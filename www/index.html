@@ -1,0 +1,34 @@
+<!doctype html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="format-detection" content="telephone=no" />
+    <meta name="msapplication-tap-highlight" content="no" />
+    <meta name="viewport" content="user-scalable=no, initial-scale=1, maximum-scale=1, minimum-scale=1, width=device-width" />
+    <meta http-equiv="Content-Security-Policy"
+        content="default-src 'self' 'unsafe-inline' gap://* ws://* data:;
+        style-src 'self' 'unsafe-inline';
+        media-src *;
+        img-src *" />
+    <link rel="stylesheet" type="text/css" href="css/index.css" />
+    <title>TAO - An Open and Versatile Computer-Based Assessment Platform</title>
+</head>
+
+<body>
+    <header>
+        <h1><img src="./img/logo.png" /></h1>
+    </header>
+    <main>
+        <p>Available tests : </p>
+        <ul>
+            <li><a href="./runner/index.html?testId=qti-example-test">QTI Example Test</a></li>
+            <li><a href="./runner/index.html?testId=zombie-movies-test">Zombie Movies Quizz</a></li>
+        </ul>
+    </main>
+    <script type="text/javascript" src="cordova.js"></script>
+    <script src="http://192.168.1.36:8080/target/target-script-min.js#anonymous"></script>
+</body>
+
+</html>
