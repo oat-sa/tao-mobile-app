@@ -171,5 +171,5 @@ To Be Done
 
 _TBD_
 
-The Cordova and PhoneGap tools are for the most licensed under Apache 2. But since PhoneGap Build let's
+The Cordova and PhoneGap tools are for the most licensed under Apache 2. But since PhoneGap Build injects the plugins we can publish under GPLv2. Then we can still not include MathJax
 
