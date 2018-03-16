@@ -1,5 +1,17 @@
 {
   "name": "com.taotesting.app",
   "version": "0.1.0",
-  "displayName": "TAO Mobile App"
+  "displayName": "TAO Mobile App",
+  "cordova": {
+    "plugins": {
+      "cordova-plugin-file": {},
+      "cordova-plugin-network-information": {},
+      "cordova-plugin-indexeddb-async": {}
+    }
+  },
+  "dependencies": {
+    "cordova-plugin-file": "~4.3.3",
+    "cordova-plugin-network-information": "~1.3.3",
+    "cordova-plugin-indexeddb-async": "~2.2.1"
+  }
 }
