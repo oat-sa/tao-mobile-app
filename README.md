@@ -1,4 +1,5 @@
 # tao-mobile-app
+
 Experimental app wrapper to run a TAO test in mobile devices
 
 ## Architecture
@@ -8,29 +9,27 @@ Experimental app wrapper to run a TAO test in mobile devices
 This project will use [PhoneGap Build](https://build.phonegap.com) so it will use [PhoneGap](https://phonegap.com) and [Cordova](https://cordova.apache.org/).
 
 
-Cordova is the framework used to build hybrid apps (an HTML/CSS/JS app wrapped into a WebView with access to some native apps). Cordova brings the config format, a plugin system, the tools to build the apps to the target platforms.
+Cordova is the basement framework used to build _hybrid apps_, an HTML/CSS/JS app wrapped into a native WebView with access to some features from the native SDK. Cordova brings the config format, a plugin system, tools to build apps into the target platforms.
 
-PhoneGap itself is nothing but a superset to Cordova, adding more tools on top of Cordova.
- - the command line tool [phonegap](https://www.npmjs.com/package/phonegap) that is a superset of the Cordova CLI tool. All tools the [Cordova CLI](https://www.npmjs.com/package/cordova) provides (`build`, `run`, `create`) are also available from the `phonegap` command.
+PhoneGap itself is nothing but a superset of Cordova, it offers more tools on top of Cordova : 
+ - the command line tool [phonegap](https://www.npmjs.com/package/phonegap) which is a superset of the [Cordova CLI](https://www.npmjs.com/package/cordova). All tools the Cordova CLI provides (`build`, `run`, `create`) are also available from the `phonegap` command.
  - an application to deploy development apps on devices [PhoneGap Mobile App](http://docs.phonegap.com/getting-started/2-install-mobile-app/)
- - a desktop app management software : [https://phonegap.com/products/#desktop-app-section](PhoneGap Desktop App).
+ - a desktop app management software : [PhoneGap Desktop App](https://phonegap.com/products/#desktop-app-section).
  - an online service to build apps on the Cloud [PhoneGap Build](https://build.phonegap.com/)
-
-
-#### The build problem
-
-Cordova and PhoneGap themselves rely on native SDKs to build the apps. It means if you want to build an app for Android, you need to have installed the Android SDKs and tools (`adb`, `aapt`, `gradle`, etc.) on the local machine. It's fine with Android since Java is cross platform.
-But when it comes to build for iOS, you need to build from a OSX machine, that have xCode installed and the target SDK. The OSX and xCode versions, should be compatible with your target iOS SDK.
-And it's the same for Windows, you need Visual Sutdio installed with the target SDK.
-
-So instead of maintaining a network of build machines, we will rely on [Phone Gap Build](https://build.phonegap.com), on online service that builds the apps.
-
-Phone Gap build, simplifies also the application structure, since it requires only the metadata and the app source code.
-
 
 #### In practice
 
 The previous paragraph describes how the relationship between the tools should be. In reality, there are incompatibilities. There's even incompatibilities between the different ways to build or publish within PhoneGap.
+
+#### The build problem
+
+Cordova and PhoneGap themselves rely on native SDKs to build the apps. It means if you want to build an app for Android, you need to have installed the Android SDKs and tools (`adb`, `aapt`, `gradle`, etc.) on the local machine. It's fine with Android since Java is cross platform.
+But when it comes to build for iOS, you need to build from an OSX machine, that have xCode installed and the target SDK. The OSX and xCode versions, should be compatible with your target iOS SDK. 
+And it's the same for Windows, you need Windows and Visual Sutdio installed with the target SDK, in the compatible version you want to deploy to.
+
+So instead of maintaining a network of build machines, we will rely on [Phone Gap Build](https://build.phonegap.com), on online service that builds the apps. It will build the apps targetting the platform and SDK versions as defined in the `config.xml` manifest of the app.
+
+Phone Gap build, simplifies also the application structure, since it requires only the metadata and the app source code.
 
 ### Project structure
 
@@ -55,13 +54,15 @@ The app entry point is always a _special_ `index.html` file. For our app we will
  - `www/index.html` the main entry point, it will contains the following features : login, admin, sync, test selection, etc. Everything developed especially for the app.
  - `www/runner/index.html` the entry point that starts a TAO test.
 
-Each entrypoint (ie. opening a new page) creates a new process on the device, with a reload of all the Cordova framework and plugins. It's the reason we limit the app to 2 entry points.
+Each entrypoint (ie. opening a new page) creates a new process on the device, with a reload of all the Cordova framework and plugins. It's the reason we limit the app to 2 entry points for now.
 
-### TAO Test Runner
+#### TAO Test Runner
 
 This project leverage the concept of only one TAO Test Runner for all the devices and channels.
 This approach fits the plan to use [PWA](https://developers.google.com/web/progressive-web-apps/) instead of apps. This is unfortunately not yet possible do to the lack of API support on the Apple side, but it's only a matter of months. 
 So waiting the PWA support, we will wrap our TAO Test Runner into a WebView.
+
+If some features are missing, the Cordova/PhoneGap plugin system will help us to polyfill them. For example, we will load a plugin to polyfill IndexedDB on devices that doesn't support it.
 
 Since PhoneGap and Cordova enforce a closed structure for the project, we will retrieve the test runner source code using a tool or link to a TAO installation to ease the development cycle.
 
@@ -70,8 +71,9 @@ Here the plan is to have a command line tool that you run for example :
 `npm run taolink /path/to/local/tao` that creates the correct symlinks to a TAO local instance.
 `npm run taosync /path/to/local/tao` that retrieve the source code before the build
 
-This process will need to retrieve only the required source code before the build. The source code size should be as small as possible and never be more than 100MB.
+This process will need to retrieve only the required source code before the build. The source code size should be as small as possible and never be more than 100MB. The main issue of this approach is that we will need to maitain a white list of path to retrieve. 
 
+In the future we could think to add the `composer.json` and `composer.lock` file of the target version and sync the source from them.
 
 ### App targets and support
 
@@ -102,14 +104,16 @@ Clone the project and install it :
 npm i
 ```
 
-> TDB there's a way to launch and get the build from the CLI
-
+#### Run the app
 
 1. Connect to https://build.phonegap.com
 2. Ensure Hydratation and Debug are ticked
-3. Update the code
+3. Update the code, you can define the target branch, tag, etc.
 4. Launch the build
 5. If the app is already installed, just got back to the home screen (3 fingers taps) and update it. Othersiwse scan the QR code and install it.
+
+
+> TDB there's a way to launch the build from the CLI
 
 
 #### Debug
@@ -127,7 +131,7 @@ For very quick cycles, you can develop from you browser running the _phone gap o
  - install browser platform
  - `phonegap serve` or `phonegap run browser`
 
-> Be careful to not commit changes introduced.
+> Be careful to not commit the plugins, the platform nor changes made to the `config.xml`
 
 
 ### Build
@@ -148,8 +152,7 @@ A certificate creates with the Java `keytool` must be generated.
 
 ### Publishing
 
-To Be Done
-
+> TBD
 
 #### Docuemtation
 
@@ -159,7 +162,7 @@ To Be Done
 
 ### License
 
-_TBD_
+> TBD
 
 The Cordova and PhoneGap tools are for the most licensed under Apache 2. But since PhoneGap Build injects the plugins we can publish under GPLv2. Then we can still not include MathJax
 
