@@ -28,9 +28,6 @@ So instead of maintaining a network of build machines, we will rely on [Phone Ga
 Phone Gap build, simplifies also the application structure, since it requires only the metadata and the app source code.
 
 
-
-
-
 #### In practice
 
 The previous paragraph describes how the relationship between the tools should be. In reality, there are incompatibilities. There's even incompatibilities between the different ways to build or publish within PhoneGap.
@@ -46,6 +43,7 @@ The project layout is fixed and can't be changed, it rely on the Cordova and Pho
  - `www/runner/` : the TAO test runner folder.
  - `www/runner/index.html` : the TAO test runner entry point.
  - `www/runner/src/` : the test runner source code from TAO.
+ - `www/runner/data/` : the test runner data, to be downloaded from an external endpoint (taoSync)
  - `merges` : an optional folder that can contain resources per platform that will override the resource for the target platform (`merges/android/css/index.css` will replace `www/css/index.css` on Android only)
 
 You can add a `.pgbomit` file in all folders you want the build to ignore.
@@ -59,9 +57,12 @@ The app entry point is always a _special_ `index.html` file. For our app we will
 
 Each entrypoint (ie. opening a new page) creates a new process on the device, with a reload of all the Cordova framework and plugins. It's the reason we limit the app to 2 entry points.
 
-#### TAO Test Runner
+### TAO Test Runner
 
 This project leverage the concept of only one TAO Test Runner for all the devices and channels.
+This approach fits the plan to use [PWA](https://developers.google.com/web/progressive-web-apps/) instead of apps. This is unfortunately not yet possible do to the lack of API support on the Apple side, but it's only a matter of months. 
+So waiting the PWA support, we will wrap our TAO Test Runner into a WebView.
+
 Since PhoneGap and Cordova enforce a closed structure for the project, we will retrieve the test runner source code using a tool or link to a TAO installation to ease the development cycle.
 
 Here the plan is to have a command line tool that you run for example :
@@ -72,28 +73,18 @@ Here the plan is to have a command line tool that you run for example :
 This process will need to retrieve only the required source code before the build. The source code size should be as small as possible and never be more than 100MB.
 
 
+### App targets and support
 
-### Build
-
-Connect to https://build.phonegap.com and launch the build.
-
-#### Signing
-
-##### Apple
-
-We need to subscribe to the [Apple Developer Program](https://developer.apple.com/programs/) to distribute the app on iOS devices.
-
-##### Android
-
-A certificate creates with the Java `keytool` must be generated.
-
-##### Windows
-
-### Publishing
-
-To Be Done
+In a first time we can focus on the following support table. Supporting previous versions for each platform may require additional work on the TAO source code.
 
 
+| Platform      | OS/SDK Version| Mobile Market Share<sup>(1)</sup>| Comment  |
+|---------------|:-------------:|:--------------------:|----------|
+| Android       | >=5.1 (API 21) | 64,08%              |  Starting from [Lollipop](https://developer.android.com/about/versions/android-5.0.html) Android Webview are Chrome based. All previous versions use an old webkit implementation.  |
+| iOS      | >=10      | 26.04% | The minimum requirement for TAO is iOS 9/Safari 9, with some possible limitations, but with a low market share we can start concentrate on 10+  |
+| Windows  | ?       |  ? | We can generate `aapx` files, the windows universal app format, I need to investigate what it means exactly |
+
+_(1)_: From https://www.netmarketshare.com
 
 ### Development
 
@@ -114,7 +105,6 @@ npm i
 > TDB there's a way to launch and get the build from the CLI
 
 
-
 1. Connect to https://build.phonegap.com
 2. Ensure Hydratation and Debug are ticked
 3. Update the code
@@ -126,6 +116,8 @@ npm i
 
 See http://docs.phonegap.com/phonegap-build/tools/debugging/
 
+Debugging using the Chrome Dev Tools' remote device give the most friendly way, Weinre is more universal but offers only limited debugging options (mainly console.log).
+
 
 #### Local Development
 
@@ -135,7 +127,7 @@ For very quick cycles, you can develop from you browser running the _phone gap o
  - install browser platform
  - `phonegap serve` or `phonegap run browser`
 
-> Be careful to not commit the plugins, the platform nor changes made to the `config.xml`
+> Be careful to not commit changes introduced.
 
 
 ### Build
@@ -158,8 +150,6 @@ A certificate creates with the Java `keytool` must be generated.
 
 To Be Done
 
-
-#### Debug
 
 #### Docuemtation
 
