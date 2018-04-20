@@ -26,7 +26,8 @@ define([], function(){
 
     return {
         start: function start(){
-            console.log('THE ADMIN CONTROLLER STARTS');
+            var container = document.getElementById('page');
+            container.innerHTML = 'ADMIN PAGE';
         }
     };
 

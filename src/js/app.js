@@ -18,15 +18,16 @@
  */
 
 /**
+ * App main controller,
+ * takes case of the application routing and
+ * loading of the main services.
  *
  * @author Bertrand Chevrier <bertrand@taotesting.com>
  */
 define([
     'tao/controller/app',
-    'app/service/authentication'
-],  function(appController, authenticationService){
+],  function(appController){
     'use strict';
-
 
     return {
         start: function start(){
@@ -34,7 +35,7 @@ define([
             var pageContainer = document.getElementById('page');
 
             appController
-                .apply('a.route')
+                .apply('a.route', pageContainer)
                 .on('change', function(route){
                     pageContainer.innerHTML = '';
                     this.getLogger().debug('Load route ' + route);

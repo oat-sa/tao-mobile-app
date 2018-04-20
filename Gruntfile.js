@@ -127,8 +127,8 @@ module.exports = function(grunt) {
                             'max_line_len': 666
                         }
                     },
-                    name: "js/appController",
-                    out : 'www/dist/js/app.min.js',
+                    name: 'app',
+                    out : `${target}js/app.min.js`,
                     include: [
                         'lib/require',
                         'config',
@@ -142,7 +142,7 @@ module.exports = function(grunt) {
             }
         },
 
-         watch: {
+        watch: {
             sass : {
                 files : ['src/scss/**/*.scss', 'src/js/app/component/**/*.scss'],
                 tasks : ['sass:app'],
