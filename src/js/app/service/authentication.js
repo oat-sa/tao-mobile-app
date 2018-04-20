@@ -18,24 +18,69 @@
  */
 
 /**
+ * Service that manages the authentication
  *
  * @author Bertrand Chevrier <bertrand@taotesting.com>
  */
 define([
     'jquery',
+    'lodash',
+    'i18n',
     'module',
     'core/store'
-], function($, module, store){
+], function($, _, __, module, store){
     'use strict';
 
     var config = module.config();
 
     return {
 
+        /**
+         * Get the current session if any
+         * @returns {Promise<Object>} resolves with the session
+         */
         getCurrentSession : function getCurrentSession(){
-            return false;
+            return store('session').then(function(sessionStore){
+                return sessionStore.getItem('current');
+            });
         },
 
+        /**
+         * Creates a new session
+         * @param {Object} user - the user linked to the session
+         * @param {String} user.id
+         * @param {String} user.username
+         * @returns {Promise<Object>} resolves with the session
+         */
+        createSession : function createSession(user){
+            if(!_.isPlainObject(user) || _.isEmpty(user.id) || _.isEmpty(user.username)){
+                throw new TypeError(__('Incomplete user, missing id and/or username'));
+            }
+            return store('session')
+                .then(function(sessionStore){
+                    return sessionStore
+                        .clear()    //only one session at one time
+                        .then( function(){
+                            return sessionStore.setItem('current', {
+                                user: user,
+                                createdAt : Date.now()
+                            });
+                        })
+                        .then( function(result){
+                            if(result){
+                                return sessionStore.getItem('current');
+                            }
+                            return null;
+                        });
+                });
+        },
+
+        /**
+         * Login a user
+         * @param {String} username
+         * @param {String} password
+         * @returns {Promise<Object>} should resolve with the status and the user if logged in
+         */
         login : function login(username, password){
             return new Promise(function(resolve, reject) {
 
@@ -43,18 +88,29 @@ define([
                     return reject(new Error('No endpoint configured'));
                 }
 
+                /*
+                 Mock
+                return resolve({
+                    success : true,
+                    user : {
+                        id : username,
+                        username : username,
+                        role : 'sync-manager'
+                    }
+                });
+                */
+                //the remote login is supposed to
+                //get a handshake on tao sync, using a basic auth
                 $.ajax({
-                    url: config.endpoint + '/tao/Main/login',
+                    url: config.endpoint,
                     method: 'POST',
+                    dataType: 'json',
                     crossDomain: true,
-                    headers:{
-                        "Content-Type":'application/x-www-form-urlencoded'
-                    },
+                    username: username,
+                    password : password,
                     cache:false,
                     data : {
-                        login : username,
-                        password : password,
-                        'loginForm_sent' : 1
+                        login : username
                     }
                 })
                 .done(function(response, status, xhr){
@@ -69,9 +125,15 @@ define([
             });
         },
 
+        /**
+         * logout the user, remove it's session
+         * @returns {Promise}
+         */
         logout : function logout(){
+            return store('session').then(function(sessionStore){
+                return sessionStore.removeItem('current');
+            });
 
         }
-
     };
 });

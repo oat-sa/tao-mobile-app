@@ -42,7 +42,7 @@
                 }
             },
             'app/service/authentication' : {
-                'endpoint' : 'http://taodev2.localdomain'
+                'endpoint' : 'http://taodev2.localdomain/taoSync/HandShake/index'
             }
         },
         shim: {

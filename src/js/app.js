@@ -26,19 +26,41 @@
  */
 define([
     'tao/controller/app',
-],  function(appController){
+    'app/service/authentication'
+],  function(appController, authenticationService){
     'use strict';
 
     return {
         start: function start(){
 
             var pageContainer = document.getElementById('page');
+            var loginRoute        = 'app/main/login';
 
             appController
                 .apply('a.route', pageContainer)
                 .on('change', function(route){
-                    pageContainer.innerHTML = '';
-                    this.getLogger().debug('Load route ' + route);
+                    var pageChange = function pageChange(){
+                        pageContainer.innerHTML = '';
+                        pageContainer.dataset.page = route;
+                        appController.getRouter().replace('/');
+                        appController.getLogger().debug('Load route ' + route + '');
+                    };
+                    //check permission during each route change
+                    if(route !== loginRoute){
+                        authenticationService
+                            .getCurrentSession()
+                            .then(function(session){
+                                if(!session || !session.user || !session.user.id){
+                                    appController.getRouter().dispatch('app/main/login');
+                                }
+                            })
+                            .catch(function(err){
+                                appController.onError(err);
+                            });
+                    } else {
+                        pageChange();
+                    }
+
                 })
                 .start({
                     forwardTo : 'app/main/login'

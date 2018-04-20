@@ -18,6 +18,7 @@
  */
 
 /**
+ * The login controller manages the authentication
  *
  * @author Bertrand Chevrier <bertrand@taotesting.com>
  */
@@ -31,28 +32,39 @@ define([
     'use strict';
 
     return {
-        start: function start(){
-            var container = document.getElementById('page');
-            container.dataset.page = 'login';
 
+        /**
+         * Controller entrypoint
+         */
+        start: function start(){
+
+            //instantiate the component
             loginComponentFactory(document.getElementById('page'))
                 .on('submit', function(data){
                     var self  = this;
                     this.trigger('loading');
 
+                    //call the authentication service
                     authenticationService
-                        .login(data)
+                        .login(data.username, data.password)
                         .then(function(result){
                             self.trigger('loaded');
-                            if(result){
-                                feedback().success(__('Logged in, yeah!.'));
-                            } else {
-                                feedback().error(__('Invalid login or password. Please try again.'));
+                            if(result && result.success && result.user && result.user.id){
+
+                                return authenticationService
+                                    .createSession(result.user)
+                                    .then( function(){
+                                        appController.getRouter().dispatch('app/admin/index');
+                                    });
+
                             }
+                            self.reset();
+                            feedback().error(__('Invalid login or password. Please try again.'));
                         })
                         .catch( function(err){
                             self.trigger('loaded');
-                            appController.trigger('error', err);
+                            self.reset();
+                            appController.onError(err);
                         });
                 });
         }

@@ -11,10 +11,6 @@
             <input type="password" name="password" placeholder="{{__ 'Password'}}" required autocomplete="false" />
             <label for="password">{{__ 'Password'}}</label>
         </span>
-        <div class="options">
-            <label><input type="checkbox" name="asadmin" />Login as admin</label>
-        </div>
-        <!--input class="btn-info" type="submit" value="{{__ 'Login'}}" /> -->
         <div class="actions"></div>
     </form>
 </section>
