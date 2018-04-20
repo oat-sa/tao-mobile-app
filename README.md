@@ -1,6 +1,6 @@
 # tao-mobile-app
 
-Experimental app wrapper to run a TAO test in mobile devices
+App wrapper to run a TAO test in mobile devices
 
 ## Architecture
 
@@ -11,7 +11,7 @@ This project will use [PhoneGap Build](https://build.phonegap.com) so it will us
 
 Cordova is the basement framework used to build _hybrid apps_, an HTML/CSS/JS app wrapped into a native WebView with access to some features from the native SDK. Cordova brings the config format, a plugin system, tools to build apps into the target platforms.
 
-PhoneGap itself is nothing but a superset of Cordova, it offers more tools on top of Cordova : 
+PhoneGap itself is nothing but a superset of Cordova, it offers more tools on top of Cordova :
  - the command line tool [phonegap](https://www.npmjs.com/package/phonegap) which is a superset of the [Cordova CLI](https://www.npmjs.com/package/cordova). All tools the Cordova CLI provides (`build`, `run`, `create`) are also available from the `phonegap` command.
  - an application to deploy development apps on devices [PhoneGap Mobile App](http://docs.phonegap.com/getting-started/2-install-mobile-app/)
  - a desktop app management software : [PhoneGap Desktop App](https://phonegap.com/products/#desktop-app-section).
@@ -24,7 +24,7 @@ The previous paragraph describes how the relationship between the tools should b
 #### The build problem
 
 Cordova and PhoneGap themselves rely on native SDKs to build the apps. It means if you want to build an app for Android, you need to have installed the Android SDKs and tools (`adb`, `aapt`, `gradle`, etc.) on the local machine. It's fine with Android since Java is cross platform.
-But when it comes to build for iOS, you need to build from an OSX machine, that have xCode installed and the target SDK. The OSX and xCode versions, should be compatible with your target iOS SDK. 
+But when it comes to build for iOS, you need to build from an OSX machine, that have xCode installed and the target SDK. The OSX and xCode versions, should be compatible with your target iOS SDK.
 And it's the same for Windows, you need Windows and Visual Sutdio installed with the target SDK, in the compatible version you want to deploy to.
 
 So instead of maintaining a network of build machines, we will rely on [Phone Gap Build](https://build.phonegap.com), on online service that builds the apps. It will build the apps targetting the platform and SDK versions as defined in the `config.xml` manifest of the app.
@@ -36,14 +36,21 @@ Phone Gap build, simplifies also the application structure, since it requires on
 The project layout is fixed and can't be changed, it rely on the Cordova and PhoneGap build conventions.
 
  - `config.xml` : it's the manifest file for the app.
+ - `src/` : the app specific source code, where you edit your files
+ - `src/js` : the app javascript source code
+ - `src/scss` : the app sass source code
+ - `src/taodist` : the symlink to a running TAO instance (not setup by default).
  - `www/` : it contains the source code of the app.
  - `www/index.html` : the app entry point.
+ - `www/dist/` : the compiled app source code
  - `www/res/` : the app resources (app icons, app splash screens, etc.)
+ - `merges` : an optional folder that can contain resources per platform that will override the resource for the target platform (`merges/android/css/index.css` will replace `www/css/index.css` on Android only)
+
+For the need of the prototype the test runner was under the following folder, which should be refactored to use the build from the symlink.
  - `www/runner/` : the TAO test runner folder.
  - `www/runner/index.html` : the TAO test runner entry point.
- - `www/runner/src/` : the test runner source code from TAO.
- - `www/runner/data/` : the test runner data, to be downloaded from an external endpoint (taoSync)
- - `merges` : an optional folder that can contain resources per platform that will override the resource for the target platform (`merges/android/css/index.css` will replace `www/css/index.css` on Android only)
+ - `www/runner/src/` : the test runner source code from TAO. (**TO BE REMOVED**)
+ - `www/runner/data/` : the test runner data, to be downloaded from an external endpoint (taoSync) (**TO BE REPLACED BY A NATIVE PRIVATE DATA FOLDER**)
 
 You can add a `.pgbomit` file in all folders you want the build to ignore.
 
@@ -59,7 +66,7 @@ Each entrypoint (ie. opening a new page) creates a new process on the device, wi
 #### TAO Test Runner
 
 This project leverage the concept of only one TAO Test Runner for all the devices and channels.
-This approach fits the plan to use [PWA](https://developers.google.com/web/progressive-web-apps/) instead of apps. This is unfortunately not yet possible do to the lack of API support on the Apple side, but it's only a matter of months. 
+This approach fits the plan to use [PWA](https://developers.google.com/web/progressive-web-apps/) instead of apps. This is unfortunately not yet possible do to the lack of API support on the Apple side, but it's only a matter of months.
 So waiting the PWA support, we will wrap our TAO Test Runner into a WebView.
 
 If some features are missing, the Cordova/PhoneGap plugin system will help us to polyfill them. For example, we will load a plugin to polyfill IndexedDB on devices that doesn't support it.
@@ -71,7 +78,7 @@ Here the plan is to have a command line tool that you run for example :
 `npm run taolink /path/to/local/tao` that creates the correct symlinks to a TAO local instance.
 `npm run taosync /path/to/local/tao` that retrieve the source code before the build
 
-This process will need to retrieve only the required source code before the build. The source code size should be as small as possible and never be more than 100MB. The main issue of this approach is that we will need to maitain a white list of path to retrieve. 
+This process will need to retrieve only the required source code before the build. The source code size should be as small as possible and never be more than 100MB. The main issue of this approach is that we will need to maitain a white list of path to retrieve.
 
 In the future we could think to add the `composer.json` and `composer.lock` file of the target version and sync the source from them.
 
@@ -90,53 +97,60 @@ _(1)_: From https://www.netmarketshare.com
 
 ### Development
 
-You need the last version of [node.js](https://nodejs.org/en/) (>=9.8.0).
-
-Install the PhoneGap CLI, globally :
-
+1. You need the last version of [node.js](https://nodejs.org/en/) (>=9.8.0).
+2. Clone this repository :
 ```sh
-npm i -g phonegap@latest
+git clone  https://github.com/oat-sa/tao-mobile-app.git
 ```
-
-Clone the project and install it :
-
+3. Install the dependencies
 ```sh
 npm i
 ```
+4. Link an installed version of TAO, for now, target the develop version
+```sh
+npm run tao:symlink /path/to/the/root/of/your/package-tao
+```
+5. You can build the code, to check everything is allright
+```sh
+npm run build
+```
+6. Run the development mode (watch mode for sass and js)
 
-#### Run the app
+```sh
+npm run dev
+```
+7. Open Chrome(ium) at the address indicated in CLI.
 
-1. Connect to https://build.phonegap.com
-2. Ensure Hydratation and Debug are ticked
-3. Update the code, you can define the target branch, tag, etc.
-4. Launch the build
-5. If the app is already installed, just got back to the home screen (3 fingers taps) and update it. Othersiwse scan the QR code and install it.
+Please note, the local developmenent is better using Webkit based browsers, because phonegap injects some specific services.
 
-
-> TDB there's a way to launch the build from the CLI
-
+8. You can also run it in a real device, by installing [the developer app](http://docs.phonegap.com/getting-started/2-install-mobile-app/) and opening the same address (_PRO TIP_ : you should be on the same network...).
 
 #### Debug
 
+##### From the development server
+
+You can debug using the Chrome Dev Tools, but on a device running the development application, you have no other option than running a remote debugger.
+One of them that works more or less is [Vorlon.js](http://www.vorlonjs.io/)
+
+##### From a built app
+
 See http://docs.phonegap.com/phonegap-build/tools/debugging/
 
-Debugging using the Chrome Dev Tools' remote device give the most friendly way, Weinre is more universal but offers only limited debugging options (mainly console.log).
+ - For Android use remote debugging from the Chrome Dev Tools
+ - For iOS use remote debugging from Safari
 
 
-#### Local Development
+#### Build the app
 
-For very quick cycles, you can develop from you browser running the _phone gap only_ app.
+1. Build the optimized version of the source code using `npm run build`
+2. Push the code to Github (here the usual release process takes place)
+3. Connect to https://build.phonegap.com
+4. Ensure Hydratation and Debug are ticked
+5. Update the code, you can define the target branch, tag, etc.
+6. Launch the build
+7. If the app is already installed, just got back to the home screen (3 fingers taps) and update it. Othersiwse scan the QR code and install it.
 
- - install plugins
- - install browser platform
- - `phonegap serve` or `phonegap run browser`
-
-> Be careful to not commit the plugins, the platform nor changes made to the `config.xml`
-
-
-### Build
-
-Connect to https://build.phonegap.com and launch the build.
+> TDB there's a way to launch the build from the CLI
 
 #### Signing
 
