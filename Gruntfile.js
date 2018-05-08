@@ -68,9 +68,10 @@ module.exports = function(grunt) {
                 removeCombined : true,
                 baseUrl : 'src/js',
                 force : true,
+                mainConfigFile : 'src/js/config.js',
 
                 //need to map all TAO paths to their location in the symlink folder
-                paths : {
+               /* paths : {
                     'text':        '../taodist/tao/views/js/lib/text/text',
                     'json':        '../taodist/tao/views/js/lib/text/json',
                     'css':         '../taodist/tao/views/js/lib/require-css/css',
@@ -94,8 +95,7 @@ module.exports = function(grunt) {
                     'core':        '../taodist/tao/views/js/core',
                     'tao':         '../taodist/tao/views/js',
                     'taoCss':      '../taodist/tao/views/css',
-
-                }
+                }*/
             },
 
             // bundle for dev without opitmization, for performances
