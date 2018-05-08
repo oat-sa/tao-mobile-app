@@ -67,7 +67,7 @@ define([
          */
         create : function create(user){
             if(!_.isPlainObject(user) || _.isEmpty(user.id) || _.isEmpty(user.username) || _.isEmpty(user.role)){
-                throw new TypeError(__('Incomplete user, missing id and/or username'));
+                throw new TypeError(__('Incomplete user, missing id and/or username, or role'));
             }
             return store(storeName)
                 .then(function(sessionStore){
