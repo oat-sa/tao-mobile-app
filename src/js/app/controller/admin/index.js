@@ -22,19 +22,21 @@
  * @author Bertrand Chevrier <bertrand@taotesting.com>
  */
 define([
-    'app/service/authentication'
-], function(authenticationService){
+    'app/service/session'
+], function(sessionService){
     'use strict';
 
     return {
         start: function start(){
             var container = document.getElementById('page');
+            container.dataset.page = 'admin/index';
 
-            authenticationService
-                .getCurrentSession()
+            sessionService
+                .getCurrent()
                 .then(function(session){
-                    container.innerHTML = '<h1>Admin section</h1><br>' +
-                        '<p>Welcome ' + session.user.username + '</p>';
+                    container.innerHTML = '<h1>Admin section</h1>' +
+                        '<div><p>Welcome ' + session.user.username + '</p>' +
+                        '<p>Role : ' + session.user.role + '</div>';
                 });
 
         }

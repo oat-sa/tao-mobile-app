@@ -19,51 +19,68 @@
 
 /**
  * App main controller,
- * takes case of the application routing and
- * loading of the main services.
+ * takes care of the application front routing
  *
  * @author Bertrand Chevrier <bertrand@taotesting.com>
  */
 define([
     'tao/controller/app',
-    'app/service/authentication'
-],  function(appController, authenticationService){
+    'app/service/session'
+],  function(appController, sessionService){
     'use strict';
 
+    var logger = appController.getLogger();
+
+    /**
+     * Role based entrypoints
+     */
+    var entryPoints = {
+        all:         'app/main/login',
+        syncManager: 'app/admin/index',
+        testTaker:   'app/delivery/index'
+    };
+
     return {
+
+        /**
+         * Application main entrypoint,
+         * starts the routing
+         */
         start: function start(){
 
             var pageContainer = document.getElementById('page');
-            var loginRoute        = 'app/main/login';
 
             appController
-                .apply('a.route', pageContainer)
-                .on('change', function(route){
-                    var pageChange = function pageChange(){
-                        pageContainer.innerHTML = '';
-                        pageContainer.dataset.page = route;
-                        appController.getRouter().replace('/');
-                        appController.getLogger().debug('Load route ' + route + '');
-                    };
-                    //check permission during each route change
-                    if(route !== loginRoute){
-                        authenticationService
-                            .getCurrentSession()
-                            .then(function(session){
-                                if(!session || !session.user || !session.user.id){
-                                    appController.getRouter().dispatch('app/main/login');
-                                }
-                            })
-                            .catch(function(err){
-                                appController.onError(err);
-                            });
-                    } else {
-                        pageChange();
+                .getRouter()
+                .on('dispatching', function(route){
+                    pageContainer.classList.add('page-change');
+
+                    logger.debug('Dispatching route ' + route);
+                })
+                .on('dispatched', function(route){
+                    pageContainer.classList.remove('page-change');
+
+                    pageContainer.innerHTML = '';
+                    pageContainer.dataset.page = route;
+
+                    logger.debug('Dispatched route ' + route);
+                });
+
+            //the default route is based on the current session, if any
+            sessionService
+                .getCurrent()
+                .then(function(session){
+                    var entryPoint = entryPoints.all;
+                    if(session && session.user && session.user.role && entryPoints[session.user.role]){
+                        entryPoint = entryPoints[session.user.role];
                     }
 
+                    appController.start({
+                        forwardTo : entryPoint
+                    });
                 })
-                .start({
-                    forwardTo : 'app/main/login'
+                .catch(function(err){
+                    appController.onError(err);
                 });
         }
     };

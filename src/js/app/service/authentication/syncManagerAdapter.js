@@ -26,8 +26,9 @@
 define([
     'jquery',
     'lodash',
-    'i18n'
-], function($, _, __){
+    'i18n',
+    'app/service/dataMapper/user'
+], function($, _, __, userDataMapper){
     'use strict';
 
     return {
@@ -58,17 +59,22 @@ define([
                     })
                 })
                 .done(function(response, status, xhr){
+                    var user;
                     if (xhr.status === 200 || xhr.status === 302){
-                        return resolve({
-                            success : true,
-                            data    : {
-                                user : {
-                                    id : response.syncUser.id,
-                                    username : response.syncUser.properties['http://www.tao.lu/Ontologies/generis.rdf#login'],
-                                    role : response.syncUser.properties['http://www.tao.lu/Ontologies/generis.rdf#userRoles']
+
+                        //extract the user and the oauth info from the response
+                        debugger;
+                        user = userDataMapper(response.syncUser);
+                        if(user){
+                            user.oauthInfo = response.oauthInfo;
+
+                            return resolve({
+                                success : true,
+                                data    : {
+                                    user : user
                                 }
-                            }
-                        });
+                            });
+                        }
                     }
                     return resolve({
                         success : false,
