@@ -33,6 +33,10 @@ define([
 ], function(_, __, component, loadingButtonFactory, loginTpl){
     'use strict';
 
+    var defaultConfig = {
+        baseUrl : './'
+    };
+
     /**
      * The component factory
      *
@@ -128,14 +132,16 @@ define([
                 }
                 return this;
             }
-        }, {});
+        }, defaultConfig);
 
         loginComponent
             .setTemplate(loginTpl)
             .on('init', function(){
-
+                var self = this;
                 if(container){
-                    this.render(container);
+                    setTimeout(function(){
+                        self.render(container);
+                    }, 0);
                 }
             })
             .on('render', function(){
@@ -185,7 +191,7 @@ define([
 
         setTimeout(function(){
             loginComponent.init(config);
-        }, 1);
+        }, 0);
 
         return  loginComponent;
     };

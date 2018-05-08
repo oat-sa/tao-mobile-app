@@ -1,6 +1,6 @@
 <section class="login">
     <header>
-        <h1><img src="./img/logo.svg"  alt="TAO" /></h1>
+        <h1><img src="{{baseUrl}}img/logo.svg"  alt="TAO" /></h1>
     </header>
     <form>
         <span class="placeholder-input username">
