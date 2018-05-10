@@ -31,19 +31,30 @@ define([
 ], function($, _, __, userDataMapper){
     'use strict';
 
+    /**
+     * Some default error messages
+     */
+    var errorMessages = {
+        missingCredentials: __('Missing username or password, please fill them and try again.'),
+        invalidCredentials: __('Invalid credentials, please try again.'),
+        missingEndpoint:    __('The authentication server is not configured, please contact your administrator.'),
+        unavaibleEndpoint:  __('Unable to reach the server, please check your network.'),
+        serverError:        __('An unexpected error occur while trying to login, please contact your administrator.')
+    };
+
     return {
 
         name : 'syncManager',
 
         authenticate : function authenticate(config, values){
             return new Promise(function(resolve, reject){
-                if(!config.endpoint){
-                    return reject(new Error('The endpoint is not configured correctly'));
+                if(!config.endpoint || _.isEmpty(config.endpoint)){
+                    return reject(new Error(errorMessages.missingEndpoint));
                 }
                 if(_.isEmpty(values.username) || _.isEmpty(values.password)){
                     return resolve({
                         success: false,
-                        message :  __('Missing username or password')
+                        message :  errorMessages.missingCredentials
                     });
                 }
 
@@ -63,7 +74,6 @@ define([
                     if (xhr.status === 200 || xhr.status === 302){
 
                         //extract the user and the oauth info from the response
-                        debugger;
                         user = userDataMapper(response.syncUser);
                         if(user){
                             user.oauthInfo = response.oauthInfo;
@@ -78,17 +88,20 @@ define([
                     }
                     return resolve({
                         success : false,
-                        message : 'Invalid credentials, please try again'
+                        message : errorMessages.invalidCredentials
                     });
                 })
                 .fail(function(xhr){
                     if(xhr.status === 401 || xhr.status === 403){
                         return resolve({
                             success : false,
-                            message : 'Invalid credentials, please try again'
+                            message : errorMessages.invalidCredentials
                         });
                     }
-                    return reject(new Error(xhr.status + ' : ' + xhr.statusText));
+                    if(xhr.status === 0){
+                        return reject(new Error(errorMessages.unavaibleEndpoint));
+                    }
+                    return reject(new Error(errorMessages.serverError + ' (' + xhr.status + ' : ' + xhr.statusText + ')' ));
                 });
             });
         }
