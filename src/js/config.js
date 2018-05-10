@@ -96,7 +96,8 @@
             },
             'app/service/authentication' : {
                 syncManager : {
-                    endpoint : 'http://taodev2.localdomain/taoSync/HandShake/index'
+                    endpoint : 'http://192.168.1.36/taoSync/HandShake/index',
+                    timeout  : 30 * 1000
                 }
             }
         },

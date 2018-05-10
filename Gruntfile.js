@@ -69,33 +69,6 @@ module.exports = function(grunt) {
                 baseUrl : 'src/js',
                 force : true,
                 mainConfigFile : 'src/js/config.js',
-
-                //need to map all TAO paths to their location in the symlink folder
-               /* paths : {
-                    'text':        '../taodist/tao/views/js/lib/text/text',
-                    'json':        '../taodist/tao/views/js/lib/text/json',
-                    'css':         '../taodist/tao/views/js/lib/require-css/css',
-                    'css-builder': '../taodist/tao/views/js/lib/require-css/css-builder',
-                    'normalize':   '../taodist/tao/views/js/lib/require-css/normalize',
-                    'tpl':         '../taodist/tao/views/js/tpl',
-                    'lib':         '../taodist/tao/views/js/lib',
-                    'ui':          '../taodist/tao/views/js/ui',
-                    'lodash':      '../taodist/tao/views/js/lib/lodash.min',
-                    'moment':      '../taodist/tao/views/js/lib/moment-with-locales.min',
-                    'handlebars':  '../taodist/tao/views/js/lib/handlebars',
-                    'jquery':      '../taodist/tao/views/js/lib/jquery-1.8.0.min',
-                    'async':       '../taodist/tao/views/js/lib/async',
-                    'i18n':        '../taodist/tao/views/js/i18n',
-                    'router':      '../taodist/tao/views/js/router',
-                    'urlParser':   '../taodist/tao/views/js/urlParser',
-                    'util':        '../taodist/tao/views/js/util',
-                    'layout':      '../taodist/tao/views/js/layout',
-                    'context':     '../taodist/tao/views/js/context',
-                    'i18ntr':      '../taodist/tao/views/locales/en-US',
-                    'core':        '../taodist/tao/views/js/core',
-                    'tao':         '../taodist/tao/views/js',
-                    'taoCss':      '../taodist/tao/views/css',
-                }*/
             },
 
             // bundle for dev without opitmization, for performances
@@ -110,6 +83,7 @@ module.exports = function(grunt) {
                         'app/controller/routes',
                         'app/controller/admin/index',
                         'app/controller/main/login',
+                        'app/controller/main/logout',
                         'core/logger/console',
                         'loader/bootstrap'
                     ]

@@ -8,16 +8,19 @@
   },
   "scripts": {
     "tao:symlink": "node scripts/tao.js symlink",
+
     "build:setup": "grunt clean:build copy:build",
     "build:sass": "grunt sass",
     "build:bundle": "grunt requirejs:build",
+    "build": "run-s build:setup build:sass build:bundle",
+
     "dev:serve": "phonegap serve",
-    "dev:static-serve": "http-server",
     "dev:sass": "grunt watch:sass",
     "dev:bundle": "grunt watch:requirejs",
     "dev": "run-p dev:*",
-    "dev:test": "run-p dev:sass dev:static-serve",
-    "build": "run-s build:setup build:sass build:bundle"
+
+    "test:serve": "http-server",
+    "test:dev": "run-p dev:sass test:serve"
   },
   "repository": {
     "type": "git",
