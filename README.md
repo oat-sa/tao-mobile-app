@@ -144,6 +144,7 @@ See http://docs.phonegap.com/phonegap-build/tools/debugging/
 
 #### Build
 
+
 1. Build the optimized version of the source code using `npm run build`
 2. Push the code to Github (here the usual release process takes place)
 3. Connect to https://build.phonegap.com

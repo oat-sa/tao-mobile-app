@@ -109,6 +109,7 @@ module.exports = function(grunt) {
                         'app/controller/routes',
                         'app/controller/admin/index',
                         'app/controller/main/login',
+                        'app/controller/main/logout',
                         'core/logger/console',
                         'loader/bootstrap'
                     ]
