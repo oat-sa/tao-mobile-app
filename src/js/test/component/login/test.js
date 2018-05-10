@@ -67,13 +67,14 @@ define(['app/component/login/login'], function(loginComponentFactory){
 
     QUnit.cases([
         { title : 'submit' },
-        { title : 'validate' },
+        { title : 'canSubmit' },
         { title : 'getRawValues' },
         { title : 'getFormValues' },
-        { title : 'reset' }
+        { title : 'reset' },
+        { title : 'loginError' },
     ]).test('Instance API ', function(data, assert) {
         var instance = loginComponentFactory();
-        assert.equal(typeof instance[data.title], 'function', 'The loginComponentFactory exposes the method "' + data.title);
+        assert.equal(typeof instance[data.title], 'function', 'The loginComponentFactory exposes the method "' + data.title + '"');
     });
 
 
@@ -101,7 +102,7 @@ define(['app/component/login/login'], function(loginComponentFactory){
     QUnit.asyncTest('Rendering', function(assert) {
         var container = document.getElementById('qunit-fixture');
 
-        QUnit.expect(7);
+        QUnit.expect(8);
 
         assert.equal(container.querySelector('.login'), null, 'The component does not exists yet');
 
@@ -114,13 +115,14 @@ define(['app/component/login/login'], function(loginComponentFactory){
                 assert.ok(element.querySelectorAll('form input').length, 2, 'The form contains 2 inputs');
                 assert.ok(element.querySelectorAll('input[type="text"][name="username"]').length, 1, 'The username field is added');
                 assert.ok(element.querySelectorAll('input[type="password"][name="password"]').length, 1, 'The password field is added');
-
                 assert.ok(element.querySelectorAll('.actions button').length, 1, 'The login button is added');
+                assert.ok(element.querySelectorAll('form input[type="submit"]').length, 1, 'The form has a submit input to trigger virtual keyboard submit');
+
                 QUnit.start();
             });
     });
 
-    QUnit.asyncTest('Validate', function(assert) {
+    QUnit.asyncTest('Can Submit', function(assert) {
         var container = document.getElementById('qunit-fixture');
 
         QUnit.expect(8);
@@ -131,21 +133,21 @@ define(['app/component/login/login'], function(loginComponentFactory){
                 var usernameField = element.querySelector('input[name="username"]');
                 var passwordField = element.querySelector('input[name="password"]');
 
-                assert.equal( this.validate(), false, 'The component is not valid, the fields are empty');
-                assert.equal( this.is('valid'), false, 'The component is not in the "valid" state');
+                assert.equal( this.canSubmit(), false, 'The component is not submitable, the fields are empty');
+                assert.equal( this.is('submitable'), false, 'The component is not in the "submitable" state');
 
                 assert.ok(usernameField instanceof HTMLInputElement);
                 assert.ok(passwordField instanceof HTMLInputElement);
 
                 usernameField.value = 'negan';
 
-                assert.equal( this.validate(), false, 'The component is not valid, one field is empty');
-                assert.equal( this.is('valid'), false, 'The component is not in the "valid" state');
+                assert.equal( this.canSubmit(), false, 'The component is not submitable, one field is empty');
+                assert.equal( this.is('submitable'), false, 'The component is not in the "submitable" state');
 
                 passwordField.value = 'Lucile123!!';
 
-                assert.equal( this.validate(), true, 'The component is now valid');
-                assert.equal( this.is('valid'), true, 'The component is now in the "valid" state');
+                assert.equal( this.canSubmit(), true, 'The component is now submitable');
+                assert.equal( this.is('submitable'), true, 'The component is now in the "submitable" state');
 
                 QUnit.start();
             });
@@ -160,8 +162,8 @@ define(['app/component/login/login'], function(loginComponentFactory){
             .on('render', function(){
                 var element = this.getElement()[0];
 
-                assert.equal( this.validate(), false, 'The component is not valid, one field is empty');
-                assert.equal( this.is('valid'), false, 'The component is not in the "valid" state');
+                assert.equal( this.canSubmit(), false, 'The component is not submitable, one field is empty');
+                assert.equal( this.is('submitable'), false, 'The component is not in the "submitable" state');
 
                 //try to submit
                 element.querySelector('.actions button').click();
@@ -178,6 +180,7 @@ define(['app/component/login/login'], function(loginComponentFactory){
                 QUnit.start();
             });
     });
+
     QUnit.asyncTest('Submit', function(assert) {
         var container = document.getElementById('qunit-fixture');
 
@@ -234,8 +237,8 @@ define(['app/component/login/login'], function(loginComponentFactory){
                 usernameField.value = 'negan';
                 passwordField.value = 'Lucile123!!';
 
-                assert.equal( this.validate(), true, 'The component is now valid');
-                assert.equal( this.is('valid'), true, 'The component is now in the "valid" state');
+                assert.equal( this.canSubmit(), true, 'The component is now submitale');
+                assert.equal( this.is('submitable'), true, 'The component is now in the "submitable" state');
 
                 this.reset();
             })
@@ -247,7 +250,46 @@ define(['app/component/login/login'], function(loginComponentFactory){
                 assert.equal(usernameField.value, '', 'The username field is empty');
                 assert.equal(passwordField.value, '', 'The password field is empty');
 
-                assert.equal( this.is('valid'), false, 'The component is not in the "valid" state anymore');
+                assert.equal( this.is('submitable'), false, 'The component is not in the "submitable" state anymore');
+
+                QUnit.start();
+            });
+    });
+
+    QUnit.asyncTest('Login Error', function(assert) {
+        var container = document.getElementById('qunit-fixture');
+
+        QUnit.expect(10);
+
+        loginComponentFactory(container, {})
+            .on('render', function(){
+                var element = this.getElement()[0];
+                var usernameField = element.querySelector('input[name="username"]');
+                var passwordField = element.querySelector('input[name="password"]');
+
+                assert.ok(usernameField instanceof HTMLInputElement);
+                assert.ok(passwordField instanceof HTMLInputElement);
+
+                usernameField.value = 'negan';
+                passwordField.value = 'Lucile123!!';
+
+                assert.equal( this.canSubmit(), true, 'The component is now submitale');
+                assert.equal( this.is('submitable'), true, 'The component is now in the "submitable" state');
+                assert.equal( this.is('error'), false, 'The component is not in "error" state');
+
+                this.loginError('invalid field');
+            })
+            .on('loginerror', function(){
+                var element = this.getElement()[0];
+                var usernameField = element.querySelector('input[name="username"]');
+                var passwordField = element.querySelector('input[name="password"]');
+
+                assert.equal(usernameField.value, '', 'The username field is empty');
+                assert.equal(passwordField.value, '', 'The password field is empty');
+                assert.equal(element.querySelector('.txt-error').textContent, 'invalid field', 'The field errors have been updated');
+
+                assert.equal( this.is('error'), true, 'The component is now in "error" state');
+                assert.equal( this.is('submitable'), false, 'The component is not in the "submitable" state anymore');
 
                 QUnit.start();
             });

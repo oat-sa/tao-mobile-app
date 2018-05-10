@@ -54,12 +54,13 @@ define([
             /**
              * Submit the values
              * @returns {formComponent} chains
-             * @fires formComponent#submit
+             * @fires loginComponent#submit
              */
             submit : function submit(){
-                if(this.is('rendered') && !this.is('loading') && this.validate()){
+                if(this.is('rendered') && !this.is('loading') && this.canSubmit()){
+
                     /**
-                     * Submit the values
+                     * @event loginComponent#submit Submit the values
                      * @param {Object} values - the form values
                      * @param {String} values.username
                      * @param {String} values.password
@@ -70,20 +71,23 @@ define([
             },
 
             /**
-             * Check whether the component is in a valid state.
+             * Check whether the component can be submitted.
              * For now it check only if the fields are not empty,
              * but that can be improved using special rules.
              * @returns {Boolean} true if the fields are valid
              */
-            validate : function validate(){
+            canSubmit : function canSubmit(){
                 if(this.is('rendered')){
+                    this.setState('error', false);
+
                     if(!_.isEmpty(this.controls.username.value) &&
                         ! _.isEmpty(this.controls.password.value)) {
-                        this.setState('valid', true);
+                        this.setState('submitable', true);
                         return true;
                     }
                 }
-                this.setState('valid', false);
+
+                this.setState('submitable', false);
                 return false;
             },
 
@@ -93,7 +97,7 @@ define([
              */
             getRawValues : function getRawValues(){
                 var values = { };
-                if(this.is('rendered') && this.is('valid')){
+                if(this.is('rendered') && this.is('submitable')){
                     values.username = this.controls.username.value.trim();
                     values.password = this.controls.password.value.trim();
                 }
@@ -105,7 +109,7 @@ define([
              * @returns {FormData} the values
              */
             getFormValues : function getFormValues(){
-                if(this.is('rendered') && this.is('valid')){
+                if(this.is('rendered') && this.is('submitable')){
                     return new FormData(this.controls.form);
                 }
                 return null;
@@ -114,7 +118,7 @@ define([
             /**
              * Reset the form the values
              * @returns {formComponent} chains
-             * @fires formComponent#reset
+             * @fires loginComponent#reset
              */
             reset : function reset(){
                 if(this.is('rendered')){
@@ -122,16 +126,49 @@ define([
                     this.controls.password.value = '';
                     this.button.terminate().reset();
 
-                    this.setState('valid', false)
-                        .setState('loading', false);
+                    this.setState('submitable', false)
+                        .setState('loading', false)
+                        .setState('error', false);
 
                     /**
-                     * @event formComponent#reset
+                     * @event loginComponent#reset
                      */
                     this.trigger('reset');
                 }
                 return this;
+            },
+
+            /**
+             * Set the component in an error state, after an invalid login
+             * @param {String} [errorMessage] - optinal new error message
+             * @returns {formComponent} chains
+             * @fires loginComponent#loginerror
+             */
+            loginError : function loginError(errorMessage){
+                if(this.is('rendered')){
+                    if(errorMessage && !_.isEmpty(errorMessage)){
+                        this.controls.fieldErrors.forEach(function(messageElt){
+                            messageElt.textContent = errorMessage;
+                        });
+                    }
+
+                    //empty the form
+                    this.controls.username.value = '';
+                    this.controls.password.value = '';
+                    this.button.terminate().reset();
+
+                    this.setState('submitable', false)
+                        .setState('loading', false)
+                        .setState('error', true);
+
+                    /**
+                     * @event loginComponent#loginerror
+                     */
+                    this.trigger('loginerror');
+                }
+                return true;
             }
+
         }, defaultConfig);
 
         loginComponent
@@ -151,8 +188,9 @@ define([
 
                 this.controls = {
                     username:    element.querySelector('[name=username]'),
-                    password: element.querySelector('[name=password]'),
-                    form:     element.querySelector('form')
+                    password:    element.querySelector('[name=password]'),
+                    form:        element.querySelector('form'),
+                    fieldErrors: element.querySelectorAll('.txt-error')
                 };
 
                 //use a loading button component for it's loading effect
@@ -164,14 +202,15 @@ define([
                     renderTo : element.querySelector('.actions')
                 });
 
-                this.controls.username.addEventListener('change',  this.validate.bind(this));
-                this.controls.password.addEventListener('change', this.validate.bind(this));
+                this.controls.username.addEventListener('change',  this.canSubmit.bind(this));
+                this.controls.password.addEventListener('change', this.canSubmit.bind(this));
 
                 this.controls.form.addEventListener('submit', function(e){
                     e.preventDefault();
                     self.submit();
                     return false;
                 });
+
                 this.button.getElement()
                     .off('click')
                     .on('click', function(e){

@@ -18,6 +18,11 @@
             @include font-size(18);
         }
 
+        input.hidden-submiter {
+            visibility: hidden;
+            position: absolute;
+        }
+
         .options {
             display: none;
         }
@@ -26,14 +31,14 @@
             position: relative;
             display: block;
             padding-top: 22px;
-            margin-bottom: 10px;
+            margin-bottom: 14px;
             label {
                 opacity: 0;
                 position: absolute;
-                top: 10px;
+                top: 8px;
                 left: 0;
                 color: $info;
-                @include font-size(12);
+                @include font-size(14);
                 @include transition(opacity, 250ms, ease-out);
             }
             input {
@@ -81,6 +86,12 @@
                 @include icon-lock;
                 @include font-size(19);
             }
+
+            .txt-error {
+                position: absolute;
+                opacity : 0;
+                @include font-size(16);
+            }
         }
 
         .actions button {
@@ -89,6 +100,24 @@
             line-height: 35px;
             height: 35px;
             margin-top: 28px;
+        }
+    }
+
+
+    &.error {
+         .placeholder-input {
+            input {
+                border-bottom-color: $errorBorderColor ;
+                @include transition(border-bottom-color, 500ms, linear);
+            }
+            .txt-error {
+                opacity : 1;
+                @include transition(opacity, 500ms, linear);
+            }
+            &:before {
+                color: $error !important;
+                @include transition(color, 500ms, linear);
+            }
         }
     }
 }
