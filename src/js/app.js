@@ -19,54 +19,60 @@
 
 /**
  * App main controller,
- * takes care of the application front routing
+ * set up the router and the navigation,
+ * dispatch the 1st route, based on the session.
  *
  * @author Bertrand Chevrier <bertrand@taotesting.com>
  */
 define([
-    'tao/controller/app',
+    'jquery',
+    'app/controller/pageController',
     'app/service/session'
-],  function(appController, sessionService){
+],  function($, pageController, sessionService){
     'use strict';
-
-    var logger = appController.getLogger();
 
     /**
      * Role based entrypoints
      */
     var entryPoints = {
-        all:         'app/main/login',
-        syncManager: 'app/admin/index',
-        testTaker:   'app/delivery/index'
+        all:         'main/login',
+        syncManager: 'admin/index'
     };
 
-    return {
+    return pageController({
 
         /**
          * Application main entrypoint,
          * starts the routing
          */
         start: function start(){
+            var self          = this;
+            var router        = this.getRouter();
+            var pageContainer = this.getContainer();
 
-            var pageContainer = document.getElementById('page');
-
-            appController
-                .getRouter()
-                .on('dispatching', function(route){
+            //page transition when the router dipatch
+            this.getRouter()
+                .on('dispatching', function(){
                     pageContainer.classList.add('page-change');
-
-                    logger.debug('Dispatching route ' + route);
                 })
                 .on('dispatched', function(route){
                     pageContainer.classList.remove('page-change');
 
                     pageContainer.innerHTML = '';
                     pageContainer.dataset.page = route;
-
-                    logger.debug('Dispatched route ' + route);
                 });
 
-            //the default route is based on the current session, if any
+            //dispatch a route if an element has the correct data-attr
+            $(pageContainer).on('click', '[data-route]', function(e){
+                var route = $(this).data('route');
+                if(route){
+                    e.preventDefault();
+
+                    router.dispatch(route);
+                }
+            });
+
+            //the default route is based on the current session content, if any
             sessionService
                 .getCurrent()
                 .then(function(session){
@@ -75,13 +81,11 @@ define([
                         entryPoint = entryPoints[session.user.role];
                     }
 
-                    appController.start({
-                        forwardTo : entryPoint
-                    });
+                    router.dispatch(entryPoint);
                 })
                 .catch(function(err){
-                    appController.onError(err);
+                    self.handleError(err);
                 });
         }
-    };
+    });
 });

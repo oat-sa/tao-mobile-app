@@ -13,24 +13,25 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  *
- * Copyright (c) 2018 Open Assessment Technologies SA
+ * Copyright (c) 2018 (original work) Open Assessment Technologies SA
+ *
  */
 
-//@see http://forge.taotesting.com/projects/tao/wiki/Front_js
-define(function(){
+/**
+ * Mock the tao router
+ *
+ * @author Bertrand Chevrier <bertrand@taotesting.com>
+ */
+define([], function(){
     'use strict';
 
     return {
-        'admin': {
-            'actions' : {
-                'index' : 'controller/admin/index',
+        dispatch : function dispatch(route, cb){
+            console.log('mock route dispatch ' + route);
+            if(route === 'app/test/index'){
+                return setTimeout(cb, 10);
             }
-        },
-        'main': {
-            'actions' : {
-                'login' : 'controller/main/login',
-                'logout' : 'controller/main/logout'
-            }
-        },
+        }
     };
 });
+

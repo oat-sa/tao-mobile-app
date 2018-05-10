@@ -25,68 +25,67 @@
 define([
     'i18n',
     'ui/feedback',
-    'tao/controller/app',
     'app/component/login/login',
+    'app/controller/pageController',
     'app/service/authentication',
     'app/service/session',
     'app/service/user',
-], function(__, feedback, appController, loginComponentFactory, authenticationService, sessionService, userService) {
+], function(__, feedback, loginComponentFactory, pageController, authenticationService, sessionService, userService) {
     'use strict';
 
-    return {
+    return pageController({
 
         /**
          * Controller entrypoint
          */
         start: function start(){
+            var self = this;
 
             //instantiate the component
-            loginComponentFactory(document.getElementById('page'))
-                .on('submit', function(data){
-                    var self  = this;
-                    this.trigger('loading');
+            var loginComponent = loginComponentFactory(this.getContainer());
 
-                    //call the authentication service,
-                    //uses the remote SyncManager endpoints only, for now
-                    //
-                    //TODO implement fallback to local db for already saved user and test taker
-                    //
-                    authenticationService
-                        .authenticate(authenticationService.adapters.syncManager, data)
-                        .then(function(result){
-                            self.trigger('loaded');
+            loginComponent.on('submit', function(data){
+                loginComponent.trigger('loading');
 
-                            if(result && result.success && result.data && result.data.user){
-                                return result.data.user;
-                            }
-                            return false;
-                        })
-                        .then(function(user){
-                            if(!user){
-                                self.reset();
-                                feedback().error(__('Invalid login or password. Please try again.'));
-                                return;
-                            }
+                //call the authentication service,
+                //uses the remote SyncManager endpoints only, for now
+                //
+                //TODO implement fallback to local db for already saved user and test taker
+                //
+                authenticationService
+                    .authenticate(authenticationService.adapters.syncManager, data)
+                    .then(function(result){
+                        loginComponent.trigger('loaded');
 
-                            //create the current session
-                            //and save the user in database
-                            return Promise.all([
-                                sessionService.create(user),
-                                userService.set(user)
-                            ]);
-                        })
-                        .then(function(results){
-                            //we check if at least the session is created
-                            if(results.length === 2 && results[0]){
-                                return appController.getRouter().dispatch('app/admin/index');
-                            }
-                        })
-                        .catch( function(err){
-                            self.trigger('loaded');
-                            self.reset();
-                            appController.onError(err);
-                        });
-                });
+                        if(result && result.success && result.data && result.data.user){
+                            return result.data.user;
+                        }
+                        return false;
+                    })
+                    .then(function(user){
+                        if(!user){
+                            loginComponent.loginError();
+                            return;
+                        }
+
+                        //create the current session
+                        //and save the user in database
+                        return Promise.all([
+                            sessionService.create(user),
+                            userService.set(user)
+                        ]);
+                    })
+                    .then(function(results){
+                        //we check if at least the session is created
+                        if(results && results.length === 2 && results[0]){
+                            return self.getRouter().dispatch('admin/index');
+                        }
+                    })
+                    .catch( function(err){
+                        loginComponent.reset();
+                        self.handleError(err);
+                    });
+            });
         }
-    };
+    });
 });
