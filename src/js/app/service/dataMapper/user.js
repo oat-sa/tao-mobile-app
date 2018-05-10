@@ -34,7 +34,7 @@ define([
         username:      'http:\/\/www.tao.lu\/Ontologies\/generis.rdf#login',
         password:      'http:\/\/www.tao.lu\/Ontologies\/generis.rdf#password',
         firstname:     'http:\/\/www.tao.lu\/Ontologies\/generis.rdf#userFirstName',
-        lastName:      'http:\/\/www.tao.lu\/Ontologies\/generis.rdf#userLastName',
+        lastname:      'http:\/\/www.tao.lu\/Ontologies\/generis.rdf#userLastName',
         email:         'http:\/\/www.tao.lu\/Ontologies\/generis.rdf#userMail',
         originalRoles: 'http:\/\/www.tao.lu\/Ontologies\/generis.rdf#userRoles',
         updatedAt:     'http:\/\/www.tao.lu\/Ontologies\/TAO.rdf#UpdatedAt',
@@ -57,17 +57,18 @@ define([
      */
     var mapper = function mapper(inputUser) {
         var outputUser = null;
-        if (_.isPlainObject(inputUser)) {
+        if (_.isPlainObject(inputUser) && (inputUser.id || inputUser.uri) ) {
             outputUser = {
-                id: inputUser.id
+                id: inputUser.id || inputUser.uri
             };
             if (_.isPlainObject(inputUser.properties)) {
                 outputUser = _.reduce(mapping, function(acc, propName, key) {
                     if (!_.isUndefined(inputUser.properties[propName])) {
                         outputUser[key] = inputUser.properties[propName];
-                        return acc;
                     }
+                    return acc;
                 }, outputUser);
+
                 if(_.isString(outputUser.originalRoles)){
                     outputUser.originalRoles = [outputUser.originalRoles];
                 }
@@ -79,6 +80,12 @@ define([
                             return false;
                         }
                     });
+                }
+                if(_.isString(outputUser.createdAt)){
+                    outputUser.createdAt = parseFloat(outputUser.createdAt);
+                }
+                if(_.isString(outputUser.updatedAt)){
+                    outputUser.updatedAt = parseFloat(outputUser.updatedAt);
                 }
             }
         }
