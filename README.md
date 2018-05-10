@@ -38,6 +38,12 @@ The project layout is fixed and can't be changed, it rely on the Cordova and Pho
  - `config.xml` : it's the manifest file for the app.
  - `src/` : the app specific source code, where you edit your files
  - `src/js` : the app javascript source code
+ - `src/js/test` : the javascript unit tests
+ - `src/js/app/app.js` : the main controller
+ - `src/js/app/config.js` : the application configuration
+ - `src/js/app/component` : the application graphical components
+ - `src/js/app/controller` : the applications controllers
+ - `src/js/app/service` :  the applications services
  - `src/scss` : the app sass source code
  - `src/taodist` : the symlink to a running TAO instance (not setup by default).
  - `www/` : it contains the source code of the app.
@@ -46,41 +52,15 @@ The project layout is fixed and can't be changed, it rely on the Cordova and Pho
  - `www/res/` : the app resources (app icons, app splash screens, etc.)
  - `merges` : an optional folder that can contain resources per platform that will override the resource for the target platform (`merges/android/css/index.css` will replace `www/css/index.css` on Android only)
 
-For the need of the prototype the test runner was under the following folder, which should be refactored to use the build from the symlink.
- - `www/runner/` : the TAO test runner folder.
- - `www/runner/index.html` : the TAO test runner entry point.
- - `www/runner/src/` : the test runner source code from TAO. (**TO BE REMOVED**)
- - `www/runner/data/` : the test runner data, to be downloaded from an external endpoint (taoSync) (**TO BE REPLACED BY A NATIVE PRIVATE DATA FOLDER**)
 
 You can add a `.pgbomit` file in all folders you want the build to ignore.
 
 #### Entry points
 
-The app entry point is always a _special_ `index.html` file. For our app we will have 2 entry points :
+The app entry point is the file `www/index.html`
 
- - `www/index.html` the main entry point, it will contains the following features : login, admin, sync, test selection, etc. Everything developed especially for the app.
- - `www/runner/index.html` the entry point that starts a TAO test.
-
-Each entrypoint (ie. opening a new page) creates a new process on the device, with a reload of all the Cordova framework and plugins. It's the reason we limit the app to 2 entry points for now.
-
-#### TAO Test Runner
-
-This project leverage the concept of only one TAO Test Runner for all the devices and channels.
-This approach fits the plan to use [PWA](https://developers.google.com/web/progressive-web-apps/) instead of apps. This is unfortunately not yet possible do to the lack of API support on the Apple side, but it's only a matter of months.
-So waiting the PWA support, we will wrap our TAO Test Runner into a WebView.
-
-If some features are missing, the Cordova/PhoneGap plugin system will help us to polyfill them. For example, we will load a plugin to polyfill IndexedDB on devices that doesn't support it.
-
-Since PhoneGap and Cordova enforce a closed structure for the project, we will retrieve the test runner source code using a tool or link to a TAO installation to ease the development cycle.
-
-Here the plan is to have a command line tool that you run for example :
-
-`npm run taolink /path/to/local/tao` that creates the correct symlinks to a TAO local instance.
-`npm run taosync /path/to/local/tao` that retrieve the source code before the build
-
-This process will need to retrieve only the required source code before the build. The source code size should be as small as possible and never be more than 100MB. The main issue of this approach is that we will need to maitain a white list of path to retrieve.
-
-In the future we could think to add the `composer.json` and `composer.lock` file of the target version and sync the source from them.
+This file bootstraps the phonegap/cordova framework. 
+It is recommended to don't navigate to other files, even internally, each entrypoins create a new Cordova process.
 
 ### App targets and support
 
@@ -95,7 +75,10 @@ In a first time we can focus on the following support table. Supporting previous
 
 _(1)_: From https://www.netmarketshare.com
 
+
 ### Development
+
+#### Quick Setup
 
 1. You need the last version of [node.js](https://nodejs.org/en/) (>=9.8.0).
 2. Clone this repository :
@@ -110,7 +93,18 @@ npm i
 ```sh
 npm run tao:symlink /path/to/the/root/of/your/package-tao
 ```
-5. You can build the code, to check everything is allright
+5. Update the configuration file `src/js/config.js`, especially the value of the sync endpoint 
+```
+'app/service/authentication' : {
+    syncManager : {
+        endpoint : 'http://192.168.1.36/taoSync/HandShake/index',
+    }
+}
+
+```
+Please note this endpoint should link to an installed TAO, configured as [central sync endpoint](#central-sync-endpoint). If you test on a real device, don't forget the endpoint to be accessible through your LAN/WAN.
+
+5. You can build the code, to check everything is alright
 ```sh
 npm run build
 ```
@@ -121,9 +115,17 @@ npm run dev
 ```
 7. Open Chrome(ium) at the address indicated in CLI.
 
-Please note, the local developmenent is better using Webkit based browsers, because phonegap injects some specific services.
+Please note, the local development is better using Webkit based browsers, because phonegap injects some specific services.
 
 8. You can also run it in a real device, by installing [the developer app](http://docs.phonegap.com/getting-started/2-install-mobile-app/) and opening the same address (_PRO TIP_ : you should be on the same network...).
+
+#### Set up a TAO central sync endpoint
+<a name="central-sync-endpoint"></a>
+
+ - Install a recent (>= sprint-75) version of TAO with the extensions `taoSync` and `taoOAuth`.
+ - Once installed, create a user with the role `Sync Manager`
+ - Run the script `php index.php '\oat\taoSync\scripts\tool\RegisterHandShakeAuthAdapter'`
+ - Do not forget to change the value of the endpoint in the app config file `src/js/config.js`
 
 #### Debug
 
@@ -140,7 +142,7 @@ See http://docs.phonegap.com/phonegap-build/tools/debugging/
  - For iOS use remote debugging from Safari
 
 
-#### Build the app
+#### Build
 
 1. Build the optimized version of the source code using `npm run build`
 2. Push the code to Github (here the usual release process takes place)
