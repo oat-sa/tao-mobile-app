@@ -259,7 +259,7 @@ define(['app/component/login/login'], function(loginComponentFactory){
     QUnit.asyncTest('Login Error', function(assert) {
         var container = document.getElementById('qunit-fixture');
 
-        QUnit.expect(10);
+        QUnit.expect(12);
 
         loginComponentFactory(container, {})
             .on('render', function(){
@@ -284,14 +284,22 @@ define(['app/component/login/login'], function(loginComponentFactory){
                 var usernameField = element.querySelector('input[name="username"]');
                 var passwordField = element.querySelector('input[name="password"]');
 
-                assert.equal(usernameField.value, '', 'The username field is empty');
-                assert.equal(passwordField.value, '', 'The password field is empty');
+                assert.equal(usernameField.value, 'negan', 'The username field value is kept');
+                assert.equal(passwordField.value, 'Lucile123!!', 'The password field value is kept');
                 assert.equal(element.querySelector('.txt-error').textContent, 'invalid field', 'The field errors have been updated');
 
                 assert.equal( this.is('error'), true, 'The component is now in "error" state');
                 assert.equal( this.is('submitable'), false, 'The component is not in the "submitable" state anymore');
 
-                QUnit.start();
+                //focus one field to change the state
+                usernameField.focus();
+
+                setTimeout( () => {
+                    assert.equal( this.is('error'), false, 'The component is not in "error" state');
+                    assert.equal( this.is('submitable'), true, 'The component is "submitable"');
+
+                    QUnit.start();
+                }, 10);
             });
     });
 

@@ -152,9 +152,6 @@ define([
                         });
                     }
 
-                    //empty the form
-                    this.controls.username.value = '';
-                    this.controls.password.value = '';
                     this.button.terminate().reset();
 
                     this.setState('submitable', false)
@@ -202,8 +199,12 @@ define([
                     renderTo : element.querySelector('.actions')
                 });
 
-                this.controls.username.addEventListener('change',  this.canSubmit.bind(this));
-                this.controls.password.addEventListener('change', this.canSubmit.bind(this));
+                const check = () => this.canSubmit();
+
+                this.controls.username.addEventListener('change', check);
+                this.controls.password.addEventListener('change', check);
+                this.controls.username.addEventListener('focus', check);
+                this.controls.password.addEventListener('focus', check);
 
                 this.controls.form.addEventListener('submit', function(e){
                     e.preventDefault();
@@ -217,6 +218,8 @@ define([
                         e.preventDefault();
                         self.submit();
                     });
+
+                check();
 
             })
             .on('loading', function(){
