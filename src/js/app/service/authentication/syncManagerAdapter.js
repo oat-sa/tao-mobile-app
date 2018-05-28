@@ -63,10 +63,9 @@ define([
                     type: 'POST',
                     dataType: 'json',
                     contentType: 'application/json',
-                    username: values.username,
-                    password : values.password,
                     data : JSON.stringify({
-                        login : values.username
+                        login : values.username,
+                        password : values.password
                     })
                 })
                 .done(function(response, status, xhr){
