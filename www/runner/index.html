@@ -1,0 +1,79 @@
+<!doctype html>
+<html class="no-js no-version-warning">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="format-detection" content="telephone=no" />
+    <meta name="msapplication-tap-highlight" content="no" />
+    <meta name="viewport" content="user-scalable=no, initial-scale=1, maximum-scale=1, minimum-scale=1, width=device-width" />
+    <meta http-equiv="Content-Security-Policy"
+    content="default-src 'self' data: gap:;
+        script-src 'self' 'unsafe-eval' data: gap: https://www.youtube.com;
+        frame-src 'self';
+        style-src 'self' 'unsafe-inline' https://www.youtube.com;
+        media-src * data: blob:;
+        img-src * data:" />
+
+    <title>TAO - An Open and Versatile Computer-Based Assessment Platform</title>
+    <link rel="stylesheet" href="src/tao/views/css/tao-main-style.css" />
+    <link rel="stylesheet" href="src/tao/views/css/tao-3.css" />
+    <link rel="shortcut icon" href="favicon.ico" />
+
+    <!-- Source mode -->
+    <!--src="src/tao/views/js/lib/require.js"-->
+    <!--data-main="src/tao/views/js/loader/bootstrap.js"-->
+    <!--data-controller="taoQtiTest/controller/runner/runner"-->
+
+    <script type="text/javascript" src="cordova.js"></script>
+    <!--<script src="http://192.168.1.36:8080/target/target-script-min.js#anonymous"></script>-->
+
+    <!-- Bundle mode
+
+    Loader order :
+        1. qtiTestRunner.min.js will execute the bootstrap at it's end
+        2. the bootstrap will load the data-config value
+        3. the config file configure require.js and fill the data-params
+        4. the data-controller is loaded with the params
+    -->
+    <script id="amd-loader"
+        data-config="./static/config.js"
+        src="src/taoQtiTest/views/js/loader/qtiTestRunner.min.js"
+        data-controller="taoQtiTest/controller/runner/runner"
+        data-params=""
+    ></script>
+
+</head>
+
+<body class="delivery-scope">
+
+    <!-- requirement checks -->
+    <noscript>
+            <div id="js-check" class="feedback-error check-msg"><span class="icon-error"></span>You must activate JavaScript in your browser to run this application.</div>
+        </noscript>
+    <div id="browser-check" class="feedback-error hidden check-msg"><span class="icon-error"></span>Your browser does not meet the technical requirements to run TAO.</div>
+    <script src="src/tao/views/js/layout/requirement-check.js"></script>
+
+    <div class="content-wrap">
+        <header class="dark-bar clearfix">
+            <a href="http://taotesting.com" title="" class="lft" target="_blank">
+                <img src="src/tao/views/img/tao-logo.png" alt="TAO Logo" id="tao-main-logo">
+            </a>
+            <div class="lft title-box"></div>
+            <nav class="rgt">
+                <div class="settings-menu"></div>
+            </nav>
+        </header>
+        <div id="feedback-box"></div>
+        <div class="runner"></div>
+    </div>
+    <footer class="dark-bar">
+        <div class="lft">
+            © 2013 - 2018 · <span class="tao-version">3.3.0-sprint69-static</span> ·
+            <a href="http://taotesting.com" target="_blank">Open Assessment Technologies S.A.</a> · All rights reserved. </div>
+        <div class="rgt"></div>
+    </footer>
+    <div class="loading-bar"></div>
+</body>
+
+</html>

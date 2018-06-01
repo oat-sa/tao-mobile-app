@@ -57,3 +57,9 @@ typings/
 # dotenv environment variables file
 .env
 
+#phonegap / cordova specific resources 
+#mostly to test them in the browser or a given device
+plugins
+platforms
+www/dist/*
+src/taodist

@@ -1,0 +1,392 @@
+{
+  "testData": {
+    "title": "QTI Example Test",
+    "identifier": "Test-1",
+    "className": "assessmentTest",
+    "toolName": "tao",
+    "exclusivelyLinear": false,
+    "hasTimeLimits": true,
+    "states": {
+      "initial": 0,
+      "interacting": 1,
+      "modalFeedback": 2,
+      "suspended": 3,
+      "closed": 4
+    },
+    "itemStates": {
+      "initial": 0,
+      "interacting": 1,
+      "modalFeedback": 2,
+      "suspended": 3,
+      "closed": 4,
+      "solution": 5,
+      "review": 6,
+      "notSelected": 255
+    },
+    "timeLimits": {
+      "maxTime": {
+        "duration": 7810,
+        "iso": "PT2H10M10S"
+      }
+    },
+    "config": {
+      "timerWarning": {
+        "assessmentItemRef": null,
+        "assessmentSection": null,
+        "testPart": null,
+        "assessmentTest": null
+      },
+      "catEngineWarning": null,
+      "progressIndicator": {
+        "type": "percentage",
+        "scope": "testSection",
+        "forced": false,
+        "showTotal": true
+      },
+      "review": {
+        "enabled": true,
+        "scope": "test",
+        "useTitle": true,
+        "forceTitle": false,
+        "forceInformationalTitle": false,
+        "showLegend": true,
+        "defaultOpen": true,
+        "itemTitle": "Item %d",
+        "informationalItemTitle": "Instructions",
+        "preventsUnseen": true,
+        "canCollapse": false,
+        "displaySubsectionTitle": true
+      },
+      "exitButton": false,
+      "nextSection": false,
+      "plugins": {
+        "answer-masking": {
+          "restoreStateOnToggle": true,
+          "restoreStateOnMove": true
+        },
+        "overlay": {
+          "full": false
+        },
+        "collapser": {
+          "collapseTools": true,
+          "collapseNavigation": false,
+          "collapseInOrder": false,
+          "hover": false,
+          "collapseOrder": []
+        },
+        "magnifier": {
+          "zoomMin": 2,
+          "zoomMax": 8,
+          "zoomStep": 0.5
+        },
+        "calculator": {
+          "template": ""
+        }
+      },
+      "security": {
+        "csrfToken": true
+      },
+      "timer": {
+        "target": "server",
+        "resetAfterResume": false,
+        "keepUpToTimeout": false
+      },
+      "enableAllowSkipping": true,
+      "enableValidateResponses": true,
+      "checkInformational": true,
+      "enableUnansweredItemsWarning": true,
+      "allowShortcuts": true,
+      "shortcuts": {
+        "calculator": {
+          "toggle": "C"
+        },
+        "zoom": {
+          "in": "I",
+          "out": "O"
+        },
+        "comment": {
+          "toggle": "A"
+        },
+        "itemThemeSwitcher": {
+          "toggle": "T"
+        },
+        "review": {
+          "toggle": "R",
+          "flag": "M"
+        },
+        "keyNavigation": {
+          "previous": "Shift+Tab",
+          "next": "Tab"
+        },
+        "next": {
+          "trigger": "J"
+        },
+        "previous": {
+          "trigger": "K"
+        },
+        "dialog": [],
+        "magnifier": {
+          "toggle": "L",
+          "in": "Shift+I",
+          "out": "Shift+O",
+          "close": "esc"
+        },
+        "highlighter": {
+          "toggle": "Shift+U"
+        },
+        "area-masking": {
+          "toggle": "Y"
+        },
+        "line-reader": {
+          "toggle": "G"
+        },
+        "answer-masking": {
+          "toggle": "D"
+        }
+      },
+      "itemCaching": {
+        "enabled": false,
+        "amount": 3
+      }
+    }
+  },
+  "testContext": {
+    "state": 1,
+    "navigationMode": 1,
+    "submissionMode": 0,
+    "remainingAttempts": 0,
+    "isAdaptive": false,
+    "isLinear": false,
+    "isTimeout": false,
+    "itemIdentifier": "item-1",
+    "attempt": 1,
+    "itemSessionState": 1,
+    "isCatAdaptive": false,
+    "needMapUpdate": false,
+    "isLast": false,
+    "itemPosition": 0,
+    "itemFlagged": false,
+    "itemAnswered": false,
+    "timeConstraints": [{
+      "label": "QTI Example Test",
+      "source": "Test-1",
+      "seconds": 7810,
+      "extraTime": 0,
+      "allowLateSubmission": false,
+      "qtiClassName": "assessmentTest"
+    }],
+    "extraTime": {
+      "total": 0,
+      "consumed": 0,
+      "remaining": 0
+    },
+    "testPartId": "Introduction",
+    "sectionId": "assessmentSection-1",
+    "sectionTitle": "Section 1",
+    "numberItems": 9,
+    "numberCompleted": 0,
+    "numberPresented": 1,
+    "considerProgress": true,
+    "isDeepestSectionVisible": true,
+    "canMoveBackward": false,
+    "numberRubrics": 0,
+    "enableAllowSkipping": true,
+    "allowSkipping": true,
+    "enableValidateResponses": true,
+    "validateResponses": false,
+    "hasFeedbacks": false,
+    "options": {
+      "allowComment": true,
+      "allowSkipping": true,
+      "exitButton": false,
+      "logoutButton": true,
+      "validateResponses": false,
+      "sectionPause": false
+    }
+  },
+  "testMap": {
+    "scope": "test",
+    "parts": {
+      "Introduction": {
+        "id": "Introduction",
+        "label": "Introduction",
+        "position": 0,
+        "isLinear": false,
+        "sections": {
+          "assessmentSection-1": {
+            "id": "assessmentSection-1",
+            "label": "Section 1",
+            "isCatAdaptive": false,
+            "position": 0,
+            "items": {
+              "item-1": {
+                "id": "item-1",
+                "label": "Example_0_Introduction",
+                "position": 0,
+                "occurrence": 0,
+                "remainingAttempts": 0,
+                "answered": false,
+                "flagged": false,
+                "viewed": true,
+                "categories": [],
+                "informational": true
+              }
+            },
+            "stats": {
+              "questions": 0,
+              "answered": 0,
+              "flagged": 0,
+              "viewed": 1,
+              "total": 1,
+              "questionsViewed": 0
+            }
+          }
+        },
+        "stats": {
+          "questions": 0,
+          "answered": 0,
+          "flagged": 0,
+          "viewed": 1,
+          "total": 1,
+          "questionsViewed": 0
+        }
+      },
+      "QTIExamples": {
+        "id": "QTIExamples",
+        "label": "QTIExamples",
+        "position": 1,
+        "isLinear": true,
+        "sections": {
+          "assessmentSection-2": {
+            "id": "assessmentSection-2",
+            "label": "Section 1",
+            "isCatAdaptive": false,
+            "position": 1,
+            "items": {
+              "item-2": {
+                "id": "item-2",
+                "label": "example_1_TAO",
+                "position": 1,
+                "occurrence": 0,
+                "remainingAttempts": 1,
+                "answered": false,
+                "flagged": false,
+                "viewed": false,
+                "categories": [],
+                "informational": false
+              },
+              "item-3": {
+                "id": "item-3",
+                "label": "example_2_Math",
+                "position": 2,
+                "occurrence": 0,
+                "remainingAttempts": 1,
+                "answered": false,
+                "flagged": false,
+                "viewed": false,
+                "categories": [],
+                "informational": false
+              },
+              "item-4": {
+                "id": "item-4",
+                "label": "Example_3_Baudelaire",
+                "position": 3,
+                "occurrence": 0,
+                "remainingAttempts": 1,
+                "answered": false,
+                "flagged": false,
+                "viewed": false,
+                "categories": [],
+                "informational": false
+              },
+              "item-5": {
+                "id": "item-5",
+                "label": "Example_4_Appearance",
+                "position": 4,
+                "occurrence": 0,
+                "remainingAttempts": 1,
+                "answered": false,
+                "flagged": false,
+                "viewed": false,
+                "categories": [],
+                "informational": false
+              },
+              "item-6": {
+                "id": "item-6",
+                "label": "Example_5_picasso",
+                "position": 5,
+                "occurrence": 0,
+                "remainingAttempts": 1,
+                "answered": false,
+                "flagged": false,
+                "viewed": false,
+                "categories": [],
+                "informational": false
+              },
+              "item-7": {
+                "id": "item-7",
+                "label": "Example_6_Geography",
+                "position": 6,
+                "occurrence": 0,
+                "remainingAttempts": 1,
+                "answered": false,
+                "flagged": false,
+                "viewed": false,
+                "categories": [],
+                "informational": false
+              },
+              "item-8": {
+                "id": "item-8",
+                "label": "Example_7_Geo 2",
+                "position": 7,
+                "occurrence": 0,
+                "remainingAttempts": 1,
+                "answered": false,
+                "flagged": false,
+                "viewed": false,
+                "categories": [],
+                "informational": false
+              },
+              "item-9": {
+                "id": "item-9",
+                "label": "Example_8_Geo 3",
+                "position": 8,
+                "occurrence": 0,
+                "remainingAttempts": 1,
+                "answered": false,
+                "flagged": false,
+                "viewed": false,
+                "categories": [],
+                "informational": false
+              }
+            },
+            "stats": {
+              "questions": 8,
+              "answered": 0,
+              "flagged": 0,
+              "viewed": 0,
+              "total": 8,
+              "questionsViewed": 0
+            }
+          }
+        },
+        "stats": {
+          "questions": 8,
+          "answered": 0,
+          "flagged": 0,
+          "viewed": 0,
+          "total": 8,
+          "questionsViewed": 0
+        }
+      }
+    },
+    "stats": {
+      "questions": 8,
+      "answered": 0,
+      "flagged": 0,
+      "viewed": 1,
+      "total": 9,
+      "questionsViewed": 0
+    }
+  }
+}
