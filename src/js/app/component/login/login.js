@@ -182,6 +182,9 @@ define([
                 var self    = this;
 
                 var element = this.getElement()[0];
+                var checkHandler = function checkHandler(){
+                    return self.canSubmit();
+                };
 
                 this.controls = {
                     username:    element.querySelector('[name=username]'),
@@ -199,12 +202,11 @@ define([
                     renderTo : element.querySelector('.actions')
                 });
 
-                const check = () => this.canSubmit();
 
-                this.controls.username.addEventListener('change', check);
-                this.controls.password.addEventListener('change', check);
-                this.controls.username.addEventListener('focus', check);
-                this.controls.password.addEventListener('focus', check);
+                this.controls.username.addEventListener('change', checkHandler);
+                this.controls.password.addEventListener('change', checkHandler);
+                this.controls.username.addEventListener('focus', checkHandler);
+                this.controls.password.addEventListener('focus', checkHandler);
 
                 this.controls.form.addEventListener('submit', function(e){
                     e.preventDefault();
@@ -219,7 +221,7 @@ define([
                         self.submit();
                     });
 
-                check();
+                checkHandler();
 
             })
             .on('loading', function(){
