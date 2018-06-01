@@ -1,6 +1,6 @@
 {
   "name": "@oat-sa/tao-mobile-app",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "displayName": "TAO Mobile App",
   "description": "TAO hybrid application project for mobile devices",
   "bin": {
