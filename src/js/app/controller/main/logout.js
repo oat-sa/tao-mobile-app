@@ -18,29 +18,30 @@
  */
 
 /**
- * This controller is a placeholder
- * to test the admin page access.
- *
+ * The logout controller, clear the session and redirect to the login screen
  *
  * @author Bertrand Chevrier <bertrand@taotesting.com>
  */
 define([
     'app/controller/pageController',
-    'app/service/session',
-    'tpl!app/controller/admin/layout'
-], function(pageController, sessionService, layoutTpl){
+    'app/service/session'
+], function(pageController, sessionService) {
     'use strict';
 
     return pageController({
+
+        /**
+         * Controller entrypoint
+         */
         start: function start(){
             var self = this;
 
             sessionService
-                .getCurrent()
-                .then(function(session){
-                    self.getContainer().innerHTML = layoutTpl(session.user);
+                .clear()
+                .then(function(){
+                    self.getRouter().dispatch('main/login');
                 })
-                .catch(function(err){
+                .catch( function(err){
                     self.handleError(err);
                 });
         }

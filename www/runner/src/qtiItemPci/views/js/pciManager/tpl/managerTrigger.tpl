@@ -1,1 +1,0 @@
-<a class="pci-manager-trigger" href="#" data-role="pci-manager-trigger">{{title}}</a>

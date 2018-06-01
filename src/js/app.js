@@ -19,30 +19,73 @@
 
 /**
  * App main controller,
- * takes case of the application routing and
- * loading of the main services.
+ * set up the router and the navigation,
+ * dispatch the 1st route, based on the session.
  *
  * @author Bertrand Chevrier <bertrand@taotesting.com>
  */
 define([
-    'tao/controller/app',
-],  function(appController){
+    'jquery',
+    'app/controller/pageController',
+    'app/service/session'
+],  function($, pageController, sessionService){
     'use strict';
 
-    return {
+    /**
+     * Role based entrypoints
+     */
+    var entryPoints = {
+        all:         'main/login',
+        syncManager: 'admin/index'
+    };
+
+    return pageController({
+
+        /**
+         * Application main entrypoint,
+         * starts the routing
+         */
         start: function start(){
+            var self          = this;
+            var router        = this.getRouter();
+            var pageContainer = this.getContainer();
 
-            var pageContainer = document.getElementById('page');
-
-            appController
-                .apply('a.route', pageContainer)
-                .on('change', function(route){
-                    pageContainer.innerHTML = '';
-                    this.getLogger().debug('Load route ' + route);
+            //page transition when the router dipatch
+            this.getRouter()
+                .on('dispatching', function(){
+                    pageContainer.classList.add('page-change');
                 })
-                .start({
-                    forwardTo : 'app/main/login'
+                .on('dispatched', function(route){
+                    pageContainer.classList.remove('page-change');
+
+                    pageContainer.innerHTML = '';
+                    pageContainer.dataset.page = route;
+                });
+
+            //dispatch a route if an element has the correct data-attr
+            $(pageContainer).on('click', '[data-route]', function(e){
+                var route = $(this).data('route');
+                if(route){
+                    e.preventDefault();
+
+                    router.dispatch(route);
+                }
+            });
+
+            //the default route is based on the current session content, if any
+            sessionService
+                .getCurrent()
+                .then(function(session){
+                    var entryPoint = entryPoints.all;
+                    if(session && session.user && session.user.role && entryPoints[session.user.role]){
+                        entryPoint = entryPoints[session.user.role];
+                    }
+
+                    router.dispatch(entryPoint);
+                })
+                .catch(function(err){
+                    self.handleError(err);
                 });
         }
-    };
+    });
 });

@@ -1,0 +1,31 @@
+[data-page="admin/index"] {
+
+    header {
+        position: relative;
+        height: 8rem;
+        background: $uiClickableHoverBg;
+        color: $textHighlight;
+        padding-top: 2rem;
+        padding-left: 2rem;
+
+        h1 {
+            display: inline-block; 
+            margin: 0;
+            font-size: 2.4rem;
+        }
+
+        a {
+            position: absolute;
+            top: 2.4rem;
+            right: 2.4rem;
+            color: $textHighlight;
+            font-size: 2.2rem;
+        }
+    }
+
+    & > div {
+        padding: 1rem;
+        font-size: 2.2rem;
+    }
+}
+

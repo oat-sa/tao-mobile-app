@@ -1,0 +1,25 @@
+
+[data-page="main/login"] {
+    position: relative;
+    width: 100vw;
+    height: 100vh;
+    background-color: $uiGeneralContentBg;
+
+    //relative path for webviews
+    background-image: url(../../img/TAO_grey_pattern.svg),
+                      url(../../img/TAO_grey_pattern.svg);
+    background-position: bottom -35vh left -25vh, top -15vh right -40vh;
+    background-size: 75vh, 75vh;
+    background-repeat: no-repeat, no-repeat;
+
+    @include vendor-prefix(display, flex, value, (-ms-, -webkit-, ''));
+    @include vendor-prefix(flex-direction, row, property, (-ms-, -webkit-, ''));
+    @include vendor-prefix(flex-wrap, no-wrap, property, (-ms-, -webkit-, ''));
+    @include vendor-prefix(justify-content, center, property, (-webkit-, ''));
+    @include vendor-prefix(align-items, center, property, (-webkit-, ''));
+
+    @media screen and (max-width: 600px) {
+        background-image: none;
+    }
+}
+

@@ -1,4 +1,3 @@
-
 @charset "UTF-8";
 
 @import "inc/bootstrap";
@@ -10,3 +9,7 @@
 body {
     background-color: $uiGeneralContentBg;
 }
+
+//pages specific styles
+@import "pages/login";
+@import "pages/admin";
