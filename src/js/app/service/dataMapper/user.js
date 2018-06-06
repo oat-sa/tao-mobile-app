@@ -45,7 +45,8 @@ define([
      * Map TAO roles to app roles
      */
     var interestingRoles = {
-        syncManager : 'http://www.tao.lu/Ontologies/generis.rdf#taoSyncManager'
+        syncManager : 'http://www.tao.lu/Ontologies/generis.rdf#taoSyncManager',
+        testTaker   : 'http://www.tao.lu/Ontologies/TAO.rdf#DeliveryRole'
     };
 
     /**
@@ -59,7 +60,8 @@ define([
         var outputUser = null;
         if (_.isPlainObject(inputUser) && (inputUser.id || inputUser.uri) ) {
             outputUser = {
-                id: inputUser.id || inputUser.uri
+                id: inputUser.id || inputUser.uri,
+                checksum : inputUser.checksum
             };
             if (_.isPlainObject(inputUser.properties)) {
                 outputUser = _.reduce(mapping, function(acc, propName, key) {

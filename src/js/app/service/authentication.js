@@ -66,20 +66,21 @@ define([
         /**
          * Authenticate a user
          * @param {Object} adapter - the authentication adapter used for this authentication
+         * @param {Object} credentials - the credentials to authenticate with
          * @returns {Promise<Object>} should resolve with the status and the user if logged in
          */
-        authenticate : function authenticate(adapter, values){
+        authenticate : function authenticate(adapter, credentials){
             var adapterConfig;
             if(!validateAdapter(adapter)){
                 throw new TypeError('The authentication adatper  must be defined');
             }
-            if(!_.isPlainObject(values)){
-                throw new TypeError('No values given for the authentication');
+            if(!_.isPlainObject(credentials)){
+                throw new TypeError('No credentials given for the authentication');
             }
 
             adapterConfig = config[adapter.name];
 
-            return adapter.authenticate(adapterConfig, values);
+            return adapter.authenticate(adapterConfig, credentials);
         }
     };
 

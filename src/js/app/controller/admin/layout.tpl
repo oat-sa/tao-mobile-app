@@ -5,5 +5,9 @@
     </nav>
 </header>
 <div>
-    <p>Welcome {{firstname}} {{lastname}}</p>
+    <p>{{__ 'Welcome'}} {{firstname}} {{lastname}}</p>
+    <a class="syncer" href="#">{{__ 'Sync'}}</a>
+    <div class="sync-results">
+
+    </div>
 </div>

@@ -27,8 +27,9 @@
 define([
     'app/controller/pageController',
     'app/service/session',
+    'app/service/synchronization/testTaker',
     'tpl!app/controller/admin/layout'
-], function(pageController, sessionService, layoutTpl){
+], function(pageController, sessionService, testTakerSyncService, layoutTpl){
     'use strict';
 
     return pageController({
@@ -39,6 +40,20 @@ define([
                 .getCurrent()
                 .then(function(session){
                     self.getContainer().innerHTML = layoutTpl(session.user);
+
+                    document.querySelector('.syncer').addEventListener('click', function(e){
+                        e.preventDefault();
+                        testTakerSyncService({
+                            key : session.user.oauthInfo.key,
+                            secret : session.user.oauthInfo.secret
+                        })
+                        .then(function(results){
+                            document.querySelector('.sync-results').innerHTML = JSON.stringify(results, null, ' ');
+                        })
+                        .catch(function(err){
+                            self.handleError(err);
+                        });
+                    });
                 })
                 .catch(function(err){
                     self.handleError(err);

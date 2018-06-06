@@ -28,7 +28,7 @@ define([], function(){
     'use strict';
 
     return {
-        authenticate : function authenticate(values){
+        authenticate : function authenticate(config, credentials){
             return Promise.reject(new Error('Not yet implemented'));
         }
     };

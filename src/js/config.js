@@ -94,10 +94,34 @@
                     }
                 }
             },
+            'app/service/request' : {
+                endpoint : 'http://192.168.1.36',
+                timeout  : 30 * 1000
+            },
             'app/service/authentication' : {
                 syncManager : {
-                    endpoint : 'http://192.168.1.36/taoSync/HandShake/index',
-                    timeout  : 30 * 1000
+                    api : {
+                        method :'POST',
+                        path : '/taoSync/HandShake/index'
+                    }
+                }
+            },
+            'app/service/synchronization/token' : {
+                api : {
+                    method : 'GET',
+                    path : '/taoOauth/TokenApi/requestToken'
+                }
+            },
+            'app/service/synchronization/client' : {
+                api : {
+                    entity : {
+                        method: 'GET',
+                        path : '/taoSync/SynchronisationApi/fetchEntityChecksums',
+                    },
+                    details : {
+                        method: 'POST',
+                        path : '/taoSync/SynchronisationApi/fetchEntityDetails'
+                    }
                 }
             }
         },
