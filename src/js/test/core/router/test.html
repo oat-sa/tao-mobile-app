@@ -18,7 +18,7 @@
 
                 requirejs.config({
                     paths :  {
-                        router : 'test/service/router/taoRouterMock'
+                        router : 'test/core/router/taoRouterMock'
                     },
                     config : {
                         'app/service/router' : {
@@ -28,7 +28,7 @@
                 });
 
                 //load the test
-                require(['test/service/router/test'], function(){
+                require(['test/core/router/test'], function(){
 
                     //Tests loaded, run tests
                     QUnit.start();

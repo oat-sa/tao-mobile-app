@@ -56,18 +56,22 @@ define(['app/service/dataMapper/user'], function(userDataMapper){
     }, {
         title : 'id only input',
         input : {
-            id: '1234'
+            id: '1234',
+            checksum: '1234'
         },
         output : {
-            id: '1234'
+            id: '1234',
+            checksum: '1234'
         }
     }, {
         title : 'uri only input',
         input : {
-            uri: 'http://bertaodev2/tao.rdf#i1525274752697464'
+            uri: 'http://bertaodev2/tao.rdf#i1525274752697464',
+            checksum : '1234'
         },
         output : {
-            id: 'http://bertaodev2/tao.rdf#i1525274752697464'
+            id: 'http://bertaodev2/tao.rdf#i1525274752697464',
+            checksum : '1234'
         }
     }, {
         title : 'full input',
@@ -93,6 +97,7 @@ define(['app/service/dataMapper/user'], function(userDataMapper){
         },
         output : {
             id:            'http://bertaodev2/tao.rdf#i1525274752697464',
+            checksum:      'f4c19fff572ac1981ce560c29e5e8564',
             username:      'psmith',
             password:      'TSzCwsPz7358eee9cd2780ac9e8912a7cb08e4da246697eb5dfd5d181c050e63366a25cab1',
             firstname:     'Paul',
@@ -107,6 +112,7 @@ define(['app/service/dataMapper/user'], function(userDataMapper){
         title : 'incomplete input and mulitple roles',
         input : {
             'id': 'http://bertaodev2/tao.rdf#i1525274752697464',
+            'checksum': 'a1b2c3d4',
             'properties': {
                 'http://www.tao.lu/Ontologies/generis.rdf#login': 'psmith',
                 'http://www.tao.lu/Ontologies/generis.rdf#password': 'TSzCwsPz7358eee9cd2780ac9e8912a7cb08e4da246697eb5dfd5d181c050e63366a25cab1',
@@ -122,6 +128,7 @@ define(['app/service/dataMapper/user'], function(userDataMapper){
         },
         output : {
             id:            'http://bertaodev2/tao.rdf#i1525274752697464',
+            checksum:      'a1b2c3d4',
             username:      'psmith',
             password:      'TSzCwsPz7358eee9cd2780ac9e8912a7cb08e4da246697eb5dfd5d181c050e63366a25cab1',
             firstname:     'Paul',

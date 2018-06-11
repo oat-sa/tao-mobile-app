@@ -22,7 +22,7 @@
  *
  * @author Bertrand Chevrier <bertrand@taotesting.com>
  */
-define(['app/service/router'], function(router){
+define(['app/core/router'], function(router){
     'use strict';
 
     QUnit.module('API');
