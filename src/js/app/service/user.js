@@ -76,7 +76,7 @@ define([
     return {
 
         /**
-         * Get a user from it's username/login
+         * Get a user from it's identifier / URI.
          *
          * @param {String} id - the user identifier
          * @returns {Promise<user>} resolves with the user or null if not found
@@ -90,6 +90,12 @@ define([
             });
         },
 
+        /**
+         * Get a user from it's username / login.
+         *
+         * @param {String} id - the user identifier
+         * @returns {Promise<user>} resolves with the user or null if not found
+         */
         getByUserName : function getByUserName(username){
             var self = this;
             if(_.isEmpty(username)){
@@ -119,13 +125,16 @@ define([
 
         /**
          * Get all users of the given role
+         *
+         * @param {String} role - the role to filter users.
+         *
          * @returns {Promise<Object[]>} resolves with the user collection
          */
         getAllByRole : function getAllByRole(role){
             return store(userStoreName).then(function(userStore){
                 return userStore.getItems();
             }).then(function(users){
-                return _.filter(users, {role : role });
+                return _.filter(users, { role : role });
             });
         },
 
@@ -171,7 +180,9 @@ define([
         update : function update(user){
             var self = this;
 
-            validateUser(user);
+            if(!_.isPlainObject(user) || !user.id){
+                return Promise.resolve(false);
+            }
 
             return this.getById(user.id)
                 .then(function(existingUser){
