@@ -99,6 +99,12 @@
                 timeout  : 30 * 1000
             },
             'app/service/authentication' : {
+                local : {
+                    hash : {
+                        salt : 10,
+                        algorithm : 'sha-256'
+                    }
+                },
                 syncManager : {
                     api : {
                         method :'POST',

@@ -27,7 +27,7 @@ define([
     'jquery',
     'lodash',
     'i18n',
-    'app/service/request',
+    'app/core/request',
     'app/service/dataMapper/user'
 ], function($, _, __, requestFactory, userDataMapper){
     'use strict';

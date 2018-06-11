@@ -89,7 +89,7 @@ define([
                     dataType: 'json',
                     contentType: 'application/json',
                     headers : requestConfig.headers,
-                    data : method === 'GET' ?  requestConfig.data : JSON.stringify(requestConfig.data)
+                    data : requestConfig.data
                 })
                 .done(function(response, status, xhr){
                     if ( (xhr.status === 200 || xhr.status === 302) && response){

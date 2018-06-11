@@ -26,7 +26,7 @@ define([
     'lodash',
     'i18n',
     'module',
-    'app/service/request'
+    'app/core/request'
 ], function($, _, __, module, requestFactory){
     'use strict';
 

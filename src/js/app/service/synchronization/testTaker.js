@@ -108,20 +108,20 @@ define([
                     });
                 });
 
-                _.forEach(getIdsChunks(syncActions.add), function(ids){
-                    promiseQueue.serie(function addUsers(){
+                _.forEach(getIdsChunks(syncActions.update), function(ids){
+                    promiseQueue.serie(function updateUsers(){
                         console.log('fetch user content for ', ids);
                         return client.getEntitiesContent(resourceType, ids)
                             .then(function(entities){
                                 console.log('received content for ', ids, entities);
-                                var addQueue = promiseQueueFactory();
+                                var updateQueue = promiseQueueFactory();
                                 _.forEach(entities, function(entity){
-                                    addQueue.serie(function addUser(){
+                                    updateQueue.serie(function updateUser(){
                                         console.log('update user', entity, userDataMapper(entity));
                                         return userService.update(userDataMapper(entity));
                                     });
                                 });
-                                return addQueue;
+                                return updateQueue;
                             });
                     });
                 });
@@ -143,11 +143,8 @@ define([
                     });
                 });
 
-                return promiseQueue;
+                return syncActions;
             }
-        })
-        .then(function(results){
-            console.log('SYNC RESULTS', results);
         });
     };
 });

@@ -27,7 +27,7 @@ define([
     'i18n',
     'module',
     'urlParser',
-    'app/service/request',
+    'app/core/request',
     'app/service/synchronization/token'
 ], function($, _, __, module, UrlParser, requestFactory, tokenServiceFactory){
     'use strict';
@@ -124,10 +124,10 @@ define([
                             headers: {
                                 'Authorization' : 'Bearer ' + token.access_token
                             },
-                            data : {
+                            data : JSON.stringify({
                                 type : type,
                                 entityIds : entityIds
-                            }
+                            })
                         }, clientConfig.api.details));
                     })
                     .then(function(result){
