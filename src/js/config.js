@@ -94,8 +94,8 @@
                     }
                 }
             },
-            'app/service/request' : {
-                endpoint : 'http://192.168.1.36',
+            'app/core/request' : {
+                endpoint : 'http://spielplatz.taocloud.org/app-central-sync',
                 timeout  : 30 * 1000
             },
             'app/service/authentication' : {

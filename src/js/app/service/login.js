@@ -22,16 +22,27 @@
  *  - try to login against the local db
  *  - try to login against the remote server
  *
+ * If the login succeed a new session is created.
+ *
  * @author Bertrand Chevrier <bertrand@taotesting.com>
  */
 define([
+    'core/logger',
     'app/service/authentication',
     'app/service/session',
     'app/service/user',
-], function(authenticationService, sessionService, userService) {
+], function(loggerFactory, authenticationService, sessionService, userService) {
     'use strict';
 
+    var logger = loggerFactory('app/service/login');
 
+    /**
+     * Multi Stage login
+     *
+     * @param {String} username
+     * @param {String} password
+     * @returns {Promise<Object|Boolean>} resolves with false in case of failure or the session
+     */
     return function login(username, password) {
 
         var credentials = {
@@ -43,10 +54,13 @@ define([
         return authenticationService
             .authenticate(authenticationService.adapters.local, credentials)
             .then(function(result){
-                console.log('LOCAL RESULT', result);
+
                 if(result && result.success && result.data && result.data.user){
+
+                    logger.debug('User ' + username + ' logged in from local adapter');
                     return result.data.user;
                 }
+                logger.debug('User ' + username + ' not identified from local adapter');
             })
             .then(function(user){
                 if(!user){
@@ -54,15 +68,16 @@ define([
                     return authenticationService
                         .authenticate(authenticationService.adapters.syncManager, credentials)
                         .then(function(result){
-                            console.log('SYNC MANAGER RESULT', result);
-
                             if(result && result.success && result.data && result.data.user){
+
+                                logger.debug('User ' + username + ' logged in from syncManager adapter');
                                 return userService.set(result.data.user).then(function(saved){
                                     if(saved){
                                         return result.data.user;
                                     }
                                 });
                             }
+                            logger.debug('User ' + username + ' not identified from syncManager adapter');
                         });
                 }
                 return user;

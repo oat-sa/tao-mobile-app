@@ -18,6 +18,10 @@
  */
 
 /**
+ * Data synchronization client.
+ *
+ * The client shouldn't be used directly in controllers, but
+ * should be used for a given synchronization type (see {@link app/service/synchronization/testTaker}).
  *
  * @author Bertrand Chevrier <bertrand@taotesting.com>
  */
@@ -32,6 +36,9 @@ define([
 ], function($, _, __, module, UrlParser, requestFactory, tokenServiceFactory){
     'use strict';
 
+    /**
+     * The list of resource types we can synchronize
+     */
     var supportedTypes = [
         'test-taker'
     ];
@@ -45,19 +52,35 @@ define([
         serverError:        __('An unexpected error occur while trying to request a synchronization token, please contact your administrator.')
     };
 
-
-    return function synchronizationClient(config) {
-
+    /**
+     * Creates a new client
+     * @param {Object} config
+     * @param {String} config.key - the OAuth key linked to the syncManager profile
+     * @param {String} config.secret - the OAuth secret  linked to the syncManager profile
+     * @param {Object} config.api - contains the REST API info for the request module
+     * @param {Object} config.api.entity - contains the REST API info for the getEntityIds call
+     * @param {Object} config.api.details - contains the REST API info for the getEntitiesContent call
+     * @returns {synchronizationClient} the client
+     */
+    return function synchronizationClientFactory(config) {
 
         var clientConfig = _.defaults( config || {}, module.config());
 
+        //configured request object for the 2 types of calls
         var request = requestFactory({}, errorMessages);
 
+        //we need a valid token for each sync
         var tokenService = tokenServiceFactory({
             key : config.key,
             secret : config.secret
         });
 
+        /**
+         * Ensure the requested resource type is supported
+         * @param {String} type - the resource type
+         * @returns {Boolean} true
+         * @throws {TypeError} if not supported
+         */
         var validateType = function validateType(type){
             if(!_.isString(type) || !_.contains(supportedTypes, type)){
                 throw new TypeError('Unsupported resource type for synchronization : ' + type);
@@ -72,8 +95,18 @@ define([
             return tokenService.getToken();
         };
 
+        /**
+         * @typedef {Object} synchronizationClient
+         */
         return  {
 
+            /**
+             * Get the ids and checksums (only) of the entities on the server
+             * @param {String} type - the resource type
+             * @param {String} [nextCallUrl] - the sync server makes paging by sending you the next URL to call until (weird)
+             * @param {Boolean} [retrying = false] - retry with a new token (only once)
+             * @returns {Promise<Object>} resolves with the ids
+             */
             getEntityIds : function getEntityIds(type, nextCallUrl, retrying){
                 var self = this;
                 var entityIds = {};
@@ -110,6 +143,13 @@ define([
                     });
             },
 
+            /**
+             * Get the content of a batch of entities
+             * @param {String} type - the resource type
+             * @param {String[]} entityIds - the ids of the entities to get the content
+             * @param {Boolean} [retrying = false] - retry with a new token (only once)
+             * @returns {Promise<Object>} resolves with the entities
+             */
             getEntitiesContent : function getEntitiesContent(type, entityIds, retrying){
 
                 validateType(type);

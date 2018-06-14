@@ -27,11 +27,10 @@
 define([
     'lodash',
     'i18n',
+    'app/core/digest',
     'app/service/user'
-], function(_, __, userService){
+], function(_, __, digest, userService){
     'use strict';
-
-    var subtle = window.crypto.subtle || window.crypto.webkitSublte;
 
     /**
      * The dedicated error messages
@@ -41,46 +40,48 @@ define([
         unauthorized:          __('Invalid credentials, please try again.')
     };
 
-    function hex(buffer) {
-        var hexCodes = [];
-        var view = new DataView(buffer);
-        for (var i = 0; i < view.byteLength; i += 4) {
-            // Using getUint32 reduces the number of iterations needed (we process 4 bytes each time)
-            var value = view.getUint32(i)
-            // toString(16) will give the hex representation of the number without padding
-            var stringValue = value.toString(16)
-            // We use concatenation and slice for padding
-            var padding = '00000000'
-            var paddedValue = (padding + stringValue).slice(-padding.length)
-            hexCodes.push(paddedValue);
-        }
-
-        // Join all the hex strings into one
-        return hexCodes.join("");
-    }
-
+    /**
+     * Authentication adapter for the local database
+     */
     return {
 
         name : 'local',
 
+        /**
+         * Try to authenticate from the given credentials
+         * @param {Object} config - the authentication configuration
+         * @param {Object} [config.hash] - the password hash configuration
+         * @param {String} [config.hash.algorithm = 'SHA-256'] - the password hash algo
+         * @param {Number} [config.hash.salt = 10] - the salt length
+         * @param {Object} credentials - the authentication credentials
+         * @param {String} credentials.username - the login/username of the sync manager
+         * @param {String} credentials.password - the password of the sync manager
+         * @returns {Promise<Object>} resolves with the user data
+         */
         authenticate : function authenticate(config, credentials){
-            var status = {
+
+            var failStatus = {
                 success: false,
                 message: errorMessages.unauthorized
             };
+
+            var hashConfig = _.defaults(config.hash || {}, {
+                salt : 10,
+                algorithm : 'SHA-256'
+            });
+
+            /**
+             * Verify the password against the store hash
+             * @param {String} password - the password in clear
+             * @param {String} hash - the stored value
+             * @returns {Promise<Boolean>} true if the password are exactly matching
+             */
             var verifyPassword = function verifyPassword(password, hash){
-                var hashAlgorithm = config.hash.algorithm || 'sha-256';
-                var salt = hash.substring(0, config.hash.salt);
-                var hashed = hash.substring(config.hash.salt);
-                console.log('password', password);
-                console.log('hash', hash);
-                console.log('salt', salt);
-                console.log('hashed', hashed);
-                return subtle
-                    .digest(hashAlgorithm.toUpperCase(), new TextEncoder('utf-8').encode(salt + password))
-                    .then(function(buffer){
-                        console.log( hex(buffer) + ' === ' + hashed);
-                        return hex(buffer) === hashed;
+                var salt   = hash.substring(0, hashConfig.salt);
+                var hashed = hash.substring(hashConfig.salt);
+                return digest(salt + password, hashConfig.algorithm)
+                    .then(function(generatedHash){
+                        return generatedHash.length > 0 && generatedHash === hashed;
                     });
             };
 
@@ -88,22 +89,24 @@ define([
                 return Promise.resolve(status);
             }
 
-            return userService.getByUsername(credentials.username).then(function(user){
+            return userService.getByUserName(credentials.username).then(function(user){
                 if(user && user.id && user.username === credentials.username && user.password){
+
                     return verifyPassword(credentials.password, user.password)
-                        .then(function(passwordMatching){
-                            if(passwordMatching){
-                                status = {
+                        .then(function(isPasswordMatching){
+                            if(isPasswordMatching){
+                                return {
                                     success: true,
                                     data : {
                                         user: user
                                     }
                                 };
                             }
-                            return status;
+                            return failStatus;
                         });
+
                 }
-                return status;
+                return failStatus;
             });
         }
     };

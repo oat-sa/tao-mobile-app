@@ -18,6 +18,7 @@
  */
 
 /**
+ * Request and keep OAuth token to authenticate against the sync server.
  *
  * @author Bertrand Chevrier <bertrand@taotesting.com>
  */
@@ -38,8 +39,16 @@ define([
         noContent   :  __('Unable to retrieve your synchronization token, please retry later or contact your administrator')
     };
 
-
-    return function tokenService(config) {
+    /**
+     * Creates a configured token service
+     * @param {Object} config
+     * @param {String} config.key - the OAuth key linked to the syncManager profile
+     * @param {String} config.secret - the OAuth secret  linked to the syncManager profile
+     * @param {Object} config.api - contains the REST API info for the request module
+     * @returns {tokenService} the client
+     * @throws {TypeError} if something is missing in the config
+     */
+    return function tokenServiceFactory(config) {
 
         var token = null;
 
@@ -51,8 +60,16 @@ define([
             throw new TypeError('Handshake key and secret are mandatory to request an synchronization token');
         }
 
+        /**
+         * @typedef {Object} tokenService
+         */
         return  {
 
+            /**
+             * Check whether the token is expired.
+             * We assume the token expiration date is in UTC
+             * @returns {Boolean} true if expired
+             */
             isExpired : function isExpired(){
                 if( token !== null && token.expires > 0 && token.expires < (new Date().getUTCDate() / 1000) ) {
                     return false;
@@ -60,6 +77,10 @@ define([
                 return true;
             },
 
+            /**
+             * Get the current token or request a new one
+             * @returns {Promise<Object>} resolves with the Token
+             */
             getToken : function getToken() {
                 if(token === null){
                     return this.requestToken(serviceConfig.key, serviceConfig.secret)
@@ -73,6 +94,12 @@ define([
                 return Promise.resolve(token);
             },
 
+            /**
+             * Request a new token.
+             * @param {String} [key] - set the key, use the configured one otherwise
+             * @param {String} [secret - set the secret, use the configured one otherwise
+             * @returns {Promise<Object>} resolves with the Token
+             */
             requestToken : function requestToken(key, secret) {
                 return request({
                     data : {
