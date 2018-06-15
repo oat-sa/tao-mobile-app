@@ -27,8 +27,8 @@
  */
 define([
     'lodash',
-    'core/promiseQueue',
     'core/logger',
+    'core/promiseQueue',
     'app/service/user',
     'app/service/dataMapper/user',
     'app/service/synchronization/client'
