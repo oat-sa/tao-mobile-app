@@ -38,7 +38,15 @@ define([
 
     var config = _.defaults(module.config(), {
         //Time To Live, used in case of inactivity
-        ttl : 5 * 60 * 1000
+        ttl : 5 * 60 * 1000,
+
+        //role : controller
+        //to get the entrypoint for each role
+        entryPoints : {
+            all:         'main/login',
+            syncManager: 'admin/index',
+            testTaker:   'delivery/index'
+        }
     });
 
     /**
@@ -143,6 +151,23 @@ define([
         clear : function clear(){
             return store(storeName).then(function(sessionStore){
                 return sessionStore.clear();
+            });
+        },
+
+        /**
+         * Get the entrypoint based on the current session
+         * TODO move to a dedicated service if becomes more complex
+         * otherwise, the session service can take care of it
+         *
+         * @returns {Promise<String>} resolves with the controller path to dipatch
+         */
+        getEntryPoint : function getEntryPoint(){
+            return this.getCurrent().then(function(session){
+                var entryPoint = config.entryPoints.all;
+                if(session && session.user && session.user.role && config.entryPoints[session.user.role]){
+                    entryPoint = config.entryPoints[session.user.role];
+                }
+                return entryPoint;
             });
         }
     };

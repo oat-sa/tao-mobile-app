@@ -27,11 +27,9 @@ define([
     'ui/feedback',
     'app/component/login/login',
     'app/controller/pageController',
-    'app/service/authentication',
     'app/service/session',
-    'app/service/user',
     'app/service/login',
-], function(__, feedback, loginComponentFactory, pageController, authenticationService, sessionService, userService, loginService) {
+], function(__, feedback, loginComponentFactory, pageController, sessionService, loginService) {
     'use strict';
 
     return pageController({
@@ -51,12 +49,12 @@ define([
                 loginService(data.username, data.password)
                     .then(function(session){
                         loginComponent.trigger('loaded');
-                        if(session && session.user && session.user.role){
-                            if(session.user.role === 'syncManager'){
-                                return self.getRouter().dispatch('admin/index');
-                            } else {
-                                return self.getRouter().dispatch('delivery/index');
-                            }
+                        if(session && session.user){
+                            return sessionService
+                                .getEntryPoint()
+                                .then(function(entryPoint){
+                                    return self.getRouter().dispatch(entryPoint);
+                                });
                         }
                         loginComponent.loginError();
                     })

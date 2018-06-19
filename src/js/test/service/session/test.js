@@ -39,6 +39,7 @@ define(['app/service/session'], function(sessionService){
         { title : 'check' },
         { title : 'alive' },
         { title : 'clear' },
+        { title : 'getEntryPoint' },
     ]).test('Component API ', function(data, assert) {
         assert.equal(typeof sessionService[data.title], 'function', 'The loginComponentFactory exposes the component method "' + data.title);
     });
@@ -252,6 +253,37 @@ define(['app/service/session'], function(sessionService){
         .then(function(result){
             assert.ok(result, 'The session is still valid');
 
+            return sessionService.clear();
+        })
+        .then(function(){
+            QUnit.start();
+        })
+        .catch(function(err){
+            assert.ok(false, err.message);
+            QUnit.start();
+        });
+    });
+
+    QUnit.asyncTest('Get entry point', function(assert) {
+        QUnit.expect(3);
+
+        sessionService.clear().then(function(){
+            return sessionService.getEntryPoint();
+        })
+        .then(function(entryPoint){
+            assert.equal(entryPoint, 'main-entry-point', 'Without a session the all entryPoint is selected');
+            return sessionService.create({
+                id : '87678',
+                username : 'john',
+                role : 'foo'
+            });
+        })
+        .then(function(session){
+            assert.equal(session.user.role, 'foo', 'The session has been created with the correct role');
+            return sessionService.getEntryPoint();
+        })
+        .then(function(entryPoint){
+            assert.equal(entryPoint, 'foo-entry-point', 'The role based entryPoint is selected');
             return sessionService.clear();
         })
         .then(function(){

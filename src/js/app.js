@@ -32,13 +32,9 @@ define([
     'use strict';
 
     /**
-     * Role based entrypoints
+     * The App controller,
+     * bootstrap the app (session, routing and controller)
      */
-    var entryPoints = {
-        all:         'main/login',
-        syncManager: 'admin/index'
-    };
-
     return pageController({
 
         /**
@@ -51,7 +47,7 @@ define([
             var pageContainer = this.getContainer();
 
             //page transition when the router dipatch
-            this.getRouter()
+            this.getRouter( )
                 .on('dispatching', function(){
                     pageContainer.classList.add('page-change');
                 })
@@ -73,15 +69,12 @@ define([
             });
 
             //the default route is based on the current session content, if any
-            sessionService
-                .getCurrent()
-                .then(function(session){
-                    var entryPoint = entryPoints.all;
-                    if(session && session.user && session.user.role && entryPoints[session.user.role]){
-                        entryPoint = entryPoints[session.user.role];
+            sessionService.getEntryPoint()
+                .then(function(entryPoint){
+                    if(entryPoint){
+                        return router.dispatch(entryPoint);
                     }
-
-                    router.dispatch(entryPoint);
+                    throw new Error('No entrypoint defined');
                 })
                 .catch(function(err){
                     self.handleError(err);
