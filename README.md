@@ -102,7 +102,8 @@ npm run tao:symlink /path/to/the/root/of/your/package-tao
 }
 
 ```
-Please note this endpoint should link to an installed TAO, configured as [central sync endpoint](#central-sync-endpoint). If you test on a real device, don't forget the endpoint to be accessible through your LAN/WAN.
+Please note this endpoint should link to an installed TAO, configured as [central sync endpoint](#central-sync-endpoint). If you test on a real device, don't forget the endpoint to be accessible through your LAN/WAN. 
+By default the app is configured to use [testing central server](http://spielplatz.taocloud.org/app-central-sync).
 
 5. You can build the code, to check everything is alright
 ```sh
@@ -144,6 +145,7 @@ See http://docs.phonegap.com/phonegap-build/tools/debugging/
 
 #### Build
 
+##### From the web site
 
 1. Build the optimized version of the source code using `npm run build`
 2. Push the code to Github (here the usual release process takes place)
@@ -153,7 +155,9 @@ See http://docs.phonegap.com/phonegap-build/tools/debugging/
 6. Launch the build
 7. If the app is already installed, just got back to the home screen (3 fingers taps) and update it. Othersiwse scan the QR code and install it.
 
-> TDB there's a way to launch the build from the CLI
+##### From the CLI
+
+
 
 #### Signing
 
