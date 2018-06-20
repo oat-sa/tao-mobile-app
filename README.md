@@ -27,7 +27,7 @@ Cordova and PhoneGap themselves rely on native SDKs to build the apps. It means 
 But when it comes to build for iOS, you need to build from an OSX machine, that have xCode installed and the target SDK. The OSX and xCode versions, should be compatible with your target iOS SDK.
 And it's the same for Windows, you need Windows and Visual Sutdio installed with the target SDK, in the compatible version you want to deploy to.
 
-So instead of maintaining a network of build machines, we will rely on [Phone Gap Build](https://build.phonegap.com), on online service that builds the apps. It will build the apps targetting the platform and SDK versions as defined in the `config.xml` manifest of the app.
+So instead of maintaining a network of build machines, we will rely on [Phone Gap Build](https://build.phonegap.com), on online service that builds the apps. It will build the apps targeting the platform and SDK versions as defined in the `config.xml` manifest of the app.
 
 Phone Gap build, simplifies also the application structure, since it requires only the metadata and the app source code.
 
@@ -41,6 +41,7 @@ The project layout is fixed and can't be changed, it rely on the Cordova and Pho
  - `src/js/test` : the javascript unit tests
  - `src/js/app/app.js` : the main controller
  - `src/js/app/config.js` : the application configuration
+ - `src/js/app/core` : the application core components
  - `src/js/app/component` : the application graphical components
  - `src/js/app/controller` : the applications controllers
  - `src/js/app/service` :  the applications services
@@ -59,8 +60,8 @@ You can add a `.pgbomit` file in all folders you want the build to ignore.
 
 The app entry point is the file `www/index.html`
 
-This file bootstraps the phonegap/cordova framework. 
-It is recommended to don't navigate to other files, even internally, each entrypoins create a new Cordova process.
+This file bootstraps the phonegap/cordova framework.
+It is recommended to don't navigate to other files, even internally, each entry point create a new Cordova process.
 
 ### App targets and support
 
@@ -69,11 +70,12 @@ In a first time we can focus on the following support table. Supporting previous
 
 | Platform      | OS/SDK Version| Mobile Market Share<sup>(1)</sup>| Comment  |
 |---------------|:-------------:|:--------------------:|----------|
-| Android       | >=5.1 (API 21) | 64,08%              |  Starting from [Lollipop](https://developer.android.com/about/versions/android-5.0.html) Android Webview are Chrome based. All previous versions use an old webkit implementation.  |
+| Android       | >=5.1 (API 21) | 64,08%              |  Starting from [Lollipop](https://developer.android.com/about/versions/android-5.0.html) Android WebView are Chrome based. All previous versions use an old WebKit implementation.  |
 | iOS      | >=10      | 26.04% | The minimum requirement for TAO is iOS 9/Safari 9, with some possible limitations, but with a low market share we can start concentrate on 10+  |
 | Windows  | ?       |  ? | We can generate `aapx` files, the windows universal app format, I need to investigate what it means exactly |
 
 _(1)_: From https://www.netmarketshare.com
+
 
 
 ### Development
@@ -93,7 +95,7 @@ npm i
 ```sh
 npm run tao:symlink /path/to/the/root/of/your/package-tao
 ```
-5. Update the configuration file `src/js/config.js`, especially the value of the sync endpoint 
+5. Update the configuration file `src/js/config.js`, especially the value of the sync endpoint
 ```
 'app/service/authentication' : {
     syncManager : {
@@ -102,21 +104,24 @@ npm run tao:symlink /path/to/the/root/of/your/package-tao
 }
 
 ```
-Please note this endpoint should link to an installed TAO, configured as [central sync endpoint](#central-sync-endpoint). If you test on a real device, don't forget the endpoint to be accessible through your LAN/WAN. 
+Please note this endpoint should link to an installed TAO, configured as [central sync endpoint](#central-sync-endpoint). If you test on a real device, don't forget the endpoint to be accessible through your LAN/WAN.
 By default the app is configured to use [testing central server](http://spielplatz.taocloud.org/app-central-sync).
 
-5. You can build the code, to check everything is alright
+5. You start the test server
+
 ```sh
-npm run build
+npm start
 ```
-6. Run the development mode (watch mode for sass and js)
+
+6. OR run the development mode (watch mode for sass and js)
 
 ```sh
 npm run dev
 ```
+
 7. Open Chrome(ium) at the address indicated in CLI.
 
-Please note, the local development is better using Webkit based browsers, because phonegap injects some specific services.
+Please note, the local development is better using WebKit based browsers, because phonegap injects some specific services.
 
 8. You can also run it in a real device, by installing [the developer app](http://docs.phonegap.com/getting-started/2-install-mobile-app/) and opening the same address (_PRO TIP_ : you should be on the same network...).
 
@@ -153,10 +158,15 @@ See http://docs.phonegap.com/phonegap-build/tools/debugging/
 4. Ensure Hydratation and Debug are ticked
 5. Update the code, you can define the target branch, tag, etc.
 6. Launch the build
-7. If the app is already installed, just got back to the home screen (3 fingers taps) and update it. Othersiwse scan the QR code and install it.
+7. If the app is already installed, just got back to the home screen (3 fingers taps) and update it. Otherwise scan the QR code and install it.
 
 ##### From the CLI
 
+1. Get your authentication token
+2. Authenticate against the build service : `npx pgb-cli login` (once)
+3. Get the app id : `npx pgb-cli ls`
+4. Build the app : `npx pgb-cli build APP_ID`
+5. Download the packaged app : `npx pgb-cli download APP_ID Android .`
 
 
 #### Signing
@@ -181,9 +191,24 @@ A certificate creates with the Java `keytool` must be generated.
  - http://docs.phonegap.com/phonegap-build/
  - https://cordova.apache.org/docs/en/latest/
 
+
+### FAQ
+
+> There are errors in the console about `socket.io`, is it expected ?
+
+Expected, no but this has no impact on the development, the package `connect-phonegap` injects `socket.io` and expect it to be exported globally, but wbecause we setup an `AMD` loader, this make `socket.io` loaded in an anonymous `define`. You can either ignore it or fix the dependency locally if it annoys you, waiting for a propert fix.
+See https://github.com/phonegap/phonegap-cli/issues/596
+
+> A popup says `[ERROR] Error initializing Cordova: Missing Command Error`
+
+Also very weird, but if you close the DevTools and restart the server the error will disappear.
+See https://github.com/phonegap/phonegap-cli/issues/770
+
 ### License
 
 > TBD
 
 The Cordova and PhoneGap tools are for the most licensed under Apache 2. But since PhoneGap Build injects the plugins we can publish under GPLv2. Then we can still not include MathJax
+
+
 

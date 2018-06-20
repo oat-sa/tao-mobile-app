@@ -1,6 +1,6 @@
 {
   "name": "@oat-sa/tao-mobile-app",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "displayName": "TAO Mobile App",
   "description": "TAO hybrid application project for mobile devices",
   "bin": {
@@ -8,17 +8,15 @@
   },
   "scripts": {
     "tao:symlink": "node scripts/tao.js symlink",
-
     "build:setup": "grunt clean:build copy:build",
     "build:sass": "grunt sass",
     "build:bundle": "grunt requirejs:build",
     "build": "run-s build:setup build:sass build:bundle",
-
+    "start" : "run-s build dev:serve",
     "dev:serve": "phonegap serve",
     "dev:sass": "grunt watch:sass",
     "dev:bundle": "grunt watch:requirejs",
     "dev": "run-p dev:*",
-
     "test:serve": "http-server",
     "test:dev": "run-p dev:sass test:serve"
   },
@@ -57,6 +55,7 @@
     "http-server": "^0.11.1",
     "load-grunt-tasks": "^3.5.2",
     "npm-run-all": "^4.1.2",
+    "pgb-cli": "^1.0.2",
     "phonegap": "^8.0.0"
   }
 }
