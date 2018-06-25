@@ -96,7 +96,7 @@
             },
             'app/service/authentication' : {
                 syncManager : {
-                    endpoint : 'http://taocentralsync.taocloud.org/taoSync/HandShake/index',
+                    endpoint : 'http://spielplatz.taocloud.org/app-central-sync/taoSync/HandShake/index',
                     timeout  : 30 * 1000
                 }
             }
@@ -104,10 +104,9 @@
         shim: {
             'moment': {
                 exports: 'moment'
-            },
-            '/socket.io/socket.io': {
-                exports: 'io'
             }
         }
     });
 }());
+
+
