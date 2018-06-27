@@ -42,57 +42,23 @@ define([
 
             //instantiate the component
             var loginComponent = loginComponentFactory(this.getContainer());
-
             loginComponent.on('submit', function(data){
                 loginComponent.trigger('loading');
 
+                //the login service takes care if the multi stage auth
                 loginService(data.username, data.password)
                     .then(function(session){
                         loginComponent.trigger('loaded');
                         if(session && session.user){
-                            return sessionService
-                                .getEntryPoint()
+
+                            //logged in => redirect to the role entryPoint
+                            return sessionService.getEntryPoint()
                                 .then(function(entryPoint){
                                     return self.getRouter().dispatch(entryPoint);
                                 });
                         }
                         loginComponent.loginError();
                     })
-
-                //call the authentication service,
-                //uses the remote SyncManager endpoints only, for now
-                //
-                //TODO implement fallback to local db for already saved user and test taker
-                //
-                //authenticationService
-                    //.authenticate(authenticationService.adapters.syncManager, data)
-                    //.then(function(result){
-                        //loginComponent.trigger('loaded');
-
-                        //if(result && result.success && result.data && result.data.user){
-                            //return result.data.user;
-                        //}
-                        //return false;
-                    //})
-                    //.then(function(user){
-                        //if(!user){
-                            //loginComponent.loginError();
-                            //return;
-                        //}
-
-                        ////create the current session
-                        ////and save the user in database
-                        //return Promise.all([
-                            //sessionService.create(user),
-                            //userService.set(user)
-                        //]);
-                    //})
-                    //.then(function(results){
-                        ////we check if at least the session is created
-                        //if(results && results.length === 2 && results[0]){
-                            //return self.getRouter().dispatch('admin/index');
-                        //}
-                    //})
                     .catch( function(err){
                         loginComponent.reset();
                         self.handleError(err);

@@ -40,8 +40,8 @@ define(['app/service/session'], function(sessionService){
         { title : 'alive' },
         { title : 'clear' },
         { title : 'getEntryPoint' },
-    ]).test('Component API ', function(data, assert) {
-        assert.equal(typeof sessionService[data.title], 'function', 'The loginComponentFactory exposes the component method "' + data.title);
+    ]).test('Session service API ', function(data, assert) {
+        assert.equal(typeof sessionService[data.title], 'function', 'The service exposes the method "' + data.title);
     });
 
 

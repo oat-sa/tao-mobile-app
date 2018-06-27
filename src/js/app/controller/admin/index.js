@@ -18,46 +18,71 @@
  */
 
 /**
- * This controller is a placeholder
- * to test the admin page access.
- *
+ * Admin controller, let's you synchronize data.
  *
  * @author Bertrand Chevrier <bertrand@taotesting.com>
  */
 define([
+    'i18n',
     'app/controller/pageController',
     'app/service/session',
+    'app/component/synchronizer/synchronizer',
     'app/service/synchronization/testTaker',
     'tpl!app/controller/admin/layout'
-], function(pageController, sessionService, testTakerSyncService, layoutTpl){
+], function(__, pageController, sessionService, synchronizerFactory, testTakerSyncService, layoutTpl){
     'use strict';
 
     return pageController({
         start: function start(){
             var self = this;
+            sessionService.getCurrent().then(function(session){
+                var synchronizer;
+                var syncContainer;
 
-            sessionService
-                .getCurrent()
-                .then(function(session){
-                    self.getContainer().innerHTML = layoutTpl(session.user);
+                //TODO handle the layout globally
+                self.getContainer().innerHTML = layoutTpl(session.user);
 
-                    document.querySelector('.syncer').addEventListener('click', function(e){
-                        e.preventDefault();
-                        testTakerSyncService({
-                            key : session.user.oauthInfo.key,
-                            secret : session.user.oauthInfo.secret
-                        })
-                        .then(function(results){
-                            document.querySelector('.sync-results').innerHTML = JSON.stringify(results, null, ' ');
-                        })
-                        .catch(function(err){
-                            self.handleError(err);
-                        });
+                syncContainer = self.getContainer().querySelector('.content-container');
+
+                synchronizer = synchronizerFactory(syncContainer)
+                    .on('start', function(targetType){
+
+                        //TODO implement other targets than test taker
+                        if(targetType === 'test-taker'){
+
+                            testTakerSyncService({
+                                key : session.user.oauthInfo.key,
+                                secret : session.user.oauthInfo.secret
+                            })
+                            .then(function(results){
+                                var message = [];
+
+                                if(results){
+                                    if (results.remove && results.remove.length){
+                                        message.push( __('%d removed', results.remove.length));
+                                    }
+                                    if (results.update && results.update.length){
+                                        message.push( __('%d updated', results.update.length));
+                                    }
+                                    if (results.add && results.add.length){
+                                        message.push(__('%d added', results.add.length));
+                                    }
+                                    if(message.length === 0){
+                                        message.push( __('Already up to date'));
+                                    }
+                                }
+                                synchronizer.succeed(targetType, message.join(', '));
+                            })
+                            .catch(function(err){
+                                synchronizer.fail(targetType, err);
+                                self.handleError(err);
+                            });
+                        }
                     });
-                })
-                .catch(function(err){
-                    self.handleError(err);
-                });
+            })
+            .catch(function(err){
+                self.handleError(err);
+            });
         }
     });
 });

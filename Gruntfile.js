@@ -48,7 +48,13 @@ module.exports = function(grunt) {
             app : {
                 files : [
                     { src : 'src/scss/app.scss', dest : `${target}css/app.css`, },
-                    { src : 'src/js/app/component/login/scss/login.scss',  dest : 'src/js/app/component/login/css/login.css', },
+                    {
+                        expand: true,
+                        src: 'src/js/app/component/*/scss/*.scss',
+                        rename : function(dest, src){
+                            return src.replace(/scss/g, 'css');
+                        }
+                    }
                 ]
             }
         },
@@ -84,6 +90,7 @@ module.exports = function(grunt) {
                         'app/controller/admin/index',
                         'app/controller/main/login',
                         'app/controller/main/logout',
+                        'app/controller/delivery/index',
                         'core/logger/console',
                         'loader/bootstrap'
                     ]
@@ -110,6 +117,7 @@ module.exports = function(grunt) {
                         'app/controller/admin/index',
                         'app/controller/main/login',
                         'app/controller/main/logout',
+                        'app/controller/delivery/index',
                         'core/logger/console',
                         'loader/bootstrap'
                     ]
