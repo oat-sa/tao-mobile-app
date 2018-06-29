@@ -52,8 +52,9 @@ define([
      * The component base config
      */
     var defaultConfig = {
-        startMessage : __('Start synchronization'),
-        stopMessage : __('Stop synchronization'),
+        description : __('Synchronize device'),
+        startMessage : __('Start'),
+        stopMessage : __('Stop'),
 
         //the default targets
         targets : [{

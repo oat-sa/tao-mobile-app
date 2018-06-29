@@ -24,27 +24,29 @@
  */
 define([
     'i18n',
+    'ui/feedback',
     'app/controller/pageController',
     'app/service/session',
     'app/component/synchronizer/synchronizer',
+    'app/component/wipeout/wipeout',
     'app/service/synchronization/testTaker',
+    'app/service/user',
     'tpl!app/controller/admin/layout'
-], function(__, pageController, sessionService, synchronizerFactory, testTakerSyncService, layoutTpl){
+], function(__, feedback, pageController, sessionService, synchronizerFactory, wipeoutFactory, testTakerSyncService, userService, layoutTpl){
     'use strict';
 
     return pageController({
         start: function start(){
             var self = this;
+            var logger = this.getLogger();
             sessionService.getCurrent().then(function(session){
                 var synchronizer;
-                var syncContainer;
+                var wipeout;
 
                 //TODO handle the layout globally
                 self.getContainer().innerHTML = layoutTpl(session.user);
 
-                syncContainer = self.getContainer().querySelector('.content-container');
-
-                synchronizer = synchronizerFactory(syncContainer)
+                synchronizer = synchronizerFactory(self.getContainer().querySelector('.sync-container'))
                     .on('start', function(targetType){
 
                         //TODO implement other targets than test taker
@@ -79,6 +81,30 @@ define([
                             });
                         }
                     });
+
+                wipeout = wipeoutFactory(self.getContainer().querySelector('.danger-zone'), {
+                    confirmMessage : __('This action will remove all data, including your user profile. Once done, you will have to login again. Please confirm the wipeout.')
+                }).on('wipeout', function(){
+
+                    logger.info('User ' + session.user.login + ' ask to wipeout the app data');
+
+                    userService
+                        .removeAll()
+                        .then(function(){
+
+                            logger.info('Data wipeout');
+
+                            //inform the user and log out
+                            feedback().success(__('The application data has been removed'));
+                            setTimeout(function(){
+                                self.getRouter().dispatch('main/logout');
+                            }, 3000);
+                        })
+                        .catch(function(err){
+                            wipeout.reset();
+                            self.handleError(err);
+                        });
+                });
             })
             .catch(function(err){
                 self.handleError(err);

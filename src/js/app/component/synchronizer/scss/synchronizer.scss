@@ -11,45 +11,54 @@
 
 .synchronizer {
 
-    text-align: right;
 
-    .syncer {
-        margin: 1rem;
-        background-color: whiten($success, .1);
-        text-shadow: 1px 1px 0 blacken($success, .2);
-
-        &:before {
-            @include tao-icon-setup;
-            @include icon-play;
-            margin-right : 5px;
-        }
+    & > article {
+        border-bottom: solid 1px $uiGeneralContentBorder;
+        position: relative;
+        padding: 1rem;
+        margin : 0;
     }
-    &.started .syncer {
+    .control {
 
-        background-color: whiten($danger, .1);
-        text-shadow: 1px 1px 0 blacken($danger, .2);
+        display: flex;
+        flex-flow: row nowrap;
+        align-items: center;
 
-        &:before {
-            @include icon-stop;
+        .desc {
+            flex: 1 1 auto;
+            color: whiten($textColor, .3);
+            font-size: 1.5rem;
+        }
+        .syncer {
+            background-color: whiten($success, .1);
+            text-shadow: 1px 1px 0 blacken($success, .2);
+
+            &:before {
+                @include tao-icon-setup;
+                @include icon-play;
+                margin-right : 5px;
+            }
+        }
+        &.started .syncer {
+
+            background-color: whiten($danger, .1);
+            text-shadow: 1px 1px 0 blacken($danger, .2);
+
+            &:before {
+                @include icon-stop;
+            }
         }
     }
 
     .sync-target {
-        &:first-child{
-            border-top: solid 1px grey;
-        }
-        border-bottom: solid 1px grey;
-        position: relative;
-        padding: 0;
-        margin : 0;
+
         & > h1 {
-            margin: 0 5rem 1rem 0;
-            padding-left: 1rem;
+            margin: 0;
             text-align: left;
+            font-size: 2.1rem;
         }
         .sync-result {
             margin-right: 5rem;
-            padding-left: 1rem;
             text-align: left;
         }
         .progress-indicator {
@@ -70,7 +79,7 @@
         &.disabled {
             background-color: white !important;
             .progress-indicator:before {
-                @include icon-warning;
+                @include icon-danger;
             }
         }
         &.running .progress-indicator {
@@ -89,7 +98,7 @@
             color: $success;
         }
         &.error .progress-indicator:before {
-            @include icon-danger;
+            @include icon-error;
             color: $danger;
         }
     }

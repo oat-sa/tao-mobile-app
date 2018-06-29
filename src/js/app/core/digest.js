@@ -30,8 +30,7 @@ define([
     'use strict';
 
     //get the native implementation of the CryptoSubtle
-    var cryptoSubtle = window.crypto.subtle || window.crypto.webkitSublte;
-
+    var subtle = window.crypto.subtle || window.crypto.webkitSubtle;
     var supportedAlgorithms = [
         'SHA-1', //considered as not safe anymore
         'SHA-256',
@@ -69,7 +68,7 @@ define([
         if(!_.isString(utf8String)){
             throw new TypeError('Please encode a string, not a ' + (typeof utf8String) );
         }
-        return cryptoSubtle
+        return subtle
             .digest(algorithm, new TextEncoder('utf-8').encode(utf8String))
             .then(function(buffer){
                 return bufferToHexString(buffer);

@@ -5,21 +5,35 @@
         height: 8rem;
         background: $uiClickableHoverBg;
         color: $textHighlight;
-        padding-top: 2rem;
-        padding-left: 2rem;
+
+        display: flex;
+        flex-flow: row nowrap;
+        align-items: stretch;
+        padding-top: 2.5rem;
 
         h1 {
-            display: inline-block; 
             margin: 0;
             font-size: 2.4rem;
+            flex: 1 1 auto;
+            text-align: center;
         }
+        .profile  {
+            flex: 0 0 8rem;
+            text-align: center;
 
-        a {
-            position: absolute;
-            top: 2.4rem;
-            right: 2.4rem;
-            color: $textHighlight;
-            font-size: 2.2rem;
+            & > span {
+                opacity: .9;
+                color: #fff;
+                font-size: 2rem;
+            }
+        }
+        nav {
+            flex: 0 0 6rem;
+            text-align: center;
+            a {
+                color: $textHighlight;
+                font-size: 2.2rem;
+            }
         }
     }
     section {

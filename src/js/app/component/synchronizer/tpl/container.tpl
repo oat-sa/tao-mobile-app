@@ -1,5 +1,8 @@
 <section class="synchronizer">
-    <button class="syncer btn-default"> {{startMessage}}</button>
+    <article class="control">
+        <span class="desc">{{description}}</span>
+        <button class="syncer btn-default"> {{startMessage}}</button>
+    </article>
 
     {{{targetContent}}}
 
