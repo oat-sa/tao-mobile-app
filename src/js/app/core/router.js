@@ -71,7 +71,7 @@ define([
          * @fires router#dispatching when the dispatch starts
          * @fires router#dispatched when the dispatch is done
          */
-        dispatch : function diptach(route){
+        dispatch : function disptach(route){
             var self = this;
             var taoRoute = route;
 
