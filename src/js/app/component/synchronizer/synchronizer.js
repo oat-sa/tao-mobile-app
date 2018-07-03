@@ -165,7 +165,7 @@ define([
                     //call sync for each target
                     _.forEach(this.targets, function(target){
                         if(target.state !== 'disabled'){
-                            self.setTargetState(target.type, 'ready');
+                            self.stop(target.type);
                         }
                     });
                 }
