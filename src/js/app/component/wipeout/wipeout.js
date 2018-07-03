@@ -68,7 +68,7 @@ define([
                     confirmDialog(this.config.confirmMessage, function accept(){
 
                         /**
-                         * The wipeout has bee confirmed
+                         * The wipeout has been confirmed
                          * @event wipeoutComponent#wipeout
                          */
                         self.trigger('wipeout');
@@ -78,13 +78,14 @@ define([
                         //of long running operation
 
                     }, function cancel(){
+
+                        self.reset();
+
                         /**
                          * The wipeout has bee canceled
                          * @event wipeoutComponent#cancel
                          */
                         self.trigger('cancel');
-
-                        self.reset();
                     });
                 }
                 return this;
@@ -116,9 +117,9 @@ define([
             .on('init', function(){
                 var self = this;
                 if(container){
-                    setTimeout(function(){
+                    _.defer(function(){
                         self.render(container);
-                    }, 0);
+                    });
                 }
             })
             .on('render', function(){
@@ -135,9 +136,9 @@ define([
                 });
             });
 
-        setTimeout(function(){
+        _.defer(function(){
             wipeoutComponent.init(config);
-        }, 0);
+        });
 
         return  wipeoutComponent;
     };
