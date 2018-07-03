@@ -39,14 +39,14 @@
                 margin-right : 5px;
             }
         }
-        &.started .syncer {
+    }
+    &.started .syncer {
 
-            background-color: whiten($danger, .1);
-            text-shadow: 1px 1px 0 blacken($danger, .2);
+        background-color: whiten($danger, .1);
+        text-shadow: 1px 1px 0 blacken($danger, .2);
 
-            &:before {
-                @include icon-stop;
-            }
+        &:before {
+            @include icon-stop;
         }
     }
 
