@@ -50,7 +50,7 @@ define([
     };
 
     /**
-     * Create a hash/checskum from a given string
+     * Create a hash/checksum from a given string
      * @param {String} utf8String - the string to hash
      * @param {String} [selectedAlgorithm = 'SHA-256'] - how to hash
      * @returns {Promise<String>} resolves with the hash of the string

@@ -30,10 +30,9 @@ define([
     'lodash',
     'i18n',
     'module',
-    'urlParser',
     'app/core/request',
     'app/service/synchronization/token'
-], function($, _, __, module, UrlParser, requestFactory, tokenServiceFactory){
+], function($, _, __, module, requestFactory, tokenServiceFactory){
     'use strict';
 
     /**

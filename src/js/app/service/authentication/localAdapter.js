@@ -86,7 +86,7 @@ define([
             };
 
             if(!credentials || _.isEmpty(credentials.username) || _.isEmpty(credentials.password)){
-                return Promise.resolve(status);
+                return Promise.resolve(failStatus);
             }
 
             return userService.getByUserName(credentials.username).then(function(user){

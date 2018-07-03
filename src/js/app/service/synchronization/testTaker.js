@@ -40,7 +40,7 @@ define([
     var resourceType = 'test-taker';
 
     /**
-     * we will load resouces by batch of 10
+     * we will load resources by batch of 10
      */
     var chunkSize    = 10;
 
