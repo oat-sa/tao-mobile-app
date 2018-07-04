@@ -94,19 +94,50 @@
                     }
                 }
             },
+            'app/core/request' : {
+                endpoint : 'http://spielplatz.taocloud.org/app-central-sync',
+                timeout  : 30 * 1000
+            },
             'app/service/authentication' : {
+                local : {
+                    hash : {
+                        salt : 10,
+                        algorithm : 'sha-256'
+                    }
+                },
                 syncManager : {
-                    endpoint : 'http://spielplatz.taocloud.org/app-central-sync/taoSync/HandShake/index',
-                    timeout  : 30 * 1000
+                    api : {
+                        method :'POST',
+                        path : '/taoSync/HandShake/index'
+                    }
+                }
+            },
+            'app/service/synchronization/token' : {
+                api : {
+                    method : 'GET',
+                    path : '/taoOauth/TokenApi/requestToken'
+                }
+            },
+            'app/service/synchronization/client' : {
+                api : {
+                    entity : {
+                        method: 'GET',
+                        path : '/taoSync/SynchronisationApi/fetchEntityChecksums',
+                    },
+                    details : {
+                        method: 'POST',
+                        path : '/taoSync/SynchronisationApi/fetchEntityDetails'
+                    }
                 }
             }
         },
         shim: {
             'moment': {
                 exports: 'moment'
+            },
+            '/socket.io/socket.io': {
+                exports: 'io'
             }
         }
     });
 }());
-
-

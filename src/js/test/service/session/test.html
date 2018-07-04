@@ -19,7 +19,12 @@
                 requirejs.config({
                     config : {
                         'app/service/session' : {
-                            ttl : 5 * 1000
+                            ttl : 5 * 1000,
+                            entryPoints: {
+                                all : 'main-entry-point',
+                                foo : 'foo-entry-point',
+                                bar : 'bar-entry-point'
+                            }
                         }
                     }
                 });

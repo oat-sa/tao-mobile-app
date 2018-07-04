@@ -27,81 +27,62 @@ define([
     'jquery',
     'lodash',
     'i18n',
+    'app/core/request',
     'app/service/dataMapper/user'
-], function($, _, __, userDataMapper){
+], function($, _, __, requestFactory, userDataMapper){
     'use strict';
 
     /**
-     * Some default error messages
+     * The dedicated error messages
      */
     var errorMessages = {
-        missingCredentials: __('Missing username or password, please fill them and try again.'),
-        invalidCredentials: __('Invalid credentials, please try again.'),
-        missingEndpoint:    __('The authentication server is not configured, please contact your administrator.'),
-        unavaibleEndpoint:  __('Unable to reach the server, please check your network.'),
-        serverError:        __('An unexpected error occur while trying to login, please contact your administrator.')
+        missingCredentials:    __('Missing username or password, please fill them and try again.'),
+        unauthorized:          __('Invalid credentials, please try again.'),
+        misconfiguredEndpoint: __('The authentication server is not configured, please contact your administrator.')
     };
 
+    /**
+     * Authentication adapter for the sync manager
+     */
     return {
 
         name : 'syncManager',
 
-        authenticate : function authenticate(config, values){
-            return new Promise(function(resolve, reject){
-                if(!config.endpoint || _.isEmpty(config.endpoint)){
-                    return reject(new Error(errorMessages.missingEndpoint));
-                }
-                if(_.isEmpty(values.username) || _.isEmpty(values.password)){
-                    return resolve({
-                        success: false,
-                        message :  errorMessages.missingCredentials
-                    });
-                }
+        /**
+         * Try to authenticate from the given credentials
+         * @param {Object} config - the authentication configuration
+         * @param {Object} config.api - contains the API details
+         * @param {Object} credentials - the authentication credentials
+         * @param {String} credentials.username - the login/username of the sync manager
+         * @param {String} credentials.password - the password of the sync manager
+         * @returns {Promise<Object>} resolves with the user data
+         */
+        authenticate : function authenticate(config, credentials){
+            var request = requestFactory(config.api, errorMessages);
 
-                $.ajax({
-                    url: config.endpoint,
-                    type: 'POST',
-                    dataType: 'json',
-                    contentType: 'application/json',
-                    data : JSON.stringify({
-                        login : values.username,
-                        password : values.password
-                    })
-                })
-                .done(function(response, status, xhr){
-                    var user;
-                    if (xhr.status === 200 || xhr.status === 302){
-
-                        //extract the user and the oauth info from the response
-                        user = userDataMapper(response.syncUser);
-                        if(user){
-                            user.oauthInfo = response.oauthInfo;
-
-                            return resolve({
-                                success : true,
-                                data    : {
-                                    user : user
-                                }
-                            });
-                        }
-                    }
-                    return resolve({
-                        success : false,
-                        message : errorMessages.invalidCredentials
-                    });
-                })
-                .fail(function(xhr){
-                    if(xhr.status === 401 || xhr.status === 403){
-                        return resolve({
-                            success : false,
-                            message : errorMessages.invalidCredentials
-                        });
-                    }
-                    if(xhr.status === 0){
-                        return reject(new Error(errorMessages.unavaibleEndpoint));
-                    }
-                    return reject(new Error(errorMessages.serverError + ' (' + xhr.status + ' : ' + xhr.statusText + ')' ));
+            if(!credentials || _.isEmpty(credentials.username) || _.isEmpty(credentials.password)){
+                return Promise.resolve({
+                    success: false,
+                    message: errorMessages.unauthorized
                 });
+            }
+            return request({
+                data : JSON.stringify({
+                    login:    credentials.username,
+                    password: credentials.password
+                })
+            })
+            .then(function(response){
+                var user;
+                if(response && response.success){
+                    //extract the user and the oauth info from the response
+                    user = userDataMapper(response.data.syncUser);
+                    if(user){
+                        user.oauthInfo = response.data.oauthInfo;
+                        response.data.user = user;
+                    }
+                }
+                return response;
             });
         }
     };

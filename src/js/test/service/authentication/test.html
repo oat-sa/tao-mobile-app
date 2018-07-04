@@ -3,7 +3,7 @@
     <head>
         <meta charset="utf-8">
         <base href="../../../" />
-        <title>Test - App router</title>
+        <title>Test - Authentication Service</title>
         <link rel="stylesheet" type="text/css" href="../taodist/tao/views/js/lib/qunit/qunit.css">
         <script type="text/javascript" src="../taodist/tao/views/js/lib/qunit/qunit.js"></script>
         <script type="text/javascript" src="../taodist/tao/views/js/lib/qunit/qunit-parameterize.js"></script>
@@ -17,18 +17,20 @@
             require(['config'], function(){
 
                 requirejs.config({
-                    paths :  {
-                        router : 'test/service/router/taoRouterMock'
-                    },
                     config : {
-                        'app/service/router' : {
-                            timeout : 500
+                        'app/service/authentication' : {
+                            'mock1' : {
+                                foo : true
+                            },
+                            'mock2' : {
+                                foo : false
+                            }
                         }
                     }
                 });
 
                 //load the test
-                require(['test/service/router/test'], function(){
+                require(['test/service/authentication/test'], function(){
 
                     //Tests loaded, run tests
                     QUnit.start();

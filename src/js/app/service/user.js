@@ -20,6 +20,10 @@
 /**
  * Service that manages users.
  *
+ * The full users are stored in the "user" store, indexed by id.
+ *
+ * We store also the user's authentication data, in the "userAuth" store, indexed by username.
+ *
  *
  * @author Bertrand Chevrier <bertrand@taotesting.com>
  */
@@ -29,7 +33,8 @@ define([
 ], function(_, store){
     'use strict';
 
-    var storeName = 'user';
+    var userStoreName = 'user';
+    var userAuthStoreName = 'userAuth';
 
     /**
      * Definition of a minimal user as seen by the service
@@ -37,6 +42,7 @@ define([
      * @param {String} id - the user unique identifier
      * @param {String} username - the user name/login, should be unique too
      * @param {String} password - hashed version
+     * @param {String} role - the user role
      */
 
     /**
@@ -58,6 +64,9 @@ define([
         if(_.isEmpty(user.password)){
             throw new TypeError('A user needs to have a property password');
         }
+        if(_.isEmpty(user.role)){
+            throw new TypeError('A user needs to have a property role');
+        }
         return true;
     };
 
@@ -67,17 +76,65 @@ define([
     return {
 
         /**
-         * Get a user from it's username/login
+         * Get a user from it's identifier / URI.
          *
-         * @param {String} username
+         * @param {String} id - the user identifier
          * @returns {Promise<user>} resolves with the user or null if not found
          */
-        get : function get(username){
+        getById : function getById(id){
+            if(_.isEmpty(id)){
+                return Promise.resolve(null);
+            }
+            return store(userStoreName).then(function(userStore){
+                return userStore.getItem(id);
+            });
+        },
+
+        /**
+         * Get a user from it's username / login.
+         *
+         * @param {String} id - the user identifier
+         * @returns {Promise<user>} resolves with the user or null if not found
+         */
+        getByUserName : function getByUserName(username){
+            var self = this;
             if(_.isEmpty(username)){
                 return Promise.resolve(null);
             }
-            return store(storeName).then(function(userStore){
-                return userStore.getItem(username);
+            return store(userAuthStoreName)
+                .then(function(userAuthStore){
+                    return userAuthStore.getItem(username);
+                })
+                .then(function(userAuth){
+                    if(userAuth && userAuth.id){
+                        return self.getById(userAuth.id);
+                    }
+                    return null;
+                });
+        },
+
+        /**
+         * Get all users
+         * @returns {Promise<Object[]>} resolves with the user collection
+         */
+        getAll : function getAll(){
+            return store(userStoreName).then(function(userStore){
+                return userStore.getItems();
+            });
+        },
+
+        /**
+         * Get all users of the given role
+         *
+         * @param {String} role - the role to filter users.
+         *
+         * @returns {Promise<Object[]>} resolves with the user collection
+         */
+        getAllByRole : function getAllByRole(role){
+            return store(userStoreName).then(function(userStore){
+                return userStore.getItems();
+            }).then(function(users){
+                return _.filter(users, { role : role });
             });
         },
 
@@ -90,9 +147,26 @@ define([
 
             validateUser(user);
 
-            return store(storeName).then(function(userStore){
-                return userStore.setItem(user.username, user);
-            });
+            return store(userStoreName)
+                .then(function(userStore){
+                    return userStore.setItem(user.id, user);
+                })
+                .then(function(result){
+                    if(result){
+                        return store(userAuthStoreName);
+                    }
+                    return false;
+                })
+                .then(function(userAuthStore){
+                    if(userAuthStore){
+                        return userAuthStore.setItem(user.username, {
+                            role: user.role,
+                            password : user.password,
+                            id : user.id
+                        });
+                    }
+                    return false;
+                });
         },
 
         /**
@@ -104,29 +178,73 @@ define([
          * @returns {Promise<Boolean>} resolves with true if updated
          */
         update : function update(user){
+            var self = this;
 
-            validateUser(user);
+            if(!_.isPlainObject(user) || !user.id){
+                return Promise.resolve(false);
+            }
 
-            return store(storeName).then(function(userStore){
-                return userStore.getItem(user.username).then(function(existingUser){
-                    return userStore.setItem(user.username, _.defaults(user, existingUser || {}));
+            return this.getById(user.id)
+                .then(function(existingUser){
+                    return self.set(_.defaults(user, existingUser || {}));
                 });
-            });
         },
 
         /**
          * Remove a user
          *
-         * @param {String} username
+         * @param {String} id - the user identifier
          * @returns {Promise<Boolean>} resolves with true if removed
          */
-        remove : function remove(username){
-            if(_.isEmpty(username)){
+        remove : function remove(id){
+            if(_.isEmpty(id)){
                 return Promise.resolve(false);
             }
-            return store(storeName).then(function(userStore){
-                return userStore.removeItem(username);
-            });
+            return this.getById(id)
+                .then(function(user){
+                    if(user && user.id && user.username){
+                        return store(userStoreName)
+                            .then(function(userStore){
+                                return userStore.removeItem(id);
+                            })
+                            .then(function(result){
+                                if(result){
+                                    return store(userAuthStoreName);
+                                }
+                                return false;
+                            })
+                            .then(function(userAuthStore){
+                                if(userAuthStore){
+                                    return userAuthStore.removeItem(user.username);
+                                }
+                                return false;
+                            });
+                    }
+                    return false;
+                });
+        },
+
+        /**
+         * Remove all users
+         * @returns {Promise<Boolean>}
+         */
+        removeAll : function removeAll(){
+            return store(userStoreName)
+                .then(function(userStore){
+                    return userStore.clear();
+                })
+                .then(function(result){
+                    if(result){
+                        return store(userAuthStoreName);
+                    }
+                    return false;
+                })
+                .then(function(userAuthStore){
+                    if(userAuthStore){
+                        return userAuthStore.clear();
+                    }
+                    return false;
+                });
         }
     };
 });

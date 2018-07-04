@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <base href="../../../" />
+        <title>Test - Wipeout Component</title>
+        <link rel="stylesheet" type="text/css" href="../taodist/tao/views/js/lib/qunit/qunit.css">
+        <link rel="stylesheet" type="text/css" href="../../www/dist/css/app.css">
+        <script type="text/javascript" src="../taodist/tao/views/js/lib/qunit/qunit.js"></script>
+        <script type="text/javascript" src="../taodist/tao/views/js/lib/qunit/qunit-parameterize.js"></script>
+        <script type="text/javascript" src="../taodist/tao/views/js/lib/require.js"></script>
+        <style>
+            #visual-container {
+                 background: #fff;
+                 border: solid 5px #444;
+                 border-top-width: 24px;
+                 border-bottom-width: 24px;
+                 border-radius: 12px;
+                 width: 400px;
+                 height: 800px;
+                 margin : 2em auto;
+                 box-shadow: 2px 2px 2px #000;
+            }
+        </style>
+        <script type="text/javascript">
+
+            //don't start the test now
+            QUnit.config.autostart = false;
+
+            //load the config
+            require(['config'], function(){
+
+                //load the test
+                require(['test/component/wipeout/test'], function(){
+
+                    //Tests loaded, run tests
+                    QUnit.start();
+                });
+            });
+        </script>
+    </head>
+    <body>
+        <div id="qunit"></div>
+        <div id="qunit-fixture"></div>
+        <div id="visual-container" data-page="admin/index"></div>
+    </body>
+</html>

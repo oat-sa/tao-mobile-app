@@ -26,6 +26,11 @@ define(function(){
                 'index' : 'controller/admin/index',
             }
         },
+        'delivery': {
+            'actions' : {
+                'index' : 'controller/delivery/index',
+            }
+        },
         'main': {
             'actions' : {
                 'login' : 'controller/main/login',

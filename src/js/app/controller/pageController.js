@@ -31,7 +31,7 @@ define([
     'lodash',
     'core/logger',
     'ui/feedback',
-    'app/service/router'
+    'app/core/router'
 ], function(_, loggerFactory, feedback, router){
     'use strict';
 

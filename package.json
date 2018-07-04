@@ -12,7 +12,7 @@
     "build:sass": "grunt sass",
     "build:bundle": "grunt requirejs:build",
     "build": "run-s build:setup build:sass build:bundle",
-    "start" : "run-s build dev:serve",
+    "start": "run-s build dev:serve",
     "dev:serve": "phonegap serve",
     "dev:sass": "grunt watch:sass",
     "dev:bundle": "grunt watch:requirejs",
