@@ -27,23 +27,25 @@
  */
 define([
     'lodash',
+    'core/eventifier',
+    'core/providerRegistry',
     'core/logger',
     'core/promiseQueue',
     'app/service/user',
     'app/service/dataMapper/user',
     'app/service/synchronization/client'
-], function(_, loggerFactory, promiseQueueFactory, userService, userDataMapper, syncClientFactory){
+], function(_,
+    eventifier,
+    providerRegistry,
+    loggerFactory, promiseQueueFactory, userService, userDataMapper, syncClientFactory){
     'use strict';
 
-    var logger  = loggerFactory('app/service/synchronization/testTaker');
-
-    var resourceType = 'test-taker';
+    var logger  = loggerFactory('app/service/synchronization/synchronizer');
 
     /**
      * we will load resources by batch of 10
      */
     var chunkSize    = 10;
-
 
     /**
      * From a unique array of ids we create multiples array
@@ -62,6 +64,200 @@ define([
         }, []);
     };
 
+    var isSynchronizerProvider = function isSynchronizerProvider(provider){
+        return _.all(['getAll', 'add', 'update', 'remove'], function(method){
+            return _.isFunction(provider[method]);
+        });
+    };
+
+    var synchronizerFactory = function synchronizerFactory(resourceType, config) {
+
+        var provider = synchronizerFactory.getProvider(resourceType);
+
+        var client = syncClientFactory(config);
+
+        if(!provider){
+            throw new TypeError('No registered provider for resources of type ' + resourceType);
+        }
+
+        return eventifier({
+            start : function start(){
+                var self  = this;
+
+                var promiseQueue  = promiseQueueFactory();
+
+
+
+                this.trigger('start', resourceType);
+
+                // 1st step check the list of what to be synchronized
+                // and load all resources from DB to compare
+                return Promise.all([
+                    provider.getAll(),
+                    client.getEntityIds(resourceType)
+                ]).then(function(results){
+
+                    if(results && results.length === 2){
+
+                        //remoteResourceIds  = results[0];
+                        //localResources     = results[1];
+
+
+                        //re-index users by id
+                        /*
+                        if(_.isArray(results[1])){
+                            users = _.reduce(results[1], function(acc, user){
+                                if(user && user.id){
+                                    acc[user.id] = user;
+                                }
+                                return acc;
+                            }, {});
+                        } else {
+                            users = results[1];
+                        }*/
+
+                        //logger.info(_.size(entityIds) +  ' remote test takers found');
+                        //logger.info(_.size(users) +  ' local test takers found');
+
+                        //check if testTakers needs to be updated, added or removed
+                        //_.forEach(entityIds, function(entity, id){
+                            //if(users[id]){
+                                //if(users[id].checksum && !_.isEmpty(users[id].checksum) && users[id].checksum !== entity.checksum){
+                                    //if(syncActions.update.indexOf(id) < 0){
+                                        //syncActions.update.push(id);
+                                    //}
+                                //}
+                                ////all users not in the entity list will be removed,
+                                //users[id].sync = true;
+                            //} else {
+                                //if(syncActions.add.indexOf(id) < 0){
+                                    //syncActions.add.push(id);
+                                //}
+                            //}
+                        //});
+
+                        //syncActions.remove = _(users).reject({ sync : true }).pluck('id').value();
+
+                        ////force memory free
+                        //users = null;
+
+                        ////we have the list of who to add to remove or update
+                        //return syncActions;
+                        return self.computeSyncActions(results[0], results[1]);
+                    }
+                })
+                .then(function(syncActions){
+
+                    if(syncActions){
+
+                        //1 remove
+                        logger.info(syncActions.remove.length + ' ' + resourceType + ' to remove');
+
+                        _.forEach(syncActions.remove, function(id){
+                            promiseQueue.serie(function removeUser() {
+                                logger.debug('removing ' + resourceType + ' ' + id);
+                                return provider.remove(id);
+                                //return userService.remove(id);
+                            });
+                        });
+
+                        //2 update
+                        logger.info(syncActions.update.length + ' ' + resourceType + ' to update');
+
+                        _.forEach(getIdsChunks(syncActions.update), function(ids){
+                            promiseQueue.serie(function updateUsers(){
+
+                                logger.debug('fetch user content for ' +  ids.join(','));
+
+                                return client.getEntitiesContent(resourceType, ids)
+                                    .then(function(entities){
+                                        var updateQueue = promiseQueueFactory();
+                                        _.forEach(entities, function(entity){
+                                            updateQueue.serie(function updateUser(){
+                                                logger.debug('updating ' + resourceType + ' ' + entity.id);
+                                                return provider.update(entity.id, entity);
+
+                                                //return userService.update(userDataMapper(entity));
+                                            });
+                                        });
+                                        return updateQueue;
+                                    });
+                            });
+                        });
+
+                        //3 add
+                        logger.info(syncActions.add.length + ' ' + resourceType + ' to add');
+
+                        _.forEach(getIdsChunks(syncActions.add), function(ids){
+                            promiseQueue.serie(function addUsers(){
+
+                                logger.debug('fetch user content for ' +  ids.join(','));
+                                return client.getEntitiesContent(resourceType, ids)
+                                    .then(function(entities){
+                                        var addQueue = promiseQueueFactory();
+                                        _.forEach(entities, function(entity){
+                                            addQueue.serie(function addUser(){
+
+                                                logger.debug('adding ' + resourceType + ' ' + entity.id);
+                                                //return userService.set(userDataMapper(entity));
+                                                return provider.add(entity.id, entity);
+                                            });
+                                        });
+                                        return addQueue;
+                                    });
+                            });
+                        });
+
+                        return syncActions;
+                    }
+                });
+            },
+
+            computeSyncActions : function computeSyncActions(localResources, remoteResources) {
+                var syncActions = {
+                    add : [],
+                    update : [],
+                    remove : []
+                };
+                if(_.isPlainObject(localResources) && _.isPlainObject(remoteResources)) {
+
+                    _.forEach(remoteResources, function(remoteResource, id){
+
+                        if(localResources[id]){
+                            if( localResources[id].checksum &&
+                                !_.isEmpty(localResources[id].checksum) &&
+                                localResources[id].checksum !== remoteResource.checksum &&
+                                syncActions.update.indexOf(id) < 0 ){
+
+                                //if the resource exists locally but the checksums are
+                                //different, we index it in the resource to update
+                                syncActions.update.push(id);
+                            }
+
+                            //flag local resources (even if not updated)
+                            //so all without the sync flag will be removed
+                            localResources[id].sync = true;
+
+                        } else if(syncActions.add.indexOf(id) < 0){
+
+                            //if the resource doesn't exists locally and isn't already in the
+                            //sync list, we add it to the resources to create.
+                            syncActions.add.push(id);
+                        }
+                    });
+
+                    //based on the sync flag we index resources that will be removed
+                    syncActions.remove = _(localResources).reject({ sync : true }).pluck('id').value();
+                }
+                return syncActions;
+            }
+        });
+    };
+
+    //bind the provider registration capabilities to the testRunnerFactory
+    return providerRegistry(synchronizerFactory, isSynchronizerProvider);
+
+
     /**
      * Perform the synchronization
      * @param {Object} config
@@ -69,9 +265,8 @@ define([
      * @param {String} config.secret - the OAuth secret  linked to the syncManager profile
      * @returns {Promise<Object>} - resolves with the sync stats
      */
-    return function synchronize(config){
+    return function synchronize(type, config){
 
-        var client = syncClientFactory(config);
 
         var promiseQueue  = promiseQueueFactory();
 

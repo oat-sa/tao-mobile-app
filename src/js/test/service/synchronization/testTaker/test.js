@@ -23,10 +23,11 @@
  * @author Bertrand Chevrier <bertrand@taotesting.com>
  */
 define([
-    'app/service/synchronization/testTaker',
+    'app/service/synchronization/synchronizer',
+    'app/service/synchronization/provider/testTaker',
     'app/service/user',
     'app/service/synchronization/client'
-], function(testTakerSyncService, userServiceMock, syncClientMock) {
+], function(synchronizerFactory, testTakerSyncProvider, userServiceMock, syncClientMock) {
     'use strict';
 
     QUnit.module('API');
@@ -34,11 +35,14 @@ define([
     QUnit.test('module', function(assert) {
         QUnit.expect(1);
 
-        assert.equal(typeof testTakerSyncService, 'function', 'The module exposes a unique function');
+        assert.equal(typeof synchronizerFactory, 'function', 'The module exposes a unique function');
     });
 
 
     QUnit.module('Behavior', {
+        setup : function setup(){
+            synchronizerFactory.registerProvider('test-taker', testTakerSyncProvider);
+        },
         teardown: function teardown() {
             userServiceMock.users = {};
             syncClientMock.entityIds = {};
@@ -234,13 +238,16 @@ define([
         update : 0
     }]).asyncTest('Synchronize', function(data, assert) {
 
+        var testTakerSynchronizer = synchronizerFactory('test-taker', {});
+
         QUnit.expect(3);
 
         userServiceMock.users          = data.local;
         syncClientMock.entityIds       = data.entityIds;
         syncClientMock.entitiesContent = data.entitiesContent;
 
-        testTakerSyncService({})
+        testTakerSynchronizer
+            .start()
             .then(function(results){
 
                 assert.equal(results.add.length, data.add, 'The correct number of test taker is added');
