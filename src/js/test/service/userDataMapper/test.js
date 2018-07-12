@@ -88,6 +88,10 @@ define(['app/service/dataMapper/user'], function(userDataMapper){
                 'http://www.tao.lu/Ontologies/generis.rdf#userUILg': 'http://www.tao.lu/Ontologies/TAO.rdf#Langen-US',
                 'http://www.tao.lu/Ontologies/TAO.rdf#FirstTimeInTao': 'http://www.tao.lu/Ontologies/generis.rdf#False',
                 'http://www.tao.lu/Ontologies/TAO.rdf#LastExtensionUsed': 'tao/Main/index?structure=synchronization&ext=taoSync',
+                'http://www.tao.lu/Ontologies/TAOTestCenter#UserAssignment': [
+                    'http://bertaodev2/tao.rdf#i1531144478419294',
+                    'http://bertaodev2/tao.rdf#i15313993705227171'
+                ],
                 'http://www.tao.lu/Ontologies/TAO.rdf#UpdatedAt': '1525944401.2057',
                 'http://www.tao.lu/Ontologies/taoSync.rdf#ConsumerUser': 'http://bertaodev2/tao.rdf#i15259444011408235',
                 'http://www.taotesting.com/Ontologies/TAO.rdf#CreatedAt': '1525274752.9149',
@@ -105,6 +109,7 @@ define(['app/service/dataMapper/user'], function(userDataMapper){
             email:         'psmith@noone.net',
             originalRoles: ['http://www.tao.lu/Ontologies/generis.rdf#taoSyncManager'],
             role:          'syncManager',
+            assignment:    ['http://bertaodev2/tao.rdf#i1531144478419294', 'http://bertaodev2/tao.rdf#i15313993705227171'],
             updatedAt:     1525944401.2057,
             createdAt:     1525274752.9149,
         }

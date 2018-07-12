@@ -38,7 +38,8 @@ define([
         email:         'http:\/\/www.tao.lu\/Ontologies\/generis.rdf#userMail',
         originalRoles: 'http:\/\/www.tao.lu\/Ontologies\/generis.rdf#userRoles',
         updatedAt:     'http:\/\/www.tao.lu\/Ontologies\/TAO.rdf#UpdatedAt',
-        createdAt:     'http:\/\/www.taotesting.com\/Ontologies\/TAO.rdf#CreatedAt'
+        createdAt:     'http:\/\/www.taotesting.com\/Ontologies\/TAO.rdf#CreatedAt',
+        assignment:    'http://www.tao.lu/Ontologies/TAOTestCenter#UserAssignment'
     };
 
     /**
