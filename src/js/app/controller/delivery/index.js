@@ -29,9 +29,8 @@
 define([
     'app/controller/pageController',
     'app/service/session',
-    'app/service/synchronization/testTaker',
     'tpl!app/controller/delivery/layout'
-], function(pageController, sessionService, testTakerSyncService, layoutTpl){
+], function(pageController, sessionService, layoutTpl){
     'use strict';
 
     return pageController({

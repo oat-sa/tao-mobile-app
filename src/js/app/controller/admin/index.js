@@ -29,33 +29,47 @@ define([
     'app/service/session',
     'app/component/synchronizer/synchronizer',
     'app/component/wipeout/wipeout',
-    'app/service/synchronization/testTaker',
+    'app/service/synchronization/synchronizer',
+    'app/service/synchronization/provider/testTaker',
     'app/service/user',
     'tpl!app/controller/admin/layout'
-], function(__, feedback, pageController, sessionService, synchronizerFactory, wipeoutFactory, testTakerSyncService, userService, layoutTpl){
+], function(
+    __,
+    feedback,
+    pageController,
+    sessionService,
+    syncComponentFactory,
+    wipeoutFactory,
+    syncServiceFactory,
+    testTakerSyncProvider,
+    userService,
+    layoutTpl
+){
     'use strict';
+
+    syncServiceFactory.registerProvider(testTakerSyncProvider.name, testTakerSyncProvider);
 
     return pageController({
         start: function start(){
             var self = this;
             var logger = this.getLogger();
             sessionService.getCurrent().then(function(session){
-                var synchronizer;
+                var syncComponent;
                 var wipeout;
+
+                var oauthConfig = {
+                    key : session.user.oauthInfo.key,
+                    secret : session.user.oauthInfo.secret
+                };
 
                 //TODO handle the layout globally
                 self.getContainer().innerHTML = layoutTpl(session.user);
 
-                synchronizer = synchronizerFactory(self.getContainer().querySelector('.sync-container'))
+                syncComponent = syncComponentFactory(self.getContainer().querySelector('.sync-container'))
                     .on('start', function(targetType){
 
-                        //TODO implement other targets than test taker
-                        if(targetType === 'test-taker'){
-
-                            testTakerSyncService({
-                                key : session.user.oauthInfo.key,
-                                secret : session.user.oauthInfo.secret
-                            })
+                        syncServiceFactory(targetType, oauthConfig)
+                            .start()
                             .then(function(results){
                                 var message = [];
 
@@ -73,13 +87,12 @@ define([
                                         message.push( __('Already up to date'));
                                     }
                                 }
-                                synchronizer.succeed(targetType, message.join(', '));
+                                syncComponent.succeed(targetType, message.join(', '));
                             })
                             .catch(function(err){
-                                synchronizer.fail(targetType, err);
+                                syncComponent.fail(targetType, err);
                                 self.handleError(err);
                             });
-                        }
                     });
 
                 wipeout = wipeoutFactory(self.getContainer().querySelector('.danger-zone'), {
