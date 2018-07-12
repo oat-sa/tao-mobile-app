@@ -18,10 +18,7 @@
  */
 
 /**
- * Synchronize test takers.
- *
- * TODO this could be generalized for any resource type
- * TODO report progress, through events
+ * Synchronization Provider for test takers
  *
  * @author Bertrand Chevrier <bertrand@taotesting.com>
  */
@@ -35,24 +32,56 @@ define([
 
     var resourceType = 'test-taker';
 
+    /**
+     * Implements the syncProviderApi to sync test takers
+     */
     return {
+
+        /**
+         * the provider name
+         */
         name : resourceType,
+
+        /**
+         * Provider initialization
+         * @param {Object} config
+         * @param {String} config.key - the OAuth key linked to the syncManager profile
+         * @param {String} config.secret - the OAuth secret  linked to the syncManager profile
+         * @throws {TypeError} if the OAuth info are missing
+         */
         init : function init(config){
             this.client = syncClientFactory(config);
         },
+
+        /**
+         * Call the client to get the list of remote test takers,
+         * This list contains only ids and checksums
+         * @returns {Promise<Object>} resolves with the collection, indexed by id
+         */
         getRemoteResourceIds : function getRemoteResourceIds(){
             return this.client.getEntityIds(resourceType);
         },
+
+        /**
+         * Call the client to retrieve remote resources from their id
+         * @param {String[]} ids - the ids of the test taker to retrieve
+         * @returns {Promise<Object>} resolves with the collection, indexed by id
+         */
         getRemoteResources : function getRemoteResources(ids){
             return this.client.getEntitiesContent(resourceType, ids);
         },
+
+        /**
+         * Get all local test takers
+         * @returns {Promise<Object>} resolves with the collection, indexed by id
+         */
         getLocalResources : function getLocalResources(){
             return userService
                 .getAllByRole('testTaker')
                 .then( function(results){
                     var users;
 
-                    //an objet with ids as keys is required for sync operations
+                    //an object with ids as key is required to compute sync operations
                     if(_.isArray(results)){
                         users = _.reduce(results, function(acc, user){
                             if(user && user.id){
@@ -66,12 +95,32 @@ define([
                     return users;
                 });
         },
-        addResource : function addResource(id, user){
-            return userService.set(userDataMapper(user));
+
+        /**
+         * Add a test taker
+         * @param {String} id - the identifier of the test taker to add
+         * @param {Object} resource - the test taker data
+         * @returns {Promise<Boolean>} true id added
+         */
+        addResource : function addResource(id, resource){
+            return userService.set(userDataMapper(resource));
         },
-        updateResource : function updateResource(id, user){
-            return userService.update(userDataMapper(user));
+
+        /**
+         * Update a test taker
+         * @param {String} id - the identifier of the test taker to add
+         * @param {Object} resource - the new test taker data
+         * @returns {Promise<Boolean>} true id updated
+         */
+        updateResource : function updateResource(id, resource){
+            return userService.update(userDataMapper(resource));
         },
+
+        /**
+         * Remove a test taker
+         * @param {String} id - the identifier of the test taker to delete
+         * @returns {Promise<Boolean>} true id removed
+         */
         removeResource : function removeResource(id){
             return userService.remove(id);
         }

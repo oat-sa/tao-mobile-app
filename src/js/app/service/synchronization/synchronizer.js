@@ -43,15 +43,13 @@ define([
     'core/eventifier',
     'core/statifier',
     'core/providerRegistry',
-    'core/logger',
-    'core/promiseQueue'
+    'core/logger'
 ], function(
     _,
     eventifier,
     statifier,
     providerRegistry,
-    loggerFactory,
-    promiseQueueFactory
+    loggerFactory
 ){
     'use strict';
 
@@ -177,10 +175,14 @@ define([
             start : function start(){
                 var self  = this;
 
+                var syncOperations = {
+                    add : [],
+                    update : [],
+                    remove : []
+                };
+
                 var totalOperations = 2;
                 var progress        = 0;
-
-                var promiseQueue  = promiseQueueFactory();
 
                 /**
                  * Internal artifact to update the current progress based on the
@@ -225,7 +227,7 @@ define([
                     ])
                     .then( stopIfCanceled )
                     .then(function(results) {
-                        var syncOperations;
+
                         if(!results || results.length !== 2){
                             throw new Error('Unable to compute operation from receieved data');
                         }
@@ -241,79 +243,76 @@ define([
                         //we consider the 2 provider calls above as 2 operations
                         updateProgress(2);
 
-                        return syncOperations;
-                    })
-                    .then( stopIfCanceled )
-                    .then(function(syncOperations){
-                        if(!syncOperations){
-                            throw new Error('Invalid sync operations');
-                        }
-                        console.log(syncOperations);
-
                         logger.info('[sync] ' + resourceType + ' : '  +
                             _.map(syncOperations, function(list, key){
                                 return key + ' ' + list.length;
                             }).join(',')
                         );
-
+                    })
+                    .then( stopIfCanceled )
+                    .then(function(){
                         //Remove
-                        _.forEach(syncOperations.remove, function(id){
-                            promiseQueue.serie(function removeUser() {
-                                return provider.removeResource.call(self, id)
-                                            .then( function(){
-                                                updateProgress(1);
-                                            }) ;
-                            });
-                        });
+                        return Promise.all(
+                            _.map(syncOperations.remove, function(id){
+                                return provider.removeResource.call(self, id);
+                            })
+                        );
+                    })
+                    .then( function(){
+                        updateProgress(syncOperations.remove.length);
+                    })
+                    .then( stopIfCanceled )
+                    .then(function(){
 
-                        //2 update
-                        _.forEach(getIdsChunks(syncOperations.update, config.chunkSize), function(ids){
-                            promiseQueue.serie(function(){
+                        //Update
+                        return Promise.all(
+                            //load resources by batch
+                            _.map(getIdsChunks(syncOperations.update, config.chunkSize), function(ids){
+                                return provider.getRemoteResources.call(self, ids).then(function(entities){
 
-                                return provider.getRemoteResources.call(self, ids)
-                                    .then(function(entities){
-                                        var updateQueue = promiseQueueFactory();
-                                        _.forEach(entities, function(entity){
-                                            updateQueue.serie(function updateUser(){
-                                                return provider.updateResource.call(self, entity.id, entity)
-                                                    .then( function(){
-                                                        updateProgress(1);
-                                                    }) ;
+                                    //then update the batch
+                                    return Promise.all(
+                                        _.map(entities, function(entity){
+                                            return provider.updateResource.call(self, entity.id, entity);
+                                        })
+                                    );
+                                })
+                                .then(function(){
+                                    updateProgress(ids.length);
+                                });
+                            })
+                        );
+                    })
+                    .then( stopIfCanceled )
+                    .then(function(){
 
-                                            });
-                                        });
-                                        return updateQueue;
-                                    });
-                            });
-                        });
+                        //Add
+                        return Promise.all(
+                            //load resources by batch
+                            _.map(getIdsChunks(syncOperations.add, config.chunkSize), function(ids){
+                                return provider.getRemoteResources.call(self, ids).then(function(entities){
 
-                        //3 add
-                        _.forEach(getIdsChunks(syncOperations.add, config.chunkSize), function(ids){
-                            promiseQueue.serie(function(){
-                                return provider.getRemoteResources.call(self, ids)
-                                    .then(function(entities){
-                                        var addQueue = promiseQueueFactory();
-                                        _.forEach(entities, function(entity){
-                                            addQueue.serie(function addUser(){
-                                                return provider.addResource.call(self, entity.id, entity)
-                                                    .then( function(){
-                                                        updateProgress(1);
-                                                    }) ;
-                                            });
-                                        });
-                                        return addQueue;
-                                    });
-                            });
-                        });
+                                    //then add the batch
+                                    return Promise.all(
+                                        _.map(entities, function(entity){
+                                            return provider.addResource.call(self, entity.id, entity);
+                                        })
+                                    );
+                                })
+                                .then(function(){
+                                    updateProgress(ids.length);
+                                });
+                            })
+                        );
+                    })
+                    .then(function(){
 
                         self.trigger('progress', progress );
 
-                        return syncOperations;
-                    })
-                    .then(function(result){
                         self.setState('running', false)
                             .setState('canceled', false);
-                        return result;
+
+                        return syncOperations;
                     })
                     .catch(function(err){
                         self.setState('running', false)

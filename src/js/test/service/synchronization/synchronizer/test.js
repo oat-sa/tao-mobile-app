@@ -295,4 +295,60 @@ define([
             });
     });
 
+    QUnit.asyncTest('fail in retrieval', function(assert){
+
+        var synchronizer;
+
+        var mockConfig  = {
+            foo : true,
+            chunkSize : 5
+        };
+
+        QUnit.expect(8);
+
+        synchronizerFactory.registerProvider('fail-retrieve', {
+            name : 'fail-retrieve',
+            init : function(config){
+                assert.deepEqual(config, mockConfig, 'The provider is initialzed with the config');
+            },
+            getLocalResources : function(){
+                assert.ok(true, 'getLocalResources called');
+                return Promise.resolve({});
+            },
+            getRemoteResourceIds : function(){
+                assert.ok(true, 'getRemoteResourceIds called');
+                return Promise.resolve({
+                    n1 : { id : 'n1', checksum : 'a' },
+                    n2 : { id : 'n2', checksum : 'a' },
+                });
+            },
+            getRemoteResources : function(){
+                return new Promise(function(resolve, reject) {
+                    setTimeout(function(){
+                        assert.ok(synchronizer.getState('running'), 'the sync is running');
+                        reject(new Error('Unable to contact the server'));
+                    }, 50);
+                });
+            },
+            addResource : function(){},
+            updateResource : function(){},
+            removeResource : function(){}
+        });
+
+        synchronizer = synchronizerFactory('fail-retrieve', mockConfig);
+        assert.ok(!synchronizer.getState('running'), 'the sync is not yet running');
+
+        synchronizer
+            .start()
+            .then(function(){
+                assert.ok(false, 'the sync should fail');
+                QUnit.start();
+            })
+            .catch(function(err){
+                assert.ok(err instanceof Error, 'The promise rejects with an error');
+                assert.equal(err.message, 'Unable to contact the server', 'The error is expected');
+                assert.ok(!synchronizer.getState('running'), 'the sync states are reset');
+                QUnit.start();
+            });
+    });
 });
