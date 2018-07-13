@@ -31,14 +31,14 @@ define([
      * Maps the RDF(s) properties to the user object properties
      */
     var mapping = {
-        username:      'http:\/\/www.tao.lu\/Ontologies\/generis.rdf#login',
-        password:      'http:\/\/www.tao.lu\/Ontologies\/generis.rdf#password',
-        firstname:     'http:\/\/www.tao.lu\/Ontologies\/generis.rdf#userFirstName',
-        lastname:      'http:\/\/www.tao.lu\/Ontologies\/generis.rdf#userLastName',
-        email:         'http:\/\/www.tao.lu\/Ontologies\/generis.rdf#userMail',
-        originalRoles: 'http:\/\/www.tao.lu\/Ontologies\/generis.rdf#userRoles',
-        updatedAt:     'http:\/\/www.tao.lu\/Ontologies\/TAO.rdf#UpdatedAt',
-        createdAt:     'http:\/\/www.taotesting.com\/Ontologies\/TAO.rdf#CreatedAt',
+        username:      'http://www.tao.lu/Ontologies/generis.rdf#login',
+        password:      'http://www.tao.lu/Ontologies/generis.rdf#password',
+        firstname:     'http://www.tao.lu/Ontologies/generis.rdf#userFirstName',
+        lastname:      'http://www.tao.lu/Ontologies/generis.rdf#userLastName',
+        email:         'http://www.tao.lu/Ontologies/generis.rdf#userMail',
+        originalRoles: 'http://www.tao.lu/Ontologies/generis.rdf#userRoles',
+        updatedAt:     'http://www.tao.lu/Ontologies/TAO.rdf#UpdatedAt',
+        createdAt:     'http://www.taotesting.com/Ontologies/TAO.rdf#CreatedAt',
         assignment:    'http://www.tao.lu/Ontologies/TAOTestCenter#UserAssignment'
     };
 

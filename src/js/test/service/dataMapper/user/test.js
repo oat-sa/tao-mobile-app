@@ -66,17 +66,17 @@ define(['app/service/dataMapper/user'], function(userDataMapper){
     }, {
         title : 'uri only input',
         input : {
-            uri: 'http://bertaodev2/tao.rdf#i1525274752697464',
+            uri: 'http://a.org/tao.rdf#i1525274752697464',
             checksum : '1234'
         },
         output : {
-            id: 'http://bertaodev2/tao.rdf#i1525274752697464',
+            id: 'http://a.org/tao.rdf#i1525274752697464',
             checksum : '1234'
         }
     }, {
         title : 'full input',
         input : {
-            'id': 'http://bertaodev2/tao.rdf#i1525274752697464',
+            'id': 'http://a.org/tao.rdf#i1525274752697464',
             'checksum': 'f4c19fff572ac1981ce560c29e5e8564',
             'properties': {
                 'http://www.tao.lu/Ontologies/generis.rdf#login': 'psmith',
@@ -89,18 +89,18 @@ define(['app/service/dataMapper/user'], function(userDataMapper){
                 'http://www.tao.lu/Ontologies/TAO.rdf#FirstTimeInTao': 'http://www.tao.lu/Ontologies/generis.rdf#False',
                 'http://www.tao.lu/Ontologies/TAO.rdf#LastExtensionUsed': 'tao/Main/index?structure=synchronization&ext=taoSync',
                 'http://www.tao.lu/Ontologies/TAOTestCenter#UserAssignment': [
-                    'http://bertaodev2/tao.rdf#i1531144478419294',
-                    'http://bertaodev2/tao.rdf#i15313993705227171'
+                    'http://a.org/tao.rdf#i1531144478419294',
+                    'http://a.org/tao.rdf#i15313993705227171'
                 ],
                 'http://www.tao.lu/Ontologies/TAO.rdf#UpdatedAt': '1525944401.2057',
-                'http://www.tao.lu/Ontologies/taoSync.rdf#ConsumerUser': 'http://bertaodev2/tao.rdf#i15259444011408235',
+                'http://www.tao.lu/Ontologies/taoSync.rdf#ConsumerUser': 'http://a.org/tao.rdf#i15259444011408235',
                 'http://www.taotesting.com/Ontologies/TAO.rdf#CreatedAt': '1525274752.9149',
                 'http://www.w3.org/1999/02/22-rdf-syntax-ns#type': 'http://www.tao.lu/Ontologies/TAO.rdf#User',
                 'http://www.w3.org/2000/01/rdf-schema#label': 'User 2'
             }
         },
         output : {
-            id:            'http://bertaodev2/tao.rdf#i1525274752697464',
+            id:            'http://a.org/tao.rdf#i1525274752697464',
             checksum:      'f4c19fff572ac1981ce560c29e5e8564',
             username:      'psmith',
             password:      'TSzCwsPz7358eee9cd2780ac9e8912a7cb08e4da246697eb5dfd5d181c050e63366a25cab1',
@@ -109,14 +109,14 @@ define(['app/service/dataMapper/user'], function(userDataMapper){
             email:         'psmith@noone.net',
             originalRoles: ['http://www.tao.lu/Ontologies/generis.rdf#taoSyncManager'],
             role:          'syncManager',
-            assignment:    ['http://bertaodev2/tao.rdf#i1531144478419294', 'http://bertaodev2/tao.rdf#i15313993705227171'],
+            assignment:    ['http://a.org/tao.rdf#i1531144478419294', 'http://a.org/tao.rdf#i15313993705227171'],
             updatedAt:     1525944401.2057,
             createdAt:     1525274752.9149,
         }
     }, {
         title : 'incomplete input and mulitple roles',
         input : {
-            'id': 'http://bertaodev2/tao.rdf#i1525274752697464',
+            'id': 'http://a.org/tao.rdf#i1525274752697464',
             'checksum': 'a1b2c3d4',
             'properties': {
                 'http://www.tao.lu/Ontologies/generis.rdf#login': 'psmith',
@@ -132,7 +132,7 @@ define(['app/service/dataMapper/user'], function(userDataMapper){
             }
         },
         output : {
-            id:            'http://bertaodev2/tao.rdf#i1525274752697464',
+            id:            'http://a.org/tao.rdf#i1525274752697464',
             checksum:      'a1b2c3d4',
             username:      'psmith',
             password:      'TSzCwsPz7358eee9cd2780ac9e8912a7cb08e4da246697eb5dfd5d181c050e63366a25cab1',
