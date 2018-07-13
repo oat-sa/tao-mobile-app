@@ -1,0 +1,24 @@
+@import "inc/bootstrap";
+
+.wipeout {
+    & > article {
+        border-bottom: solid 1px $uiGeneralContentBorder;
+        position: relative;
+        padding: 1rem;
+        margin : 0;
+        display: flex;
+        flex-flow: row nowrap;
+        align-items: center;
+
+        .desc {
+            flex: 1 1 auto;
+            color: whiten($textColor, .3);
+            font-size: 1.5rem;
+        }
+    }
+
+
+    &.waiting button {
+        opacity: .7;
+    }
+}

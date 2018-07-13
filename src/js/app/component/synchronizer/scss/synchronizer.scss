@@ -1,0 +1,106 @@
+@import "inc/bootstrap";
+
+@keyframes rotate {
+  0% {
+      transform : rotate(0deg);
+  }
+  90% {
+      transform : rotate(360deg);
+  }
+}
+
+.synchronizer {
+
+
+    & > article {
+        border-bottom: solid 1px $uiGeneralContentBorder;
+        position: relative;
+        padding: 1rem;
+        margin : 0;
+    }
+    .control {
+
+        display: flex;
+        flex-flow: row nowrap;
+        align-items: center;
+
+        .desc {
+            flex: 1 1 auto;
+            color: whiten($textColor, .3);
+            font-size: 1.5rem;
+        }
+        .syncer {
+            background-color: whiten($success, .1);
+            text-shadow: 1px 1px 0 blacken($success, .2);
+
+            &:before {
+                @include tao-icon-setup;
+                @include icon-play;
+                margin-right : 5px;
+            }
+        }
+    }
+    &.started .syncer {
+
+        background-color: whiten($danger, .1);
+        text-shadow: 1px 1px 0 blacken($danger, .2);
+
+        &:before {
+            @include icon-stop;
+        }
+    }
+
+    .sync-target {
+
+        & > h1 {
+            margin: 0;
+            text-align: left;
+            font-size: 2.1rem;
+        }
+        .sync-result {
+            margin-right: 5rem;
+            text-align: left;
+        }
+        .progress-indicator {
+            width : 5rem;
+            position: absolute;
+            right: 0;
+            top: 0;
+            bottom: 0;
+            text-align: center;
+            top: 50%;
+            transform: translateY(-45%);
+
+            &:before {
+                @include tao-icon-setup;
+                @include font-size(28);
+            }
+        }
+        &.disabled {
+            background-color: white !important;
+            .progress-indicator:before {
+                @include icon-danger;
+            }
+        }
+        &.running .progress-indicator {
+            display: inline-block;
+            @include vendor-prefix(transform, translateZ(0));
+            @include vendor-prefix(transform-origin, 50% 30%);
+            animation: rotate 2s ease-in infinite;
+
+            &:before {
+                @include icon-loop;
+                @include font-size(24);
+            }
+        }
+        &.success .progress-indicator:before {
+            @include icon-success;
+            color: $success;
+        }
+        &.error .progress-indicator:before {
+            @include icon-error;
+            color: $danger;
+        }
+    }
+}
+

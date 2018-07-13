@@ -1,0 +1,22 @@
+@charset "UTF-8";
+
+@import "inc/bootstrap";
+@import "inc/fonts";
+@import "inc/base";
+@import "inc/feedback";
+@import "inc/buttons";
+@import "inc/components";
+
+body {
+    background-color: $uiGeneralContentBg;
+}
+
+.modal.opened {
+    width: auto !important;
+    top : 30%;
+}
+
+//pages specific styles
+@import "pages/login";
+@import "pages/admin";
+@import "pages/delivery";

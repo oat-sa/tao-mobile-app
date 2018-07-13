@@ -1,0 +1,55 @@
+[data-page="admin/index"] {
+
+    header {
+        position: relative;
+        height: 8rem;
+        background: $uiClickableHoverBg;
+        color: $textHighlight;
+
+        display: flex;
+        flex-flow: row nowrap;
+        align-items: stretch;
+        padding-top: 2.5rem;
+
+        h1 {
+            margin: 0;
+            font-size: 2.4rem;
+            flex: 1 1 auto;
+            text-align: center;
+        }
+        .profile  {
+            flex: 0 0 8rem;
+            text-align: center;
+
+            & > span {
+                opacity: .9;
+                color: #fff;
+                font-size: 2rem;
+            }
+        }
+        nav {
+            flex: 0 0 6rem;
+            text-align: center;
+            a {
+                color: $textHighlight;
+                font-size: 2.2rem;
+            }
+        }
+    }
+
+    .sync-container, .danger-zone {
+        h3 {
+            padding: 2rem 1rem;
+            margin: 0;
+            font-weight: bold;
+            background-color: #eee;
+
+            & > span {
+                font-size: 1.3rem;
+                vertical-align: bottom;
+                margin-right: 5px;
+            }
+        }
+    }
+}
+
