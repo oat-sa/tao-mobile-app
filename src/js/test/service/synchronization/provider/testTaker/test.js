@@ -18,7 +18,7 @@
  */
 
 /**
- * Test the testTaker sync service
+ * Test the testTaker sync provider
  *
  * @author Bertrand Chevrier <bertrand@taotesting.com>
  */
@@ -33,9 +33,18 @@ define([
     QUnit.module('API');
 
     QUnit.test('module', function(assert) {
-        QUnit.expect(1);
+        assert.equal(typeof testTakerSyncProvider, 'object', 'The module exposes a plain object');
+    });
 
-        assert.equal(typeof synchronizerFactory, 'function', 'The module exposes a unique function');
+    QUnit.test('syncProvider', function(assert) {
+        assert.equal(typeof testTakerSyncProvider.name, 'string', 'The provider exposes a name');
+        assert.equal(typeof testTakerSyncProvider.init, 'function', 'The provider exposes an init method');
+        assert.equal(typeof testTakerSyncProvider.getRemoteResourceIds, 'function', 'The provider exposes an getRemoteResourceIds method');
+        assert.equal(typeof testTakerSyncProvider.getRemoteResources, 'function', 'The provider exposes a getRemoteResources method');
+        assert.equal(typeof testTakerSyncProvider.getLocalResources, 'function', 'The provider exposes a getLocalResources method');
+        assert.equal(typeof testTakerSyncProvider.addResource, 'function', 'The provider exposes an addResource method');
+        assert.equal(typeof testTakerSyncProvider.updateResource, 'function', 'The provider exposes an updateResource method');
+        assert.equal(typeof testTakerSyncProvider.removeResource, 'function', 'The provider exposes a removeResource method');
     });
 
 
@@ -44,6 +53,7 @@ define([
             synchronizerFactory.registerProvider('test-taker', testTakerSyncProvider);
         },
         teardown: function teardown() {
+            synchronizerFactory.clearProviders();
             userServiceMock.users = {};
             syncClientMock.entityIds = {};
             syncClientMock.entitiesContent = {};
@@ -54,22 +64,22 @@ define([
         title : 'Add 3 new users',
         local : [],
         entityIds : {
-            'http://bertaodev2/tao.rdf#i1528210156143784': {
-                id:       'http://bertaodev2/tao.rdf#i1528210156143784',
+            'http://foo.org/tao.rdf#i1528210156143784': {
+                id:       'http://foo.org/tao.rdf#i1528210156143784',
                 checksum: '8faa9c360d96f666d5a2fdd2af77c2dd',
             },
-            'http://bertaodev2/tao.rdf#i1528210157329685': {
-                id:       'http://bertaodev2/tao.rdf#i1528210157329685',
+            'http://foo.org/tao.rdf#i1528210157329685': {
+                id:       'http://foo.org/tao.rdf#i1528210157329685',
                 checksum: 'e4c52b04f64abd523481e20f2177f25e',
             },
-            'http://bertaodev2/tao.rdf#i1528210157216886': {
-                id:       'http://bertaodev2/tao.rdf#i1528210157216886',
+            'http://foo.org/tao.rdf#i1528210157216886': {
+                id:       'http://foo.org/tao.rdf#i1528210157216886',
                 checksum: '418dbfe074338cbddb361aa28a758096',
             }
         },
         entitiesContent : {
-            'http://bertaodev2/tao.rdf#i1528210156143784': {
-                id: 'http://bertaodev2/tao.rdf#i1528210156143784',
+            'http://foo.org/tao.rdf#i1528210156143784': {
+                id: 'http://foo.org/tao.rdf#i1528210156143784',
                 checksum: '8faa9c360d96f666d5a2fdd2af77c2dd',
                 properties: {
                     'http://www.tao.lu/Ontologies/generis.rdf#login': 'hartvictor',
@@ -80,8 +90,8 @@ define([
                     'http://www.tao.lu/Ontologies/generis.rdf#userRoles': 'http://www.tao.lu/Ontologies/TAO.rdf#DeliveryRole'
                 }
             },
-            'http://bertaodev2/tao.rdf#i1528210157329685': {
-                id: 'http://bertaodev2/tao.rdf#i1528210157329685',
+            'http://foo.org/tao.rdf#i1528210157329685': {
+                id: 'http://foo.org/tao.rdf#i1528210157329685',
                 checksum: 'e4c52b04f64abd523481e20f2177f25e',
                 properties: {
                     'http://www.tao.lu/Ontologies/generis.rdf#login': 'joedire',
@@ -92,8 +102,8 @@ define([
                     'http://www.tao.lu/Ontologies/generis.rdf#userRoles': 'http://www.tao.lu/Ontologies/TAO.rdf#DeliveryRole'
                 }
             },
-            'http://bertaodev2/tao.rdf#i1528210157216886': {
-                id: 'http://bertaodev2/tao.rdf#i1528210157216886',
+            'http://foo.org/tao.rdf#i1528210157216886': {
+                id: 'http://foo.org/tao.rdf#i1528210157216886',
                 checksum: '418dbfe074338cbddb361aa28a758096',
                 properties: {
                     'http://www.tao.lu/Ontologies/generis.rdf#login': 'alexanderchole',
@@ -111,7 +121,7 @@ define([
     }, {
         title : 'Update a user, one remains unchanged',
         local : [{
-            id:            'http://bertaodev2/tao.rdf#i1528210156143784',
+            id:            'http://foo.org/tao.rdf#i1528210156143784',
             checksum:      '8faa9c360d96f666d5a2fdd2af77c2dd',
             username:      'hartvictor',
             password:      'mwBQtYDC7E90f72d643e7c15db6ba7562007192ee0cef2b71ef235e1878f5bedebefb75318',
@@ -123,7 +133,7 @@ define([
             updatedAt:     1525944401.2057,
             createdAt:     1525274752.9149,
         }, {
-            id:            'http://bertaodev2/tao.rdf#i1528210157329685',
+            id:            'http://foo.org/tao.rdf#i1528210157329685',
             checksum:      'e4c52b04f64abd523481e20f2177f25e',
             username:      'joedire',
             password:      '',
@@ -136,18 +146,18 @@ define([
             createdAt:     1525274752.9149,
         }],
         entityIds : {
-            'http://bertaodev2/tao.rdf#i1528210156143784': {
-                id:       'http://bertaodev2/tao.rdf#i1528210156143784',
+            'http://foo.org/tao.rdf#i1528210156143784': {
+                id:       'http://foo.org/tao.rdf#i1528210156143784',
                 checksum: '8faa9c360d96f666d5a2fdd2af77c2dd',
             },
-            'http://bertaodev2/tao.rdf#i1528210157329685': {
-                id:       'http://bertaodev2/tao.rdf#i1528210157329685',
+            'http://foo.org/tao.rdf#i1528210157329685': {
+                id:       'http://foo.org/tao.rdf#i1528210157329685',
                 checksum: 'f4c52b04f64abd523481e20f2177f25f',
             }
         },
         entitiesContent : {
-            'http://bertaodev2/tao.rdf#i1528210156143784': {
-                id: 'http://bertaodev2/tao.rdf#i1528210156143784',
+            'http://foo.org/tao.rdf#i1528210156143784': {
+                id: 'http://foo.org/tao.rdf#i1528210156143784',
                 checksum: '8faa9c360d96f666d5a2fdd2af77c2dd',
                 properties: {
                     'http://www.tao.lu/Ontologies/generis.rdf#login': 'hartvictor',
@@ -158,8 +168,8 @@ define([
                     'http://www.tao.lu/Ontologies/generis.rdf#userRoles': 'http://www.tao.lu/Ontologies/TAO.rdf#DeliveryRole'
                 }
             },
-            'http://bertaodev2/tao.rdf#i1528210157329685': {
-                id: 'http://bertaodev2/tao.rdf#i1528210157329685',
+            'http://foo.org/tao.rdf#i1528210157329685': {
+                id: 'http://foo.org/tao.rdf#i1528210157329685',
                 checksum: 'f4c52b04f64abd523481e20f2177f25f',
                 properties: {
                     'http://www.tao.lu/Ontologies/generis.rdf#login': 'joedire',
@@ -177,7 +187,7 @@ define([
     }, {
         title : 'Remove 2 users, one remains',
         local : [{
-            id:            'http://bertaodev2/tao.rdf#i1528210156143784',
+            id:            'http://foo.org/tao.rdf#i1528210156143784',
             checksum:      '8faa9c360d96f666d5a2fdd2af77c2dd',
             username:      'hartvictor',
             password:      'mwBQtYDC7E90f72d643e7c15db6ba7562007192ee0cef2b71ef235e1878f5bedebefb75318',
@@ -189,7 +199,7 @@ define([
             updatedAt:     1525944401.2057,
             createdAt:     1525274752.9149,
         }, {
-            id:            'http://bertaodev2/tao.rdf#i1528210157329685',
+            id:            'http://foo.org/tao.rdf#i1528210157329685',
             checksum:      'e4c52b04f64abd523481e20f2177f25e',
             username:      'joedire',
             password:      '',
@@ -201,7 +211,7 @@ define([
             updatedAt:     1525944401.2057,
             createdAt:     1525274752.9149,
         }, {
-            id:            'http://bertaodev2/tao.rdf#i1528210157329686',
+            id:            'http://foo.org/tao.rdf#i1528210157329686',
             checksum:      'e4c52b04f64abd523481e20f2177f25e',
             username:      'alexanderchole',
             password:      'jRQI1uVdDX57cfb055470fc1dcb8f41432af2e808b4d58d5e7415eaece9d21900361e282ed',
@@ -214,14 +224,14 @@ define([
             createdAt:     1525274752.9149,
         }],
         entityIds : {
-            'http://bertaodev2/tao.rdf#i1528210156143784': {
-                id: 'http://bertaodev2/tao.rdf#i1528210156143784',
+            'http://foo.org/tao.rdf#i1528210156143784': {
+                id: 'http://foo.org/tao.rdf#i1528210156143784',
                 checksum: '8faa9c360d96f666d5a2fdd2af77c2dd',
             }
         },
         entitiesContent : {
-            'http://bertaodev2/tao.rdf#i1528210156143784': {
-                id: 'http://bertaodev2/tao.rdf#i1528210156143784',
+            'http://foo.org/tao.rdf#i1528210156143784': {
+                id: 'http://foo.org/tao.rdf#i1528210156143784',
                 checksum: '8faa9c360d96f666d5a2fdd2af77c2dd',
                 properties: {
                     'http://www.tao.lu/Ontologies/generis.rdf#login': 'hartvictor',
