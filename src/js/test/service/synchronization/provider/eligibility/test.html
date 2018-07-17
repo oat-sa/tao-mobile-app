@@ -3,7 +3,7 @@
     <head>
         <meta charset="utf-8">
         <base href="../../../../../" />
-        <title>Test - Delivery Sync Provider</title>
+        <title>Test - Eligibility Sync Provider</title>
         <link rel="stylesheet" type="text/css" href="../taodist/tao/views/js/lib/qunit/qunit.css">
         <script type="text/javascript" src="../taodist/tao/views/js/lib/qunit/qunit.js"></script>
         <script type="text/javascript" src="../taodist/tao/views/js/lib/qunit/qunit-parameterize.js"></script>
@@ -18,13 +18,13 @@
 
                 requirejs.config({
                     'paths' : {
-                        'app/service/delivery' : 'test/service/synchronization/provider/delivery/deliveryServiceMock',
+                        'app/service/eligibility' : 'test/service/synchronization/provider/eligibility/eligibilityServiceMock',
                         'app/service/synchronization/client' : 'test/service/synchronization/provider/syncClientMock'
                     }
                 });
 
                 //load the test
-                require(['test/service/synchronization/provider/delivery/test'], function(){
+                require(['test/service/synchronization/provider/eligibility/test'], function(){
 
                     //Tests loaded, run tests
                     QUnit.start();
