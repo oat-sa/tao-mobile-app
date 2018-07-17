@@ -23,31 +23,43 @@
  * @author Bertrand Chevrier <bertrand@taotesting.com>
  */
 define([
+    'lodash',
     'i18n',
     'ui/feedback',
     'app/controller/pageController',
     'app/service/session',
     'app/component/synchronizer/synchronizer',
     'app/component/wipeout/wipeout',
-    'app/service/synchronization/synchronizer',
-    'app/service/synchronization/provider/testTaker',
+    'app/service/synchronization/loader',
     'app/service/user',
     'tpl!app/controller/admin/layout'
 ], function(
+    _,
     __,
     feedback,
     pageController,
     sessionService,
     syncComponentFactory,
     wipeoutFactory,
-    syncServiceFactory,
-    testTakerSyncProvider,
+    synchronizerFactory,
     userService,
     layoutTpl
 ){
     'use strict';
 
-    syncServiceFactory.registerProvider(testTakerSyncProvider.name, testTakerSyncProvider);
+    var targets = [{
+        type : 'test-taker',
+        name : __('Test takers'),
+        state: 'ready'
+    }, {
+        type : 'delivery',
+        name : __('Deliveries'),
+        state: 'ready'
+    }, {
+        type : 'eligibility',
+        name : __('Eligibilities'),
+        state: 'ready'
+    }];
 
     return pageController({
         start: function start(){
@@ -58,17 +70,31 @@ define([
                 var wipeout;
 
                 var oauthConfig = {
-                    key : session.user.oauthInfo.key,
+                    key :    session.user.oauthInfo.key,
                     secret : session.user.oauthInfo.secret
                 };
+
+                var synchronizers = _.reduce(targets, function(acc, target){
+                    acc[target.type] = synchronizerFactory(target.type, oauthConfig);
+                    return acc;
+                }, {});
+
+                console.log(synchronizerFactory.getAvailableProviders());
 
                 //TODO handle the layout globally
                 self.getContainer().innerHTML = layoutTpl(session.user);
 
-                syncComponent = syncComponentFactory(self.getContainer().querySelector('.sync-container'))
-                    .on('start', function(targetType){
+                //instantiate the component
+                syncComponent = syncComponentFactory(
+                    self.getContainer().querySelector('.sync-container'),
+                    { targets : targets }
+                )
+                .on('start', function(targetType){
+                    if(synchronizers[targetType]) {
 
-                        syncServiceFactory(targetType, oauthConfig)
+                        logger.info('User ' + session.user.username + ' starts to sync ' + targetType);
+
+                        synchronizers[targetType]
                             .start()
                             .then(function(results){
                                 var message = [];
@@ -93,7 +119,17 @@ define([
                                 syncComponent.fail(targetType, err);
                                 self.handleError(err);
                             });
-                    });
+                    }
+                })
+                .on('stop', function(targetType){
+                    if(synchronizers[targetType]) {
+
+                        logger.info('User ' + session.user.username + ' stops to sync ' + targetType);
+
+                        synchronizers[targetType].stop();
+                    }
+                });
+
 
                 wipeout = wipeoutFactory(self.getContainer().querySelector('.danger-zone'), {
                     confirmMessage : __('This action will remove all data, including your user profile. Once done, you will have to login again. Please confirm the wipeout.')

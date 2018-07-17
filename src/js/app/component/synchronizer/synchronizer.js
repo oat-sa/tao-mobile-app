@@ -62,7 +62,7 @@ define([
             type   : 'test-taker',
             name   : __('Test Taker')
         }, {
-            state : 'disabled',
+            state : 'ready',
             type   : 'delivery',
             name   : __('Delivery')
         }],

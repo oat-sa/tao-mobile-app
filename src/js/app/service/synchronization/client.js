@@ -39,7 +39,9 @@ define([
      * The list of resource types we can synchronize
      */
     var supportedTypes = [
-        'test-taker'
+        'test-taker',
+        'delivery',
+        'eligibility'
     ];
 
     /**
@@ -120,7 +122,8 @@ define([
                                 'Authorization' : 'Bearer ' + token.access_token
                             },
                             data : {
-                                type : type
+                                type : type,
+
                             }
                         }, clientConfig.api.entity));
                     })
