@@ -31,6 +31,13 @@ define([
 ], function($, _, __, module, requestFactory){
     'use strict';
 
+    // Since only the last requested token is
+    // valid, we keep the promises so if
+    // they are being asked multiple time while
+    // retrieving we wait for the promise to resolve
+    //
+    var tokenPromises = {};
+
     /**
      * Some default error messages
      */
@@ -50,7 +57,7 @@ define([
      */
     return function tokenServiceFactory(config) {
 
-        var token = null;
+        var token;
 
         var serviceConfig = _.defaults( config || {}, module.config());
 
@@ -82,8 +89,11 @@ define([
              * @returns {Promise<Object>} resolves with the Token
              */
             getToken : function getToken() {
-                if(token === null){
-                    return this.requestToken(serviceConfig.key, serviceConfig.secret)
+                if(token){
+                    return Promise.resolve(token);
+                }
+                if(typeof tokenPromises[serviceConfig.key] === 'undefined'){
+                    tokenPromises[serviceConfig.key] = this.requestToken(serviceConfig.key, serviceConfig.secret)
                         .then(function(result){
                             if(result && !_.isEmpty(result.access_token) && result.expires > 0){
                                 token = result;
@@ -91,7 +101,7 @@ define([
                             }
                         });
                 }
-                return Promise.resolve(token);
+                return tokenPromises[serviceConfig.key];
             },
 
             /**
