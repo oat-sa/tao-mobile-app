@@ -25,9 +25,10 @@
 define([
     'lodash',
     'app/service/delivery',
+    'app/service/deliveryAssembly',
     'app/service/dataMapper/delivery',
-    'app/service/synchronization/client'
-], function(_, deliveryService, deliveryDataMapper, syncClientFactory){
+    'app/service/synchronization/client',
+], function(_, deliveryService, deliveryAssemblyService, deliveryDataMapper, syncClientFactory){
     'use strict';
 
     var resourceType = 'delivery';
@@ -101,7 +102,17 @@ define([
          * @returns {Promise<Boolean>} true id added
          */
         addResource : function addResource(id, resource){
-            return deliveryService.set(deliveryDataMapper(resource));
+
+            //adding a new delivery : we trigger the assembly download
+            //before inserting the delivery in the db.
+            //
+            this.client.downloadDeliveryAssembly(id)
+                .then(function(result){
+                    return deliveryAssemblyService.save(id, result);
+                })
+                .then(function(result){
+                    return deliveryService.set(deliveryDataMapper(resource));
+                });
         },
 
         /**
@@ -120,7 +131,11 @@ define([
          * @returns {Promise<Boolean>} true id removed
          */
         removeResource : function removeResource(id){
-            return deliveryService.remove(id);
+
+            return deliveryAssemblyService.remove(id)
+                .then(function(result){
+                    return deliveryService.remove(id);
+                });
         }
     };
 });

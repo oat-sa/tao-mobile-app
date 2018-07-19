@@ -31,7 +31,11 @@ define([
     'app/component/synchronizer/synchronizer',
     'app/component/wipeout/wipeout',
     'app/service/synchronization/loader',
+    'app/service/synchronization/client',
     'app/service/user',
+    'app/service/eligibility',
+    'app/service/delivery',
+    'app/service/deliveryAssembly',
     'tpl!app/controller/admin/layout'
 ], function(
     _,
@@ -42,7 +46,11 @@ define([
     syncComponentFactory,
     wipeoutFactory,
     synchronizerFactory,
+    client,
     userService,
+    eligibilityService,
+    deliveryService,
+    deliveryAssemblyService,
     layoutTpl
 ){
     'use strict';
@@ -78,8 +86,6 @@ define([
                     acc[target.type] = synchronizerFactory(target.type, oauthConfig);
                     return acc;
                 }, {});
-
-                console.log(synchronizerFactory.getAvailableProviders());
 
                 //TODO handle the layout globally
                 self.getContainer().innerHTML = layoutTpl(session.user);
@@ -137,27 +143,47 @@ define([
 
                     logger.info('User ' + session.user.login + ' ask to wipeout the app data');
 
-                    userService
-                        .removeAll()
-                        .then(function(){
+                    Promise.all([
+                        userService.removeAll(),
+                        eligibilityService.removeAll(),
+                        deliveryService.removeAll(),
+                        deliveryAssemblyService.removeAll()
+                    ])
+                    .then(function(){
 
-                            logger.info('Data wipeout');
+                        logger.info('Data wipeout');
 
-                            //inform the user and log out
-                            feedback().success(__('The application data has been removed'));
-                            setTimeout(function(){
-                                self.getRouter().dispatch('main/logout');
-                            }, 3000);
-                        })
-                        .catch(function(err){
-                            wipeout.reset();
-                            self.handleError(err);
-                        });
+                        //inform the user and log out
+                        feedback().success(__('The application data has been removed'));
+                        setTimeout(function(){
+                            //self.getRouter().dispatch('main/logout');
+                        }, 3000);
+                    })
+                    .catch(function(err){
+                        wipeout.reset();
+                        self.handleError(err);
+                    });
                 });
+
+                //document.getElementById('test-assembly').addEventListener('click', function(e){
+                    //e.preventDefault();
+
+                    //client(oauthConfig).downloadDeliveryAssembly('http://playground/appcentralsync.rdf#i15319183814240222')
+                        //.then(function(result){
+                            //console.log('DOWLOADED', result);
+                        //})
+                        //.catch(function(err){
+                            //self.handleError(err);
+                        //});
+
+                //});
             })
             .catch(function(err){
                 self.handleError(err);
             });
+
+
+
         }
     });
 });
