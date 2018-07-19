@@ -112,7 +112,7 @@ define([
              */
             requestToken : function requestToken(key, secret) {
                 return request({
-                    data : {
+                    queryString : {
                         client_id : key || serviceConfig.key,
                         client_secret : secret || serviceConfig.secret
                     }

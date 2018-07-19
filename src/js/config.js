@@ -127,6 +127,15 @@
                     details : {
                         method: 'POST',
                         path : '/taoSync/SynchronisationApi/fetchEntityDetails'
+                    },
+                    assembly : {
+                        method: 'GET',
+                        path : '/taoMobileApp/MobileServices/assembly',
+                        responseType : 'blob',
+                        headers : {
+                            'Content-Type' : 'application/zip',
+                            'Accept':        'application/zip'
+                        }
                     }
                 }
             }
