@@ -38,6 +38,9 @@ define([], function(){
         },
         remove : function remove(){
             return Promise.resolve(true);
+        },
+        generatePathName : function generatePathName(){
+            return 'foo';
         }
     };
 });

@@ -30,8 +30,11 @@ define([], function(){
             getEntityIds : function getEntityIds(){
                 return Promise.resolve(mockFactory.entityIds);
             },
-            getEntitiesContent : function() {
+            getEntitiesContent : function getEntitiesContent() {
                 return Promise.resolve(mockFactory.entitiesContent);
+            },
+            downloadDeliveryAssembly : function downloadDeliveryAssembly(){
+                return Promise.resolve(true);
             }
         };
     }

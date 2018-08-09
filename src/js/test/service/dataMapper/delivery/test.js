@@ -76,15 +76,15 @@ define(['app/service/dataMapper/delivery'], function(deliveryDataMapper){
     }, {
         title : 'minimum input',
         input : {
-            'id': 'http://a.org/tao.rdf#i1531144442765069',
-            'checksum': '6c024dfe9d5e6276cf636356ec533412',
+            'id': 'http://a.org/tao.rdf#i1531144442765079',
+            'checksum': '6c024dfe9d5e6276cf636356ec533413',
             'properties': {
                 'http://www.w3.org/2000/01/rdf-schema#label': 'Delivery of QTI Example Test'
             }
         },
         output : {
-            id:       'http://a.org/tao.rdf#i1531144442765069',
-            checksum: '6c024dfe9d5e6276cf636356ec533412',
+            id:       'http://a.org/tao.rdf#i1531144442765079',
+            checksum: '6c024dfe9d5e6276cf636356ec533413',
             label:    'Delivery of QTI Example Test',
         }
     }, {
@@ -105,11 +105,11 @@ define(['app/service/dataMapper/delivery'], function(deliveryDataMapper){
             }
         },
         output : {
-            id:       'http://a.org/tao.rdf#i1531144442765068',
-            checksum: '6c024dfe9d5e6276cf636356ec533418',
-            label:    'Delivery of Advanced Test',
-            updatedAt:     1525944401.2057,
-            createdAt:     1525274752.9149,
+            id:        'http://a.org/tao.rdf#i1531144442765068',
+            checksum:  '6c024dfe9d5e6276cf636356ec533418',
+            label:     'Delivery of Advanced Test',
+            updatedAt: 1525944401.2057,
+            createdAt: 1525274752.9149,
         }
 
     }]).test('Delivery mapping ', function(data, assert) {

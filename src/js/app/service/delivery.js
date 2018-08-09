@@ -25,7 +25,8 @@
 define([
     'lodash',
     'core/store',
-], function(_, store){
+    'lib/uuid'
+], function(_, store, uuid){
     'use strict';
 
     var deliveryStoreName = 'delivery';
@@ -149,6 +150,15 @@ define([
             return store(deliveryStoreName).then(function(deliveryStore){
                 return deliveryStore.clear();
             });
+        },
+
+        /**
+         * Generate a unique path
+         *
+         * @returns {String} the path
+         */
+        generatePathName : function generatePathName(){
+            return uuid(16);
         }
     };
 });

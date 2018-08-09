@@ -105,13 +105,21 @@ define([
 
             //adding a new delivery : we trigger the assembly download
             //before inserting the delivery in the db.
-            //
+            var delivery = deliveryDataMapper(resource);
+
+            if(!delivery.assemblyPath){
+                delivery.assemblyPath = deliveryService.generatePathName();
+            }
+
             this.client.downloadDeliveryAssembly(id)
                 .then(function(result){
-                    return deliveryAssemblyService.save(id, result);
+                    return deliveryAssemblyService.save(id, delivery.assemblyPath, result);
                 })
-                .then(function(result){
-                    return deliveryService.set(deliveryDataMapper(resource));
+                .then(function(){
+                    return deliveryAssemblyService.getAssemblyDirBaseUrl(id, delivery.assemblyPath);
+                })
+                .then(function(){
+                    return deliveryService.set(delivery);
                 });
         },
 
@@ -122,7 +130,12 @@ define([
          * @returns {Promise<Boolean>} true id updated
          */
         updateResource : function updateResource(id, resource){
-            return deliveryService.update(deliveryDataMapper(resource));
+            var delivery = deliveryDataMapper(resource);
+
+            if(!delivery.assemblyPath){
+                delivery.assemblyPath = deliveryService.generatePathName();
+            }
+            return deliveryService.update(delivery);
         },
 
         /**
@@ -133,7 +146,7 @@ define([
         removeResource : function removeResource(id){
 
             return deliveryAssemblyService.remove(id)
-                .then(function(result){
+                .then(function(){
                     return deliveryService.remove(id);
                 });
         }
