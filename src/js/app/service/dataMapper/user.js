@@ -39,7 +39,8 @@ define([
         originalRoles: 'http://www.tao.lu/Ontologies/generis.rdf#userRoles',
         updatedAt:     'http://www.tao.lu/Ontologies/TAO.rdf#UpdatedAt',
         createdAt:     'http://www.taotesting.com/Ontologies/TAO.rdf#CreatedAt',
-        assignment:    'http://www.tao.lu/Ontologies/TAOTestCenter#UserAssignment'
+        assignment:    'http://www.tao.lu/Ontologies/TAOTestCenter#UserAssignment',
+        organisationId:'http://www.taotesting.com/ontologies/synchro.rdf#organisationId'
     };
 
     /**

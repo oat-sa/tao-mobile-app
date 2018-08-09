@@ -87,6 +87,7 @@ define(['app/service/dataMapper/user'], function(userDataMapper){
                 'http://www.tao.lu/Ontologies/generis.rdf#userRoles': 'http://www.tao.lu/Ontologies/generis.rdf#taoSyncManager',
                 'http://www.tao.lu/Ontologies/generis.rdf#userUILg': 'http://www.tao.lu/Ontologies/TAO.rdf#Langen-US',
                 'http://www.tao.lu/Ontologies/TAO.rdf#FirstTimeInTao': 'http://www.tao.lu/Ontologies/generis.rdf#False',
+                'http://www.taotesting.com/ontologies/synchro.rdf#organisationId': 'testorg1',
                 'http://www.tao.lu/Ontologies/TAO.rdf#LastExtensionUsed': 'tao/Main/index?structure=synchronization&ext=taoSync',
                 'http://www.tao.lu/Ontologies/TAOTestCenter#UserAssignment': [
                     'http://a.org/tao.rdf#i1531144478419294',
@@ -110,6 +111,7 @@ define(['app/service/dataMapper/user'], function(userDataMapper){
             originalRoles: ['http://www.tao.lu/Ontologies/generis.rdf#taoSyncManager'],
             role:          'syncManager',
             assignment:    ['http://a.org/tao.rdf#i1531144478419294', 'http://a.org/tao.rdf#i15313993705227171'],
+            organisationId:'testorg1',
             updatedAt:     1525944401.2057,
             createdAt:     1525274752.9149,
         }

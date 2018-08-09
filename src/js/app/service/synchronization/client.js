@@ -58,7 +58,7 @@ define([
      * @param {Object} config
      * @param {String} config.key - the OAuth key linked to the syncManager profile
      * @param {String} config.secret - the OAuth secret  linked to the syncManager profile
-     * @param {String} [config.orgId] - if the synchronization is scoped by an organisation id
+     * @param {String} [config.organisationId] - if the synchronization is scoped by an organisation id
      * @param {Object} config.api - contains the REST API info for the request module
      * @param {Object} config.api.entity - contains the REST API info for the getEntityIds call
      * @param {Object} config.api.details - contains the REST API info for the getEntitiesContent call
@@ -105,6 +105,12 @@ define([
             return headers;
         };
 
+        var extraParams = {};
+
+        if(config.organisationId){
+            extraParams.organisationId = config.organisationId;
+        }
+
         /**
          * @typedef {Object} synchronizationClient
          */
@@ -130,6 +136,7 @@ define([
                             headers: authHeaders(token.access_token, clientConfig.api.entity.headers),
                             queryString : {
                                 type : type,
+                                params : extraParams
                             }
                         }, clientConfig.api.entity));
                     })
@@ -172,7 +179,8 @@ define([
                             headers: authHeaders(token.access_token, clientConfig.api.details.headers),
                             body : {
                                 type : type,
-                                entityIds : entityIds
+                                entityIds : entityIds,
+                                params : extraParams
                             }
                         }, clientConfig.api.details));
                     })
@@ -200,7 +208,8 @@ define([
                         return request(_.defaults({
                             headers: authHeaders(token.access_token, clientConfig.api.assembly.headers),
                             queryString : {
-                                deliveryIdentifier : deliveryId
+                                deliveryIdentifier : deliveryId,
+                                params : extraParams
                             }
                         }, clientConfig.api.assembly));
                     })

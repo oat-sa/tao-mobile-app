@@ -75,6 +75,7 @@ define([
             var xhr = new XMLHttpRequest();
             var body;
             var url;
+            var queryString;
 
             requestConfig = _.defaults(requestConfig || {}, config, {
                 method : 'GET',
@@ -94,18 +95,23 @@ define([
             //build the URL
             url = requestConfig.endpoint + requestConfig.path;
 
-            //append query string
+            //serialize and append query string
             if(requestConfig.queryString){
+                queryString = _.reduce(requestConfig.queryString, function(acc, value, key){
+                    if(_.isPlainObject(value)){
+                        _.forEach(value, function(subValue, subKey){
+                            acc.push(key + '[' + subKey + ']=' + encodeURIComponent(subValue));
+                        });
+                    } else {
+                        acc.push(key + '=' + encodeURIComponent(value));
+                    }
+                    return acc;
+                }, []);
+
                 if(url.indexOf('?') < 0){
                     url += '?';
                 }
-                url = _.reduce(requestConfig.queryString, function(acc, value, key){
-                    if(!/&$/g.test(acc)){
-                        acc += '&';
-                    }
-                    acc += key + '=' + encodeURIComponent(value);
-                    return acc;
-                }, url);
+                url += queryString.join('&');
             }
 
             //encode the body
