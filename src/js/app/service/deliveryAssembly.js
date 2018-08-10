@@ -24,23 +24,29 @@
  */
 define([
     'lodash',
-    'core/promiseQueue',
-    'app/lib/jszip'
-], function(_, promiseQueue, JsZip){
+    'app/core/filesystem'
+], function(_, filesystem){
     'use strict';
 
-    var assemblyRootDir = 'assembly';
-
-    var getRootDir = function getRootDir() {
-        return new Promise(function(resolve, reject) {
-            window.requestFileSystem(window.LocalFileSystem.PERSISTENT, 0, function(fs) {
-                fs.root.getDirectory(assemblyRootDir, { create: true, exclusive : false  }, function (dirEntry) {
-                    resolve(dirEntry);
-                }, reject);
-            }, reject);
-        });
+    var assemblyFileSystem;
+    var getFileSystem = function getFileSystem(){
+        if(!assemblyFileSystem){
+            assemblyFileSystem = filesystem('assembly', true);
+        }
+        return assemblyFileSystem;
     };
 
+
+    var getAssemblyDirectory = function getAssemblyDirectory(assemblyPath){
+        return getFileSystem()
+            .getRootDirectory()
+            .then(function(rootDir){
+                return getFileSystem().getDirectory(rootDir, assemblyPath);
+            });
+    }
+
+
+/*
     var emptyRootDir = function emptyRootDir() {
         return getRootDir().then(function(rootDir){
             return new Promise(function(resolve, reject){
@@ -52,7 +58,7 @@ define([
     };
 
     var getAssemblyDir = function getAssemblyDir(deliveryId){
-        return getRootDir().then(function(rootDir){j
+        return getRootDir().then(function(rootDir){
             return new Promise(function(resolve, reject){
                 rootDir.getDirectory(encodeURIComponent(deliveryId), { create : true, exclusive : false  }, function (dirEntry) {
                     resolve(dirEntry);
@@ -64,8 +70,7 @@ define([
     var getEmptyAssemblyDir = function getEmptyAssemblyDir(deliveryId){
         return getRootDir().then(function(rootDir){
             return new Promise(function(resolve, reject){
-                rootDir.getDirectory(encodeURIComponent(deliveryId), { create : false, exclusive : false  }, function (dirEntry) {
-                    console.log(dirEntry);
+                rootDir.getDirectory(encodeURIComponent(deliveryId), { create : true, exclusive : false  }, function (dirEntry) {
                     dirEntry.removeRecursively(function() {
                         resolve(true);
                     }, reject);
@@ -116,6 +121,7 @@ define([
             });
     };
 
+*/
 
     /**
      * @typedef {Object} deliveryAssemblyService
@@ -129,38 +135,53 @@ define([
          * @param {Blob} zipData - the zip file that contains the assmebly
          * @returns {Promise<delivery>} resolves with the delivery or null if not found
          */
-        save : function save(deliveryId, zipData){
-            if(_.isEmpty(deliveryId)){
+        save : function save(deliveryId, assemblyPath, zipData){
+            if(_.isEmpty(deliveryId) || _.isEmpty(assemblyPath) ){
                 return Promise.resolve(null);
             }
-            return getEmptyAssemblyDir(deliveryId)
-                .then(function(){
-                    return getAssemblyDir(deliveryId);
+
+            return getAssemblyDirectory(assemblyPath)
+                .then(function(assemblyDir){
+                    return getFileSystem().emptyDirectory(assemblyDir);
                 })
                 .then(function(assemblyDir){
-                    return unzipAssembly(zipData, assemblyDir);
+                    return getAssemblyDirectory(assemblyPath);
+                })
+                .then(function(assemblyDir){
+                    console.log('--------- ' + deliveryId + ' : ' + assemblyPath + ' ------------');
+                    console.log(deliveryId, 'toURL', assemblyDir.toURL());
+                    console.log(deliveryId, 'toInternalURL', assemblyDir.toInternalURL());
+                    console.log(deliveryId, 'toNativeURL', assemblyDir.toNativeURL());
+                    return getFileSystem().unzipTo(zipData, assemblyDir);
                 });
         },
 
-        getAssemblyDirBaseUrl : function getAssemblyDirBaseUrl(deliveryId){
-            return getAssemblyDir(deliveryId)
+        getAssemblyDirBaseUrl : function getAssemblyDirBaseUrl(deliveryId, assemblyPath){
+            return getAssemblyDirectory(assemblyPath)
                 .then(function(assemblyDir){
                     return assemblyDir.toURL();
                 });
         },
 
-        remove : function remove(deliveryId){
-            if(_.isEmpty(deliveryId)){
+        remove : function remove(deliveryId, assemblyPath){
+            if(_.isEmpty(assemblyPath)){
                 return Promise.resolve(null);
             }
-            return getEmptyAssemblyDir(deliveryId)
+            return getAssemblyDirectory(assemblyPath)
+                .then(function(assemblyDir){
+                    return getFileSystem().emptyDirectory(assemblyDir);
+                })
                 .then(function(){
                     return true;
                 });
         },
 
         removeAll : function removeAll(){
-            return emptyRootDir();
+            return getFileSystem()
+                .getRootDirectory()
+                .then(function(rootDir){
+                    return getFileSystem().emptyDirectory(rootDir);
+                });
         }
     };
 });
