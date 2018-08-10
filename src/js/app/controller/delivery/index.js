@@ -29,8 +29,10 @@
 define([
     'app/controller/pageController',
     'app/service/session',
+    'app/service/assignment',
+    'app/component/deliveryLauncher/launcher',
     'tpl!app/controller/delivery/layout'
-], function(pageController, sessionService, layoutTpl){
+], function(pageController, sessionService, assignmentService, deliveryLauncherFactory, layoutTpl){
     'use strict';
 
     return pageController({
@@ -40,7 +42,24 @@ define([
             sessionService
                 .getCurrent()
                 .then(function(session){
+
+                    //TODO handle the layout globally
                     self.getContainer().innerHTML = layoutTpl(session.user);
+
+                    return assignmentService
+                        .getTestTakerDeliveries(session.user.id)
+                        .then( function(deliveries) {
+
+                            var container =  self.getContainer().querySelector('.tests');
+
+                            deliveryLauncherFactory(container, { deliveries: deliveries })
+                                .on('launch', function(id, delivery){
+                                    console.log('launch', id, delivery);
+                                })
+                                .on('error', function(err){
+                                    self.handleError(err);
+                                });
+                        });
                 })
                 .catch(function(err){
                     self.handleError(err);

@@ -53,7 +53,11 @@ define([
 
             return userService.getById(testTakerId)
                 .then(function(testTaker){
-                    return testTaker && testTaker.assignment;
+                    var assignment = testTaker && testTaker.assignment;
+                    if(!_.isArray(assignment)){
+                        return [assignment];
+                    }
+                    return assignment;
                 })
                 .then(function(assignment){
                     return Promise.all(
