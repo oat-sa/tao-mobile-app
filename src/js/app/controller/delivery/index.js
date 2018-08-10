@@ -39,6 +39,15 @@ define([
             var self = this;
             var logger = this.getLogger();
 
+            /**
+             * Launch the delivery
+             * @param {String} deliveryId
+             * @param {String} assemblyPath
+             */
+            var launchDelivery = function launchDelivery(deliveryId, assemblyPath){
+                window.location = 'runner/index.html?deliveryId=' + encodeURIComponent(deliveryId) + '&assemblyPath=' + encodeURIComponent(assemblyPath);
+            };
+
             sessionService
                 .getCurrent()
                 .then(function(session){
@@ -56,6 +65,7 @@ define([
                                 .on('launch', function(id, delivery){
 
                                     logger.info('User ' + session.user.login + ' launches delivery ' + id);
+                                    launchDelivery(id, delivery.assemblyPath);
                                 })
                                 .on('error', function(err){
                                     self.handleError(err);
