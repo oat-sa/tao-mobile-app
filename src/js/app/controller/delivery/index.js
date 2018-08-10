@@ -21,7 +21,6 @@
  * This controller is a placeholder
  * to test the delivery page access.
  *
- * TODO implement me
  *
  *
  * @author Bertrand Chevrier <bertrand@taotesting.com>
@@ -38,6 +37,7 @@ define([
     return pageController({
         start: function start(){
             var self = this;
+            var logger = this.getLogger();
 
             sessionService
                 .getCurrent()
@@ -54,7 +54,8 @@ define([
 
                             deliveryLauncherFactory(container, { deliveries: deliveries })
                                 .on('launch', function(id, delivery){
-                                    console.log('launch', id, delivery);
+
+                                    logger.info('User ' + session.user.login + ' launches delivery ' + id);
                                 })
                                 .on('error', function(err){
                                     self.handleError(err);

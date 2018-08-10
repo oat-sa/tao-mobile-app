@@ -16,6 +16,16 @@ body {
     top : 30%;
 }
 
+@media screen and (min-width: 1024px) {
+    #page {
+        max-width: 1024px;
+        margin:auto;
+        border-left: solid 1px $uiGeneralContentBorder;
+        border-right: solid 1px $uiGeneralContentBorder;
+    }
+}
+
+
 //pages specific styles
 @import "pages/login";
 @import "pages/admin";

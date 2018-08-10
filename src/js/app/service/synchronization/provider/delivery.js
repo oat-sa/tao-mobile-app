@@ -111,7 +111,7 @@ define([
                 delivery.assemblyPath = deliveryService.generatePathName();
             }
 
-            this.client.downloadDeliveryAssembly(id)
+            return this.client.downloadDeliveryAssembly(id)
                 .then(function(result){
                     return deliveryAssemblyService.save(id, delivery.assemblyPath, result);
                 })

@@ -73,24 +73,31 @@ define([
         start: function start(){
             var self = this;
             var logger = this.getLogger();
+
             sessionService.getCurrent().then(function(session){
                 var syncComponent;
                 var wipeout;
+                var synchronizers;
 
-                var oauthConfig = {
+                var syncConfig = {
                     key :    session.user.oauthInfo.key,
                     secret : session.user.oauthInfo.secret
                 };
 
-                var synchronizers = _.reduce(targets, function(acc, target){
-                    acc[target.type] = synchronizerFactory(target.type, oauthConfig);
+                if(session.user.organisationId){
+                    syncConfig.organisationId = session.user.organisationId;
+                }
+
+                synchronizers = _.reduce(targets, function(acc, target){
+                    acc[target.type] = synchronizerFactory(target.type, syncConfig);
                     return acc;
                 }, {});
+
 
                 //TODO handle the layout globally
                 self.getContainer().innerHTML = layoutTpl(session.user);
 
-                //instantiate the component
+                //instantiate the sync component
                 syncComponent = syncComponentFactory(
                     self.getContainer().querySelector('.sync-container'),
                     { targets : targets }
@@ -156,7 +163,7 @@ define([
                         //inform the user and log out
                         feedback().success(__('The application data has been removed'));
                         setTimeout(function(){
-                            //self.getRouter().dispatch('main/logout');
+                            self.getRouter().dispatch('main/logout');
                         }, 3000);
                     })
                     .catch(function(err){
@@ -164,26 +171,10 @@ define([
                         self.handleError(err);
                     });
                 });
-
-                //document.getElementById('test-assembly').addEventListener('click', function(e){
-                    //e.preventDefault();
-
-                    //client(oauthConfig).downloadDeliveryAssembly('http://playground/appcentralsync.rdf#i15319183814240222')
-                        //.then(function(result){
-                            //console.log('DOWLOADED', result);
-                        //})
-                        //.catch(function(err){
-                            //self.handleError(err);
-                        //});
-
-                //});
             })
             .catch(function(err){
                 self.handleError(err);
             });
-
-
-
         }
     });
 });
