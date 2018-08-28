@@ -106,8 +106,7 @@ define(['app/service/user'], function(userService){
             .then(function(user){
                 assert.deepEqual(user, sampleUser, 'This inserted user can be retrieved');
 
-                return userService.update({
-                    id : '123456',
+                return userService.update('123456', {
                     username : 'johnfoo',
                     newField : 'noz'
                 });

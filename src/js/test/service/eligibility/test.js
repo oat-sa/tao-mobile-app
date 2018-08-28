@@ -104,8 +104,7 @@ define(['app/service/eligibility'], function(eligibilityService){
             .then(function(eligibility){
                 assert.deepEqual(eligibility, sampleEligibility, 'This inserted eligibility can be retrieved');
 
-                return eligibilityService.update({
-                    id : '123456',
+                return eligibilityService.update('123456', {
                     testTakers : [ 't1', 't3' ],
                     newField : 'noz'
                 });

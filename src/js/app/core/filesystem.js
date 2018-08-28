@@ -32,7 +32,7 @@ define([
     /**
      * Access to a file system
      * @param {String} rootName - each file system need to be in it's own directory by convention
-     * @param {Boolean} persisten - persistent or temporary
+     * @param {Boolean} persistent - persistent or temporary
      * @returns {Object} the file system
      */
     return function fileSystem(rootName, persistent) {

@@ -53,10 +53,10 @@ define([
             throw new TypeError('An eligibility needs to have a property id');
         }
         if(_.isEmpty(eligibility.delivery)){
-            throw new TypeError('A eligibility needs to have a property delivery');
+            throw new TypeError('An eligibility needs to have a property delivery');
         }
         if(!_.isArray(eligibility.testTakers)){
-            throw new TypeError('A eligibility needs to have a property testTakers');
+            throw new TypeError('An eligibility needs to have a property testTakers');
         }
         return true;
     };
@@ -92,9 +92,11 @@ define([
         },
 
         /**
-         * Set an eligibility, if one exists already, it will be replaced !
-         * @param {eligibility} eligibility
+         * Set an eligibility (add or replace), if one exists already, it will be replaced !
+         *
+         * @param {eligibility} eligibility - a valid eligibility instance
          * @returns {Promise<Boolean>} resolves with true if set
+         * @throws {TypeError} when trying to set an invalid eligibility
          */
         set : function set(eligibility){
 
@@ -106,22 +108,26 @@ define([
         },
 
         /**
-         * Update an eligibility,
-         * if an entry was already there, we will merge them,
+         * Update by merge an existing eligibility.
+         *
+         * If an entry was already there, we will merge them,
          * using the existing values as default.
          *
-         * @param {eligibility} eligibility - the eligibility to update
+         * The merge is only done at the 1st level.
+         *
+         * @param {String} id - the eligibility identifier
+         * @param {Object|eligibility} properties - the properties to set to the eligibility
          * @returns {Promise<Boolean>} resolves with true if updated
          */
-        update : function update(eligibility){
+        update : function update(id, properties){
             var self = this;
 
-            if(!_.isPlainObject(eligibility) || !eligibility.id){
+            if(!_.isPlainObject(properties) || _.isEmpty(id) ){
                 return Promise.resolve(false);
             }
 
-            return this.getById(eligibility.id).then(function(existingEligibility){
-                return self.set(_.defaults(eligibility, existingEligibility || {}));
+            return this.getById(id).then(function(existingEligibility){
+                return self.set(_.defaults(properties, existingEligibility || {}));
             });
         },
 

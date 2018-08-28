@@ -28,7 +28,13 @@ define([
 ], function(_, filesystem){
     'use strict';
 
+    //keep a ref to the assembly file system
     var assemblyFileSystem;
+
+    /**
+     * Helper function that gives you or load the assembly file system instance
+     * @returns {Object} the configured file system
+     */
     var getFileSystem = function getFileSystem(){
         if(!assemblyFileSystem){
             assemblyFileSystem = filesystem('assembly', true);
@@ -36,92 +42,18 @@ define([
         return assemblyFileSystem;
     };
 
-
+    /**
+     * Get the DiretoryEntry for a given assembly
+     * @param {String} assemblyPath - the path to the assembly
+     * @returns {Promise<DirectoryEntry>} the DiretoryEntry of the assembly
+     */
     var getAssemblyDirectory = function getAssemblyDirectory(assemblyPath){
         return getFileSystem()
             .getRootDirectory()
             .then(function(rootDir){
                 return getFileSystem().getDirectory(rootDir, assemblyPath);
             });
-    }
-
-
-/*
-    var emptyRootDir = function emptyRootDir() {
-        return getRootDir().then(function(rootDir){
-            return new Promise(function(resolve, reject){
-                rootDir.removeRecursively(function() {
-                    resolve(true);
-                }, reject);
-            });
-        });
     };
-
-    var getAssemblyDir = function getAssemblyDir(deliveryId){
-        return getRootDir().then(function(rootDir){
-            return new Promise(function(resolve, reject){
-                rootDir.getDirectory(encodeURIComponent(deliveryId), { create : true, exclusive : false  }, function (dirEntry) {
-                    resolve(dirEntry);
-                }, reject);
-            });
-        });
-    };
-
-    var getEmptyAssemblyDir = function getEmptyAssemblyDir(deliveryId){
-        return getRootDir().then(function(rootDir){
-            return new Promise(function(resolve, reject){
-                rootDir.getDirectory(encodeURIComponent(deliveryId), { create : true, exclusive : false  }, function (dirEntry) {
-                    dirEntry.removeRecursively(function() {
-                        resolve(true);
-                    }, reject);
-                }, reject);
-            });
-        });
-    };
-
-    var createDir = function writeFile(dirEntry, dirName) {
-        return new Promise(function(resolve, reject){
-            dirEntry.getDirectory(dirName, { create : true }, resolve, reject);
-        });
-    };
-
-    var writeFile = function writeFile(dirEntry, fileName, dataObj) {
-        return new Promise(function(resolve, reject){
-            dirEntry.getFile(fileName, { create : true }, function(fileEntry){
-                fileEntry.createWriter(function (fileWriter) {
-                    fileWriter.onwriteend = function() {
-                        resolve(fileEntry);
-                    };
-
-                    fileWriter.onerror = reject;
-
-                    fileWriter.write(dataObj);
-                });
-            }, reject);
-        });
-    };
-
-    var unzipAssembly = function unzipAssembly(zipData, dirEntry){
-        return new JsZip()
-            .loadAsync(zipData, { createFolders : true })
-            .then(function(zip){
-                var queue = promiseQueue();
-                _.forEach(zip.files, function(file, path){
-                    if(file.dir){
-                        queue.serie(createDir(dirEntry, path));
-                    } else {
-                        queue.serie(
-                            file.async('blob').then(function(data){
-                                return writeFile(dirEntry, path, data);
-                            })
-                        );
-                    }
-                });
-                return queue.getValues();
-            });
-    };
-
-*/
 
     /**
      * @typedef {Object} deliveryAssemblyService
@@ -144,18 +76,21 @@ define([
                 .then(function(assemblyDir){
                     return getFileSystem().emptyDirectory(assemblyDir);
                 })
-                .then(function(assemblyDir){
+                .then(function(){
+                    //this is required to re-create it
                     return getAssemblyDirectory(assemblyPath);
                 })
                 .then(function(assemblyDir){
-                    console.log('--------- ' + deliveryId + ' : ' + assemblyPath + ' ------------');
-                    console.log(deliveryId, 'toURL', assemblyDir.toURL());
-                    console.log(deliveryId, 'toInternalURL', assemblyDir.toInternalURL());
-                    console.log(deliveryId, 'toNativeURL', assemblyDir.toNativeURL());
                     return getFileSystem().unzipTo(zipData, assemblyDir);
                 });
         },
 
+        /**
+         * Get the base URL of an assembly, this base URL can be used in the DOM to load the data
+         * @param {String} deliveryId - the identifier of the delivery
+         * @param {String} assemblyPath - the path to the assembly
+         * @returns {Promise<String>} the base URL (should start with the filesystem:// protocol)
+         */
         getAssemblyDirBaseUrl : function getAssemblyDirBaseUrl(deliveryId, assemblyPath){
             return getAssemblyDirectory(assemblyPath)
                 .then(function(assemblyDir){
@@ -163,6 +98,12 @@ define([
                 });
         },
 
+        /**
+         * Remove an assembly from the file system
+         * @param {String} deliveryId - the identifier of the delivery
+         * @param {String} assemblyPath - the path to the assembly
+         * @returns {Promise<Boolean>} true if removed
+         */
         remove : function remove(deliveryId, assemblyPath){
             if(_.isEmpty(assemblyPath)){
                 return Promise.resolve(null);
@@ -176,6 +117,10 @@ define([
                 });
         },
 
+        /**
+         * Remove everything from the assembly file system
+         * @returns {Promise}
+         */
         removeAll : function removeAll(){
             return getFileSystem()
                 .getRootDirectory()

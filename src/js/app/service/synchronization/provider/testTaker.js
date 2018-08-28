@@ -113,7 +113,7 @@ define([
          * @returns {Promise<Boolean>} true id updated
          */
         updateResource : function updateResource(id, resource){
-            return userService.update(userDataMapper(resource));
+            return userService.update(id, userDataMapper(resource));
         },
 
         /**

@@ -92,8 +92,7 @@ define(['app/service/delivery'], function(deliveryService){
             .then(function(delivery){
                 assert.deepEqual(delivery, sampledelivery, 'This inserted delivery can be retrieved');
 
-                return deliveryService.update({
-                    id : '123456',
+                return deliveryService.update('123456', {
                     label : 'Delivery 2',
                     newField : 'noz'
                 });

@@ -49,7 +49,7 @@ define([
             throw new TypeError('Missing or invalid delivery');
         }
         if(_.isEmpty(delivery.id)){
-            throw new TypeError('An delivery needs to have a property id');
+            throw new TypeError('A delivery needs to have a property id');
         }
         if(_.isEmpty(delivery.label)){
             throw new TypeError('A delivery needs to have a property label');
@@ -88,9 +88,11 @@ define([
         },
 
         /**
-         * Set an delivery, if one exists already, it will be replaced !
-         * @param {delivery} delivery
+         * Set a delivery (add or replace), if one exists already, it will be replaced !
+         *
+         * @param {delivery} delivery - a valid delivery instance
          * @returns {Promise<Boolean>} resolves with true if set
+         * @throws {TypeError} when trying to set an invalid delivery
          */
         set : function set(delivery){
 
@@ -102,22 +104,26 @@ define([
         },
 
         /**
-         * Update an delivery,
-         * if an entry was already there, we will merge them,
+         * Update by merge an existing delivery.
+         *
+         * If an entry was already there, we will merge them,
          * using the existing values as default.
          *
-         * @param {delivery} delivery - the delivery to update
+         * The merge is only done at the 1st level.
+         *
+         * @param {String} id - the delivery identifier
+         * @param {Object|delivery} properties - the properties to set to the delivery
          * @returns {Promise<Boolean>} resolves with true if updated
          */
-        update : function update(delivery){
+        update : function update(id, properties){
             var self = this;
 
-            if(!_.isPlainObject(delivery) || !delivery.id){
+            if(!_.isPlainObject(properties) || _.isEmpty(id) ){
                 return Promise.resolve(false);
             }
 
-            return this.getById(delivery.id).then(function(existingEligibility){
-                return self.set(_.defaults(delivery, existingEligibility || {}));
+            return this.getById(id).then(function(existingDelivery){
+                return self.set(_.defaults(properties, existingDelivery || {}));
             });
         },
 

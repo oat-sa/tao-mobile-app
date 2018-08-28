@@ -135,7 +135,7 @@ define([
             if(!delivery.assemblyPath){
                 delivery.assemblyPath = deliveryService.generatePathName();
             }
-            return deliveryService.update(delivery);
+            return deliveryService.update(id, delivery);
         },
 
         /**

@@ -111,7 +111,7 @@ define([
          * @returns {Promise<Boolean>} true id updated
          */
         updateResource : function updateResource(id, resource){
-            return eligibilityService.update(eligibilityDataMapper(resource));
+            return eligibilityService.update(id, eligibilityDataMapper(resource));
         },
 
         /**
