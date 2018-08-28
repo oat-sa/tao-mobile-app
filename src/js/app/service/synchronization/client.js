@@ -189,7 +189,7 @@ define([
                             if(result.success === true && result.data){
                                 return result.data;
                             }
-                            else if(retrying === false && result.status === 403 || result.status === 401){
+                            else if(retrying === false && (result.status === 403 || result.status === 401) ){
                                 return self.getEntitiesContent(type, entityIds, true);
                             }
                         }
@@ -218,7 +218,7 @@ define([
                             if(result.success === true && result.data){
                                 return result.data;
                             }
-                            else if(retrying === false && result.status === 403 || result.status === 401){
+                            else if(retrying === false && (result.status === 403 || result.status === 401) ){
                                 return self.getEntitiesContent(deliveryId, true);
                             }
                         }
