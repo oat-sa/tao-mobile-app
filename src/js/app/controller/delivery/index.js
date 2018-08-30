@@ -21,7 +21,6 @@
  * This controller is a placeholder
  * to test the delivery page access.
  *
- * TODO implement me
  *
  *
  * @author Bertrand Chevrier <bertrand@taotesting.com>
@@ -29,19 +28,49 @@
 define([
     'app/controller/pageController',
     'app/service/session',
-    'app/service/synchronization/testTaker',
+    'app/service/assignment',
+    'app/component/deliveryLauncher/launcher',
     'tpl!app/controller/delivery/layout'
-], function(pageController, sessionService, testTakerSyncService, layoutTpl){
+], function(pageController, sessionService, assignmentService, deliveryLauncherFactory, layoutTpl){
     'use strict';
 
     return pageController({
         start: function start(){
             var self = this;
+            var logger = this.getLogger();
+
+            /**
+             * Launch the delivery
+             * @param {String} deliveryId
+             * @param {String} assemblyPath
+             */
+            var launchDelivery = function launchDelivery(deliveryId, assemblyPath){
+                window.location = 'runner/index.html?deliveryId=' + encodeURIComponent(deliveryId) + '&assemblyPath=' + encodeURIComponent(assemblyPath);
+            };
 
             sessionService
                 .getCurrent()
                 .then(function(session){
+
+                    //TODO handle the layout globally
                     self.getContainer().innerHTML = layoutTpl(session.user);
+
+                    return assignmentService
+                        .getTestTakerDeliveries(session.user.id)
+                        .then( function(deliveries) {
+
+                            var container =  self.getContainer().querySelector('.tests');
+
+                            deliveryLauncherFactory(container, { deliveries: deliveries })
+                                .on('launch', function(id, delivery){
+
+                                    logger.info('User ' + session.user.login + ' launches delivery ' + id);
+                                    launchDelivery(id, delivery.assemblyPath);
+                                })
+                                .on('error', function(err){
+                                    self.handleError(err);
+                                });
+                        });
                 })
                 .catch(function(err){
                     self.handleError(err);

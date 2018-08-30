@@ -1,6 +1,6 @@
 [data-page="delivery/index"] {
 
-    header {
+    & > header {
         position: relative;
         height: 8rem;
         background: $uiClickableHoverBg;
@@ -15,7 +15,7 @@
             margin: 0;
             font-size: 2.4rem;
             flex: 1 1 auto;
-            text-align: center;
+            padding-left: 1rem;
         }
         .profile  {
             flex: 0 0 8rem;
@@ -35,10 +35,6 @@
                 font-size: 2.2rem;
             }
         }
-    }
-    section {
-        padding : 2rem;
-        @include font-size(18);
     }
 }
 

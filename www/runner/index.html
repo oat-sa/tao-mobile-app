@@ -1,0 +1,49 @@
+<!doctype html>
+<html class="no-js no-version-warning">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="format-detection" content="telephone=no" />
+    <meta name="msapplication-tap-highlight" content="no" />
+    <meta name="viewport" content="user-scalable=no, initial-scale=1, maximum-scale=1, minimum-scale=1, width=device-width" />
+    <meta http-equiv="Content-Security-Policy" content="default-src * data: gap: cdvfile: filesystem: content://*  https://ssl.gstatic.com 'unsafe-eval' 'unsafe-inline'; style-src cdvfile: filesystem: 'self' 'unsafe-inline'; media-src * filesystem:">
+
+    <title>TAO - An Open and Versatile Computer-Based Assessment Platform</title>
+    <link rel="stylesheet" href="src/tao/views/css/tao-main-style.css" />
+    <link rel="stylesheet" href="src/tao/views/css/tao-3.css" />
+    <link rel="shortcut icon" href="favicon.ico" />
+
+
+    <!-- Bundle mode
+
+    Loader order :
+        1. qtiTestRunner.min.js will execute the bootstrap at it's end
+        2. the bootstrap will load the data-config value
+        3. the config file configure require.js and fill the data-params
+        4. the data-controller is loaded with the params
+    -->
+    <script id="amd-loader"
+        data-config="./static/config.js"
+        src="src/taoQtiTest/views/js/loader/qtiTestRunner.min.js"
+        data-controller="taoQtiTest/controller/runner/runner"
+        data-params=""
+    ></script>
+
+</head>
+
+<body class="delivery-scope no-controls">
+
+    <!-- requirement checks -->
+    <script src="src/tao/views/js/layout/requirement-check.js"></script>
+
+    <div class="content-wrap">
+        <div id="feedback-box"></div>
+        <div class="runner"></div>
+    </div>
+    <div class="loading-bar"></div>
+
+    <script type="text/javascript" src="../cordova.js"></script>
+</body>
+
+</html>

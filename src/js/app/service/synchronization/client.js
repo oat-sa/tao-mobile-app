@@ -39,7 +39,9 @@ define([
      * The list of resource types we can synchronize
      */
     var supportedTypes = [
-        'test-taker'
+        'test-taker',
+        'delivery',
+        'eligibility'
     ];
 
     /**
@@ -47,8 +49,8 @@ define([
      */
     var errorMessages = {
         unavaibleEndpoint:  __('Unable to reach the server, please check your network.'),
-        invalidCredentials: __('Unable to request a synchronization token with the provided handshake, please contact your administrator.'),
-        serverError:        __('An unexpected error occur while trying to request a synchronization token, please contact your administrator.')
+        invalidCredentials: __('You are not authorized to synchronize the requested data, please contact your administrator.'),
+        serverError:        __('An unexpected error occur while trying to synchronize, please contact your administrator.')
     };
 
     /**
@@ -56,9 +58,12 @@ define([
      * @param {Object} config
      * @param {String} config.key - the OAuth key linked to the syncManager profile
      * @param {String} config.secret - the OAuth secret  linked to the syncManager profile
+     * @param {String} [config.organisationId] - if the synchronization is scoped by an organisation id
      * @param {Object} config.api - contains the REST API info for the request module
      * @param {Object} config.api.entity - contains the REST API info for the getEntityIds call
      * @param {Object} config.api.details - contains the REST API info for the getEntitiesContent call
+     * @param {Object} config.api.assembly - contains the REST API info for the downloadDeliveryAssembly call
+     * @param {String} config.assemblyRoot - the root path where the assemblies are extracted
      * @returns {synchronizationClient} the client
      */
     return function synchronizationClientFactory(config) {
@@ -94,6 +99,18 @@ define([
             return tokenService.getToken();
         };
 
+        var authHeaders = function authHeaders(token, headers) {
+            headers = headers || {};
+            headers['Authorization'] = 'Bearer ' + token;
+            return headers;
+        };
+
+        var extraParams = {};
+
+        if(config.organisationId){
+            extraParams.organisationId = config.organisationId;
+        }
+
         /**
          * @typedef {Object} synchronizationClient
          */
@@ -116,11 +133,10 @@ define([
                     .then(function(token) {
                         return request(_.defaults({
                             path : nextCallUrl || clientConfig.api.entity.path,
-                            headers: {
-                                'Authorization' : 'Bearer ' + token.access_token
-                            },
-                            data : {
-                                type : type
+                            headers: authHeaders(token.access_token, clientConfig.api.entity.headers),
+                            queryString : {
+                                type : type,
+                                params : extraParams
                             }
                         }, clientConfig.api.entity));
                     })
@@ -160,13 +176,12 @@ define([
                 return getAccessToken(retrying === true)
                     .then(function(token) {
                         return request(_.defaults({
-                            headers: {
-                                'Authorization' : 'Bearer ' + token.access_token
-                            },
-                            data : JSON.stringify({
+                            headers: authHeaders(token.access_token, clientConfig.api.details.headers),
+                            body : {
                                 type : type,
-                                entityIds : entityIds
-                            })
+                                entityIds : entityIds,
+                                params : extraParams
+                            }
                         }, clientConfig.api.details));
                     })
                     .then(function(result){
@@ -174,8 +189,37 @@ define([
                             if(result.success === true && result.data){
                                 return result.data;
                             }
-                            else if(retrying === false && result.status === 403 || result.status === 401){
+                            else if(retrying === false && (result.status === 403 || result.status === 401) ){
                                 return self.getEntitiesContent(type, entityIds, true);
+                            }
+                        }
+                    });
+            },
+
+            downloadDeliveryAssembly : function downloadDeliveryAssembly(deliveryId, retrying){
+
+                if(_.isEmpty(deliveryId)){
+                    return Promise.resolve(false);
+                }
+
+                return getAccessToken(retrying === true)
+                    .then(function(token) {
+
+                        return request(_.defaults({
+                            headers: authHeaders(token.access_token, clientConfig.api.assembly.headers),
+                            queryString : {
+                                deliveryIdentifier : deliveryId,
+                                params : extraParams
+                            }
+                        }, clientConfig.api.assembly));
+                    })
+                    .then(function(result){
+                        if(result){
+                            if(result.success === true && result.data){
+                                return result.data;
+                            }
+                            else if(retrying === false && (result.status === 403 || result.status === 401) ){
+                                return self.getEntitiesContent(deliveryId, true);
                             }
                         }
                     });
