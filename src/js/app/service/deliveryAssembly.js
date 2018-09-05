@@ -28,31 +28,21 @@ define([
 ], function(_, filesystem){
     'use strict';
 
-    //keep a ref to the assembly file system
-    var assemblyFileSystem;
-
     /**
-     * Helper function that gives you or load the assembly file system instance
+     * Helper function that gives you or load the assembly filesystem instance
      * @returns {Object} the configured file system
      */
     var getFileSystem = function getFileSystem(){
-        if(!assemblyFileSystem){
-            assemblyFileSystem = filesystem('assembly', true);
-        }
-        return assemblyFileSystem;
+        return filesystem('assembly', true);
     };
 
     /**
-     * Get the DiretoryEntry for a given assembly
+     * Get the DirectoryEntry for a given assembly
      * @param {String} assemblyPath - the path to the assembly
-     * @returns {Promise<DirectoryEntry>} the DiretoryEntry of the assembly
+     * @returns {Promise<DirectoryEntry>} the DirectoryEntry of the assembly
      */
-    var getAssemblyDirectory = function getAssemblyDirectory(assemblyPath){
-        return getFileSystem()
-            .getRootDirectory()
-            .then(function(rootDir){
-                return getFileSystem().getDirectory(rootDir, assemblyPath);
-            });
+    var getAssemblyDirectory = function getAssemblyDirectory(assemblyFileSystem, assemblyPath){
+        return assemblyFileSystem.getDirectory(assemblyFileSystem.getRootDirectory(), assemblyPath);
     };
 
     /**
@@ -61,10 +51,10 @@ define([
     return {
 
         /**
-         * Install an assembly into the filesystem from a zip blob.
+         * Install an assembly into the file system from a zip blob.
          *
          * @param {String} deliveryId - the delivery identifier
-         * @param {Blob} zipData - the zip file that contains the assmebly
+         * @param {Blob} zipData - the zip file that contains the assembly
          * @returns {Promise<delivery>} resolves with the delivery or null if not found
          */
         save : function save(deliveryId, assemblyPath, zipData){
@@ -72,17 +62,45 @@ define([
                 return Promise.resolve(null);
             }
 
-            return getAssemblyDirectory(assemblyPath)
-                .then(function(assemblyDir){
-                    return getFileSystem().emptyDirectory(assemblyDir);
-                })
-                .then(function(){
-                    //this is required to re-create it
-                    return getAssemblyDirectory(assemblyPath);
-                })
-                .then(function(assemblyDir){
-                    return getFileSystem().unzipTo(zipData, assemblyDir);
-                });
+            return getFileSystem().then(function(assemblyFileSystem){
+
+                return getAssemblyDirectory(assemblyFileSystem, assemblyPath)
+                    .then(function(assemblyDir){
+                        return assemblyFileSystem.emptyDirectory(assemblyDir);
+                    })
+                    .then(function(){
+                        //this is required to re-create it
+                        return getAssemblyDirectory(assemblyFileSystem, assemblyPath);
+                    })
+                    .then(function(assemblyDir){
+                        return assemblyFileSystem.unzipTo(zipData, assemblyDir);
+                    });
+            });
+        },
+
+        /**
+         * Read a file relatively from an assembly
+         * @param {String} deliveryId - the identifier of the delivery
+         * @param {String} assemblyPath - the path to the assembly
+         * @param {String} path - the file path within the assembly
+         * @param {Boolean} [binary=false]
+         * @returns {Promise<String|ArrayBuffer>} resolves with the file content
+         */
+        readAssemblyFile : function readAssemblyFile(deliveryId, assemblyPath, path, binary){
+            if(_.isEmpty(deliveryId) || _.isEmpty(assemblyPath) || _.isEmpty(path)){
+                return Promise.resolve(null);
+            }
+
+            return getFileSystem().then(function(assemblyFileSystem){
+
+                return getAssemblyDirectory(assemblyFileSystem, assemblyPath)
+                    .then(function(assemblyDir){
+                        return assemblyFileSystem.getFile(path, assemblyDir, false);
+                    })
+                    .then(function(fileEntry){
+                        return assemblyFileSystem.readFile(fileEntry, binary);
+                    });
+            });
         },
 
         /**
@@ -92,10 +110,12 @@ define([
          * @returns {Promise<String>} the base URL (should start with the filesystem:// protocol)
          */
         getAssemblyDirBaseUrl : function getAssemblyDirBaseUrl(deliveryId, assemblyPath){
-            return getAssemblyDirectory(assemblyPath)
-                .then(function(assemblyDir){
-                    return assemblyDir.toURL();
-                });
+            return getFileSystem().then(function(assemblyFileSystem){
+                return getAssemblyDirectory(assemblyFileSystem, assemblyPath);
+            })
+            .then(function(assemblyDir){
+                return assemblyDir.toURL();
+            });
         },
 
         /**
@@ -108,13 +128,16 @@ define([
             if(_.isEmpty(assemblyPath)){
                 return Promise.resolve(null);
             }
-            return getAssemblyDirectory(assemblyPath)
-                .then(function(assemblyDir){
-                    return getFileSystem().emptyDirectory(assemblyDir);
-                })
-                .then(function(){
-                    return true;
-                });
+            return getFileSystem().then(function(assemblyFileSystem){
+
+                return getAssemblyDirectory(assemblyFileSystem, assemblyPath)
+                    .then(function(assemblyDir){
+                        return assemblyFileSystem.emptyDirectory(assemblyDir);
+                    })
+                    .then(function(){
+                        return true;
+                    });
+            });
         },
 
         /**
@@ -122,11 +145,9 @@ define([
          * @returns {Promise}
          */
         removeAll : function removeAll(){
-            return getFileSystem()
-                .getRootDirectory()
-                .then(function(rootDir){
-                    return getFileSystem().emptyDirectory(rootDir);
-                });
+            return getFileSystem().then(function(assemblyFileSystem){
+                return assemblyFileSystem.emptyDirectory(assemblyFileSystem.getRootDirectory());
+            });
         }
     };
 });

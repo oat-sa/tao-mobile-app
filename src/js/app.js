@@ -26,9 +26,10 @@
  */
 define([
     'jquery',
+    'lodash',
     'app/controller/pageController',
     'app/service/session'
-],  function($, pageController, sessionService){
+],  function($, _, pageController, sessionService){
     'use strict';
 
     /**
@@ -48,14 +49,16 @@ define([
 
             //page transition when the router dipatch
             this.getRouter( )
-                .on('dispatching', function(){
+                .on('dispatching', function(route, taoRoute, params){
                     pageContainer.classList.add('page-change');
-                })
-                .on('dispatched', function(route){
-                    pageContainer.classList.remove('page-change');
 
+                    //prepare the page params early
                     pageContainer.innerHTML = '';
                     pageContainer.dataset.page = route;
+                    pageContainer.dataset.params = JSON.stringify(params || {});
+                })
+                .on('dispatched', function(){
+                    pageContainer.classList.remove('page-change');
                 });
 
             //dispatch a route if an element has the correct data-attr

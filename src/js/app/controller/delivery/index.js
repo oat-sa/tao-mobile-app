@@ -45,7 +45,10 @@ define([
              * @param {String} assemblyPath
              */
             var launchDelivery = function launchDelivery(deliveryId, assemblyPath){
-                window.location = 'runner/index.html?deliveryId=' + encodeURIComponent(deliveryId) + '&assemblyPath=' + encodeURIComponent(assemblyPath);
+                self.getRouter().dispatch('delivery/runner', {
+                    deliveryId : deliveryId,
+                    assemblyPath : assemblyPath
+                });
             };
 
             sessionService

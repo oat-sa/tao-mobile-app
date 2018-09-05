@@ -69,6 +69,7 @@ define([
                 .then(function(eligibilities){
                     return Promise.all(
                         _(eligibilities)
+                            .compact()
                             .uniq('delivery')
                             .filter(function(eligibility){
                                 //check the test taker is also set in the eligibility

@@ -91,6 +91,19 @@ define([
              */
             getRouter : function getRouter(){
                 return router;
+            },
+
+            /**
+             * Get page parameters if attached to the container's data-params
+             * @returns {Object} the parameters
+             */
+            getParams : function getParams(){
+                try {
+                    return JSON.parse(container.dataset.params);
+                } catch(err){
+                    logger.error(err);
+                }
+                return {};
             }
         });
     };
