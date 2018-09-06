@@ -67,11 +67,12 @@ define([
         /**
          * Dispatch the given route
          * @param {String} route - an internal route (main/login will dispatch the matching route in app/controller/routes.js)
+         * @param {Object} [params] - extra parameters to send to the dispatched controller
          * @returns {Promise}
          * @fires router#dispatching when the dispatch starts
          * @fires router#dispatched when the dispatch is done
          */
-        dispatch : function disptach(route){
+        dispatch : function disptach(route, params){
             var self = this;
             var taoRoute = route;
 
@@ -86,8 +87,9 @@ define([
                  * @event router#dispatching
                  * @param {String} route - the given route
                  * @param {String} taoRoute - the full route sent to the tao router
+                 * @param {Object} [params] - the dispatch parameters
                  */
-                self.trigger('dispatching', route, taoRoute);
+                self.trigger('dispatching', route, taoRoute, params);
 
                 //we dispatch the route, in the queue, with a timeout
                 return Promise.race([
@@ -101,8 +103,9 @@ define([
                              * @event router#dispatched
                              * @param {String} route - the given route
                              * @param {String} taoRoute - the full route sent to the tao router
+                             * @param {Object} [params] - the dispatch parameters
                              */
-                            self.trigger('dispatched', route, taoRoute);
+                            self.trigger('dispatched', route, taoRoute, params);
 
                             return resolve();
                         });

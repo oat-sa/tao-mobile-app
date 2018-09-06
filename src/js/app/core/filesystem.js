@@ -25,39 +25,41 @@
 define([
     'lodash',
     'core/promiseQueue',
+    'core/logger',
     'app/lib/jszip'
-], function(_, promiseQueue, JsZip){
+], function(_, promiseQueue, loggerFactory, JsZip){
     'use strict';
+
+    //default to 5MB for temp fs
+    var tempFileSystemSize = 1024 * 1024 * 5;
+
+    var logger = loggerFactory('filesystem');
+
 
     /**
      * Access to a file system
      * @param {String} rootName - each file system need to be in it's own directory by convention
      * @param {Boolean} persistent - persistent or temporary
-     * @returns {Object} the file system
+     * @returns {Promise<fileSystemService>} a promise that resolves with the filesystem service
      */
     return function fileSystem(rootName, persistent) {
 
-        var rootDir;
+        var rootDirectoryEntry;
         var fileSystemType = persistent ? window.LocalFileSystem.PERSISTENT : window.LocalFileSystem.TEMPORARY;
+        //persitent fs needs to be 0/unlimited
+        var fileSystemSize = persistent ? 0 : tempFileSystemSize;
 
         /**
-         * @typedef
+         * @typedef {Object} fileSystemService
          */
-        return {
+        var fileSystemService = {
 
             /**
              * Get the file system root directory
-             * @returns {Promise<DiretoryEntry>} the root directory
+             * @returns {DiretoryEntry} the root directory
              */
             getRootDirectory : function getRootDirectory(){
-                if(rootDir){
-                    return Promise.resolve(rootDir);
-                }
-                return new Promise(function(resolve, reject) {
-                    window.requestFileSystem(fileSystemType, 0, function(fs) {
-                        fs.root.getDirectory(rootName, { create: true, exclusive : false  }, resolve);
-                    }, reject);
-                });
+                return rootDirectoryEntry;
             },
 
             /**
@@ -72,7 +74,15 @@ define([
                     return Promise.reject(new Error('Invalid browsing options'));
                 }
                 return new Promise(function(resolve, reject){
-                    parentDirEntry.getDirectory(name, { create : true, exclusive : false }, resolve, reject);
+                    parentDirEntry.getDirectory(name, {
+                        create : true,
+                        exclusive : false
+                    },
+                    resolve,
+                    function(err){
+                        logger.error('Unable to open the directory ' + name + ' : ' + err.message);
+                        reject(err);
+                    });
                 });
             },
 
@@ -105,6 +115,9 @@ define([
                 }
                 return new Promise(function(resolve, reject){
                     dirEntry.removeRecursively(function(){
+
+                        logger.debug(dirEntry.toURL() + ' has been emptied');
+
                         resolve(true);
                     }, reject);
                 });
@@ -119,17 +132,12 @@ define([
              * @returns {Promise<FileEntry>} the file
              */
             getFile : function getFile(path, parentDirEntry, create){
-                var self = this;
                 if(parentDirEntry){
                     return new Promise(function(resolve, reject){
                         parentDirEntry.getFile(path, { create : !!create, exclusive : false }, resolve, reject);
                     });
                 }
-                return this.getRootDirectory().then(function(rootDirectory){
-                    if(rootDirectory){
-                        return self.getFile(path, rootDirectory, create);
-                    }
-                });
+                return this.getFile(path, rootDirectoryEntry, create);
             },
 
             /**
@@ -143,7 +151,10 @@ define([
                     fileEntry.file(function(file) {
                         var reader = new FileReader();
 
-                        reader.onerror = reject;
+                        reader.onerror = function(err){
+                            logger.error('Error reading file ' + fileEntry.toURL() + ' : ' + err.message);
+                            reject(err);
+                        };
                         reader.onloadend = function() {
                             resolve(this.result);
                         };
@@ -183,7 +194,10 @@ define([
                             resolve(fileEntry);
                         };
 
-                        fileWriter.onerror = reject;
+                        fileWriter.onerror = function(err){
+                            logger.error('Error writting file ' + fileEntry.toURL() + ' : ' + err.message);
+                            reject(err);
+                        };
 
                         if(content instanceof Blob){
                             fileWriter.write(content);
@@ -212,29 +226,75 @@ define([
              */
             unzipTo : function unzipTo(zipData, dirEntry){
                 var self = this;
+                var destination;
+
+                if(!zipData || !zipData instanceof Blob){
+                    return Promise.reject(new TypeError('Incorrect zip data'));
+                }
+                if(!dirEntry){
+                    return Promise.reject(new TypeError('Missing directory target'));
+                }
+                destination = dirEntry.toURL();
+                logger.debug('Start unzip a blob to ' + destination );
+
                 return new JsZip()
                     .loadAsync(zipData, { createFolders : true })
                     .then(function(zip){
                         var queue = promiseQueue();
                         _.forEach(zip.files, function(file, path){
+
+                            logger.debug('Unzip file ' + path );
+
                             if(file.dir){
-                                queue.serie(self.createDirectory(dirEntry, path));
+                                queue.serie(function(){
+                                    return self.createDirectory(dirEntry, path);
+                                })
+                                .then(function(){
+
+                                    logger.debug('directory ' + path + ' created into ' + destination );
+
+                                    return path;
+                                });
                             } else {
-                                queue.serie(
-                                    file.async('blob').then(function(data){
-                                        return self.getFile(path, dirEntry , true)
-                                            .then(function(fileEntry){
-                                                return self.writeFile(fileEntry, data);
-                                            });
-                                    })
-                                );
+                                queue.serie(function(){
+                                    return file.async('blob').then(function(data){
+                                        return self.getFile(path, dirEntry , true).then(function(fileEntry){
+                                            return self.writeFile(fileEntry, data);
+                                        });
+                                    });
+                                }).then(function(){
+
+                                    logger.debug('file ' + path + ' written to ' + destination );
+
+                                    return path;
+                                });
                             }
                         });
                         return Promise.all(queue.getValues());
                     });
             }
         };
-    };
 
+        return new Promise(function(resolve, reject){
+            window.requestFileSystem(fileSystemType, fileSystemSize, function(fs) {
+
+                logger.debug('Request file system on ' + rootName);
+
+                fs.root.getDirectory(rootName, {
+                    create: true,
+                    exclusive : false
+                }, function(rootEntry){
+
+                    logger.debug('File system root directory resolved to ' + rootEntry.toURL());
+                    rootDirectoryEntry = rootEntry;
+                    resolve(fileSystemService);
+                });
+            }, function(err){
+
+                logger.error('Unable to open the file system on ' + rootName + ' : ' + err.message);
+                reject(err);
+            });
+        });
+    };
 });
 

@@ -1,0 +1,12 @@
+
+.qti-item {
+    font-family: "Source Sans Pro";
+}
+
+// override items that make actually use of the font
+.qti-inlineChoiceInteraction .select2-chosen,
+select.qti-inlineChoiceInteraction,
+.qti-inlineChoiceInteraction-dropdown .select2-result-label {
+    font-family: inherit !important;
+    font-weight: normal !important;
+}

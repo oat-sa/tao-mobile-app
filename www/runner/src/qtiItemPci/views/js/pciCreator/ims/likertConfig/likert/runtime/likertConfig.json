@@ -1,6 +1,0 @@
-{
-    "waitSeconds": 30,
-    "paths": {
-        "likertInteraction/runtime/js/renderer" : "likert/runtime/js/renderer.js"
-    }
-}
