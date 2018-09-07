@@ -61,5 +61,4 @@ typings/
 #mostly to test them in the browser or a given device
 plugins
 platforms
-www/dist/*
 src/taodist
