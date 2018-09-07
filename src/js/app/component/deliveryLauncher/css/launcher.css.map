@@ -1,0 +1,14 @@
+{
+	"version": 3,
+	"file": "launcher.css",
+	"sources": [
+		"../scss/launcher.scss",
+		"../../../../../taodist/tao/views/scss/inc/_bootstrap.scss",
+		"../../../../../taodist/tao/views/scss/inc/_variables.scss",
+		"../../../../../taodist/tao/views/scss/inc/_functions.scss",
+		"../../../../../taodist/tao/views/scss/inc/_colors.scss",
+		"../../../../../taodist/tao/views/scss/inc/fonts/_tao-icon-vars.scss"
+	],
+	"names": [],
+	"mappings": "AAGA,AAEI,kBAFc,CAEV,MAAM,CAAC,EAAE,CAFjB,kBAAkB,CAGV,CAAC,AAAC,CACF,MAAM,CAAE,CAAC,CACT,OAAO,CAAE,SAAS,CACrB,AANL,AAQI,kBARc,CAQV,OAAO,AAAC,CACR,aAAa,CAAE,KAAK,CAAC,GAAG,CIaP,IAAI,CJZrB,QAAQ,CAAE,QAAQ,CAClB,OAAO,CAAE,CAAC,CACV,MAAM,CAAG,CAAC,CAwBb,AApCL,AAcQ,kBAdU,CAQV,OAAO,CAMP,CAAC,AAAC,CACE,QAAQ,CAAE,QAAQ,CAClB,KAAK,CAAE,IAAI,CACX,MAAM,CAAE,CAAC,CACT,OAAO,CAAE,SAAS,CAClB,eAAe,CAAE,IAAI,CACrB,SAAS,CAAE,IAAI,CACf,OAAO,CAAE,IAAI,CACb,SAAS,CAAE,UAAU,CACrB,WAAW,CAAE,MAAM,CACnB,eAAe,CAAE,aAAa,CAUjC,AAlCT,AA0BY,kBA1BM,CAQV,OAAO,CAMP,CAAC,CAYG,MAAM,AAAC,CACH,OAAO,CAAE,YAAY,CACrB,IAAI,CAAE,QAAQ,CACjB,AA7Bb,AA8BY,kBA9BM,CAQV,OAAO,CAMP,CAAC,CAgBG,UAAU,AAAC,CACP,OAAO,CAAE,YAAY,CACrB,IAAI,CAAE,QAAQ,CACjB"
+}

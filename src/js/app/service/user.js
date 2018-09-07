@@ -139,9 +139,11 @@ define([
         },
 
         /**
-         * Set a user, if one exists already, it will be replaced !
-         * @param {user} user
+         * Set a user (add or replace), if one exists already, it will be replaced !
+         *
+         * @param {user} user - a valid user
          * @returns {Promise<Boolean>} resolves with true if set
+         * @throws {TypeError} when trying to set an invalid user
          */
         set : function set(user){
 
@@ -170,23 +172,27 @@ define([
         },
 
         /**
-         * Update a user,
-         * if an entry was already there, we will merge them,
+         * Update by merge a user.
+         *
+         * If an entry was already there, we will merge them,
          * using the existing values as default.
          *
-         * @param {user} user - the user to update
+         * The merge is only done at the 1st level.
+         *
+         * @param {String} id - the user identifier
+         * @param {Object|user} properties - the properties to set to the user
          * @returns {Promise<Boolean>} resolves with true if updated
          */
-        update : function update(user){
+        update : function update(id, properties){
             var self = this;
 
-            if(!_.isPlainObject(user) || !user.id){
+            if(!_.isPlainObject(properties) || _.isEmpty(id) ){
                 return Promise.resolve(false);
             }
 
-            return this.getById(user.id)
+            return this.getById(id)
                 .then(function(existingUser){
-                    return self.set(_.defaults(user, existingUser || {}));
+                    return self.set(_.defaults(properties, existingUser || {}));
                 });
         },
 

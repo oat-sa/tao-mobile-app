@@ -67,10 +67,10 @@ define([
                 });
             }
             return request({
-                data : JSON.stringify({
+                body : {
                     login:    credentials.username,
                     password: credentials.password
-                })
+                }
             })
             .then(function(response){
                 var user;

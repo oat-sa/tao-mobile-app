@@ -82,6 +82,35 @@ define(['app/core/router'], function(router){
         });
     });
 
+    QUnit.asyncTest('Dispatch a route with parameters', function(assert) {
+        var parameters = {
+            test : true,
+            foo  : ['bar', 'baz']
+        };
+        QUnit.expect(6);
+
+        router
+            .on('dispatching', function(route, taoRoute, params){
+                assert.equal(route, 'test/index', 'The dispatching route is correct');
+                assert.equal(taoRoute, 'app/test/index', 'The internale routes are mapped to the fake app extension');
+                assert.deepEqual(params, parameters, 'The given parameters are sent through the events');
+            })
+            .on('dispatched', function(route, taoRoute, params){
+                assert.equal(route, 'test/index', 'The dispatching route is correct');
+                assert.equal(taoRoute, 'app/test/index', 'The internale routes are mapped to the fake app extension');
+                assert.deepEqual(params, parameters, 'The given parameters are sent through the events');
+
+                QUnit.start();
+            });
+
+        router
+            .dispatch('test/index', parameters)
+            .catch(function(err){
+                assert.ok(false, err.message);
+                QUnit.start();
+            });
+    });
+
     QUnit.asyncTest('Fail dispatching', function(assert) {
         QUnit.expect(5);
 

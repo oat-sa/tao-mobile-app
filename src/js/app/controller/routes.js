@@ -29,6 +29,7 @@ define(function(){
         'delivery': {
             'actions' : {
                 'index' : 'controller/delivery/index',
+                'runner' : 'controller/delivery/runner'
             }
         },
         'main': {

@@ -8,6 +8,5 @@
         <a href="#" title="{{__ 'Logout'}}" data-route="main/logout"><span class="icon-logout"></span></a>
     </nav>
 </header>
-<section>
-    <p>{{__ 'No test available'}}</p>
+<section class="tests">
 </section>

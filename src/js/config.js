@@ -48,16 +48,36 @@
             'handlebars':  '../taodist/tao/views/js/lib/handlebars',
             'jquery':      '../taodist/tao/views/js/lib/jquery-1.8.0.min',
             'async':       '../taodist/tao/views/js/lib/async',
+            'mathJax'    : '../taodist/taoQtiItem/views/js/mathjax/MathJax',
+            'ckeditor'          : '../taodist/tao/views/js/lib/ckeditor/ckeditor',
+            'raphael'           : '../taodist/tao/views/js/lib/raphael/raphael',
+            'scale.raphael'     : '../taodist/tao/views/js/lib/raphael/scale.raphael',
+            'select2'           : '../taodist/tao/views/js/lib/select2/select2.min',
+            'nouislider'        : '../taodist/tao/views/js/lib/sliders/jquery.nouislider',
+            'qtip'       : '../taodist/tao/views/js/lib/jquery.qtip/jquery.qtip',
+            'interact'       : '../taodist/tao/views/js/lib/interact',
             'i18n':        '../taodist/tao/views/js/i18n',
             'router':      '../taodist/tao/views/js/router',
             'urlParser':   '../taodist/tao/views/js/urlParser',
             'util':        '../taodist/tao/views/js/util',
+            'class':        '../taodist/tao/views/js/lib/class',
             'layout':      '../taodist/tao/views/js/layout',
             'context':     '../taodist/tao/views/js/context',
+            'iframeNotifier':     '../taodist/tao/views/js/iframeNotifier',
             'i18ntr':      '../taodist/tao/views/locales/en-US',
             'core':        '../taodist/tao/views/js/core',
             'tao':         '../taodist/tao/views/js',
             'taoCss':      '../taodist/tao/views/css',
+            'taoTests':         '../taodist/taoTests/views/js',
+            'taoTestsCss':      '../taodist/taoTests/views/css',
+            'taoQtiTest':         '../taodist/taoQtiTest/views/js',
+            'taoQtiTestCss':      '../taodist/taoQtiTest/views/css',
+            'taoQtiItem':         '../taodist/taoQtiItem/views/js',
+            'taoQtiItemCss':      '../taodist/taoQtiItem/views/css',
+            'taoItems':         '../taodist/taoItems/views/js',
+            'taoItemsCss':      '../taodist/taoItems/views/css',
+            'qtiCustomInteractionContext': '../taodist/taoQtiItem/views/js/runtime/qtiCustomInteractionContext',
+            'qtiInfoControlContext':       '../taodist/taoQtiItem/views/js/runtime/qtiInfoControlContext',
         },
 
         config: {
@@ -127,6 +147,15 @@
                     details : {
                         method: 'POST',
                         path : '/taoSync/SynchronisationApi/fetchEntityDetails'
+                    },
+                    assembly : {
+                        method: 'GET',
+                        path : '/taoMobileApp/MobileServices/assembly',
+                        responseType : 'blob',
+                        headers : {
+                            'Content-Type' : 'application/zip',
+                            'Accept':        'application/zip'
+                        }
                     }
                 }
             }
@@ -135,6 +164,8 @@
             'moment': {
                 exports: 'moment'
             },
+
+            'class'                 : { exports : 'Class'},
             '/socket.io/socket.io': {
                 exports: 'io'
             }

@@ -29,11 +29,10 @@
  * @author Bertrand Chevrier <bertrand@taotesting.com>
  */
 define([
-    'jquery',
     'lodash',
     'i18n',
     'module'
-], function($, _, __, module){
+], function(_, __, module){
     'use strict';
 
     /**
@@ -67,56 +66,114 @@ define([
          * @param {String} [config.path] - the path of the URL (will be concatenated to the endpoint)
          * @param {String} [config.method] - the HTTP method
          * @param {Object} [config.headers] - additional headers
-         * @param {Object} [config.data] - request data (queryString for GET, JSON body for POST)
+         * @param {Object} [config.queryString] - parameters to add to the query
+         * @param {Object} [config.body] - request data
          * @returns {Function} the function to perform the request
          */
         return function request(requestConfig){
+
+            var xhr = new XMLHttpRequest();
+            var body;
+            var url;
+            var queryString;
+
             requestConfig = _.defaults(requestConfig || {}, config, {
                 method : 'GET',
-                path   : '',
-                headers: {}
+                responseType: 'json',
+                path   : ''
             });
+            requestConfig.headers = _.defaults(requestConfig.headers || {}, config.headers, {
+                'Content-Type' : 'application/json',
+                'Accept':        'application/json'
+            });
+
 
             if(!_.isString(requestConfig.endpoint) || _.isEmpty(requestConfig.endpoint)){
                 throw new Error(errorMessages.misconfiguredEndpoint);
             }
 
-            return new Promise(function(resolve, reject){
-                var method = requestConfig.method.toUpperCase();
-                $.ajax({
-                    url: requestConfig.endpoint + requestConfig.path,
-                    type: method,
-                    dataType: 'json',
-                    contentType: 'application/json',
-                    headers : requestConfig.headers,
-                    data : requestConfig.data
-                })
-                .done(function(response, status, xhr){
-                    if ( (xhr.status === 200 || xhr.status === 302) && response){
-                        return resolve({
-                            success : true,
-                            data    : response
+            //build the URL
+            url = requestConfig.endpoint + requestConfig.path;
+
+            //serialize and append query string
+            if(requestConfig.queryString){
+                queryString = _.reduce(requestConfig.queryString, function(acc, value, key){
+                    if(_.isPlainObject(value)){
+                        _.forEach(value, function(subValue, subKey){
+                            acc.push(key + '[' + subKey + ']=' + encodeURIComponent(subValue));
                         });
+                    } else {
+                        acc.push(key + '=' + encodeURIComponent(value));
                     }
+                    return acc;
+                }, []);
+
+                if(url.indexOf('?') < 0){
+                    url += '?';
+                }
+                url += queryString.join('&');
+            }
+
+            //encode the body
+            if(requestConfig.body) {
+                if(requestConfig.headers['Content-Type'] === 'application/json' && _.isPlainObject(requestConfig.body)){
+                    body = JSON.stringify(requestConfig.body);
+                } else {
+                    body = requestConfig.body;
+                }
+            }
+
+            return new Promise(function(resolve) {
+
+                xhr.open(requestConfig.method.toUpperCase(), url);
+
+                if(requestConfig.responseType){
+                    xhr.responseType = requestConfig.responseType;
+                } else {
+                    xhr.responseType = 'text';
+                }
+
+                _.forEach(requestConfig.headers, function(value, header){
+                    xhr.setRequestHeader(header, value);
+                });
+
+                xhr.addEventListener('error', function(){
                     return resolve({
                         success : false,
                         errorCode : xhr.status,
-                        errorMessage : errorMessages.noContent
+                        errorMessage : errorMessages.unavaibleEndpoint
                     });
-                })
-                .fail(function(xhr){
-                    if(xhr.status === 401 || xhr.status === 403){
+                });
+                xhr.addEventListener('load', function(){
+                    var errorMessage;
+
+                    if(xhr.status === 200 || xhr.status === 302){
                         return resolve({
-                            success : false,
-                            errorCode : xhr.status,
-                            errorMessage : errorMessages.unauthorized
+                            success : true,
+                            data: xhr.response
                         });
                     }
-                    if(xhr.status === 0){
-                        return reject(new Error(errorMessages.unavaibleEndpoint));
+                    if(xhr.status  === 0 && xhr.readyState === 4){
+                        errorMessage = errorMessages.unavaibleEndpoint;
                     }
-                    return reject(new Error(errorMessages.serverError + ' (' + xhr.status + ' : ' + xhr.statusText + ')' ));
+                    if(xhr.status  === 401 || xhr.status === 403){
+                        errorMessage = errorMessages.unauthorized;
+                    }
+                    else if(xhr.status === 201) {
+                        errorMessage = errorMessages.noContent;
+                    }
+                    else {
+                        errorMessage = errorMessages.serverError + ' (' + xhr.status + ' ' + xhr.statusText + ')';
+                    }
+
+                    return resolve({
+                        success : false,
+                        errorCode : xhr.status,
+                        errorMessage : errorMessage
+                    });
                 });
+
+                xhr.send(body);
             });
         };
     };

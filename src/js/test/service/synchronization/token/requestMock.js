@@ -28,9 +28,9 @@ define([], function(){
     return function requestMockFactory(){
 
         return function requestMock(config){
-            if(config && config.data &&
-                config.data.client_id === 'foo' &&
-                config.data.client_secret === 'bar') {
+            if(config && config.queryString &&
+                config.queryString.client_id === 'foo' &&
+                config.queryString.client_secret === 'bar') {
 
                 return Promise.resolve({
                     success: true,

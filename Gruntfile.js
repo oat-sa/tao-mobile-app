@@ -17,6 +17,7 @@
  *
  */
 
+
 /**
  * Grunt configuration
  *
@@ -27,6 +28,30 @@ module.exports = function(grunt) {
 
     const target  = 'www/dist/';
     const taodist = 'src/taodist/';
+
+    const plugins = require('./src/js/app/runner/plugins.json');
+
+    const extensionHelper = require('./src/taodist/tao/views/build/tasks/helpers/extensions.js')(grunt, taodist);
+
+    var itemRuntime = extensionHelper.getExtensionSources('taoQtiItem', ['views/js/qtiItem/core/**/*.js', 'views/js/qtiCommonRenderer/renderers/**/*.js',  'views/js/qtiCommonRenderer/helpers/**/*.js'], true);
+    var testRuntime = extensionHelper.getExtensionSources('taoQtiTest', ['views/js/runner/**/*.js'], true);
+
+    //the list of file (entry points) to include in the app bundle
+    const includeInBundle = [
+        'lib/require',
+        'config',
+        'app/controller/routes',
+        'app/controller/admin/index',
+        'app/controller/main/login',
+        'app/controller/main/logout',
+        'app/controller/delivery/index',
+        'app/controller/delivery/runner',
+        'core/logger/console',
+        'loader/bootstrap'
+    ]
+    .concat(Object.keys(plugins))
+    .concat(itemRuntime)
+    .concat(testRuntime);
 
     grunt.config.init({
 
@@ -47,14 +72,17 @@ module.exports = function(grunt) {
             },
             app : {
                 files : [
-                    { src : 'src/scss/app.scss', dest : `${target}css/app.css`, },
                     {
+                        src : 'src/scss/app.scss',
+                        dest : `${target}css/app.css`
+                    }, {
                         expand: true,
-                        src: 'src/js/app/component/*/scss/*.scss',
+                        src: 'src/js/app/**/scss/*.scss',
                         rename : function(dest, src){
                             return src.replace(/scss/g, 'css');
                         }
-                    }
+                    },
+
                 ]
             }
         },
@@ -83,22 +111,12 @@ module.exports = function(grunt) {
                     optimize : 'none',
                     name: 'app',
                     out : `${target}js/app.min.js`,
-                    include: [
-                        'lib/require',
-                        'config',
-                        'app/controller/routes',
-                        'app/controller/admin/index',
-                        'app/controller/main/login',
-                        'app/controller/main/logout',
-                        'app/controller/delivery/index',
-                        'core/logger/console',
-                        'loader/bootstrap'
-                    ]
+                    include: includeInBundle,
+                    excludeShallow: ['ckeditor']
                 }
             },
 
             //build  bundle with optimization
-            //TODO share the file list
             build: {
                 options : {
                     optimize: 'uglify2',
@@ -110,24 +128,15 @@ module.exports = function(grunt) {
                     },
                     name: 'app',
                     out : `${target}js/app.min.js`,
-                    include: [
-                        'lib/require',
-                        'config',
-                        'app/controller/routes',
-                        'app/controller/admin/index',
-                        'app/controller/main/login',
-                        'app/controller/main/logout',
-                        'app/controller/delivery/index',
-                        'core/logger/console',
-                        'loader/bootstrap'
-                    ]
+                    include: includeInBundle,
+                    excludeShallow: ['ckeditor']
                 }
             }
         },
 
         watch: {
             sass : {
-                files : ['src/scss/**/*.scss', 'src/js/app/component/**/*.scss'],
+                files : ['src/scss/**/*.scss', 'src/js/app/**/*.scss'],
                 tasks : ['sass:app'],
                 options : {
                     debounceDelay : 1000
