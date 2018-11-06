@@ -33,9 +33,8 @@ define([
     'module',
     'core/eventifier',
     'core/logger',
-    'core/promiseQueue',
-    'router',
-], function(_, module, eventifier, loggerFactory, promiseQueue, router){
+    'core/router',
+], function(_, module, eventifier, loggerFactory, router){
     'use strict';
 
 
@@ -48,7 +47,7 @@ define([
     /**
      * Dispatch only one route at a time
      */
-    var queue = promiseQueue();
+    var last = Promise.resolve();
 
     /**
      * Customizable config
@@ -79,43 +78,47 @@ define([
             if(route.split('/').length <= 2){
                 taoRoute = appExtension + '/' + route;
             }
-            return queue.serie(function taoDispatch(){
 
-                logger.debug('Dispatching route ' + route + '(' + taoRoute + ')');
+            logger.debug('Dispatching route ' + route + '(' + taoRoute + ')');
 
-                /**
-                 * @event router#dispatching
-                 * @param {String} route - the given route
-                 * @param {String} taoRoute - the full route sent to the tao router
-                 * @param {Object} [params] - the dispatch parameters
-                 */
-                self.trigger('dispatching', route, taoRoute, params);
+            /**
+             * @event router#dispatching
+             * @param {String} route - the given route
+             * @param {String} taoRoute - the full route sent to the tao router
+             * @param {Object} [params] - the dispatch parameters
+             */
+            self.trigger('dispatching', route, taoRoute, params);
 
-                //we dispatch the route, in the queue, with a timeout
-                return Promise.race([
-                    new Promise( function(resolve){
+            //we dispatch the route, in the queue, with a timeout
+            return last.then(function(){
 
-                        router.dispatch(taoRoute, function dispatched(){
-
-                            logger.debug('Route ' + route + '(' + taoRoute + ') dispatched');
-
-                            /**
-                             * @event router#dispatched
-                             * @param {String} route - the given route
-                             * @param {String} taoRoute - the full route sent to the tao router
-                             * @param {Object} [params] - the dispatch parameters
-                             */
-                            self.trigger('dispatched', route, taoRoute, params);
-
-                            return resolve();
-                        });
+                var current = Promise.race([
+                    router.dispatch(taoRoute).then(function (){
+                        return false;
                     }),
-                    new Promise( function( resolve, reject){
+                    new Promise( function( resolve){
                         setTimeout(function(){
-                            return reject(new Error('Timeout : unable to dispatch the route ' + route));
+                            return resolve(true);
                         }, config.timeout);
                     })
                 ]);
+
+                last = current;
+                return current;
+            }).then(function(timeout){
+                if(timeout === true){
+                    throw new Error('Timeout : unable to dispatch the route ' + route);
+                }
+
+                logger.debug('Route ' + route + '(' + taoRoute + ') dispatched');
+
+                /**
+                  * @event router#dispatched
+                  * @param {String} route - the given route
+                  * @param {String} taoRoute - the full route sent to the tao router
+                  * @param {Object} [params] - the dispatch parameters
+                  */
+                self.trigger('dispatched', route, taoRoute, params);
             });
         }
     });
