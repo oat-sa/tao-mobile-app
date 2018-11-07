@@ -8,7 +8,6 @@
         Open Assessment Technologies S.A.
     </author>
     <preference name="Fullscreen" value="false" />
-    <preference name="android-windowSoftInputMode" value="stateUnspecified|adjustResize" />
     <preference name="DisallowOverscroll" value="true" />
     <preference name="android-minSdkVersion" value="19" />
     <platform name="android">
