@@ -30,13 +30,13 @@ define([
     'app/service/session',
     'app/component/synchronizer/synchronizer',
     'app/component/wipeout/wipeout',
+    'app/component/header/header',
     'app/service/synchronization/loader',
     'app/service/synchronization/client',
     'app/service/user',
     'app/service/eligibility',
     'app/service/delivery',
-    'app/service/deliveryAssembly',
-    'tpl!app/controller/admin/layout'
+    'app/service/deliveryAssembly'
 ], function(
     _,
     __,
@@ -45,13 +45,13 @@ define([
     sessionService,
     syncComponentFactory,
     wipeoutFactory,
+    headerComponentFactory,
     synchronizerFactory,
     client,
     userService,
     eligibilityService,
     deliveryService,
-    deliveryAssemblyService,
-    layoutTpl
+    deliveryAssemblyService
 ){
     'use strict';
 
@@ -95,11 +95,17 @@ define([
 
 
                 //TODO handle the layout globally
-                self.getContainer().innerHTML = layoutTpl(session.user);
+                headerComponentFactory(self.getContainer(), {
+                    title : __('Admin'),
+                    user  : session.user
+                })
+                .on('error', function(err){
+                    self.handleError(err);
+                });
 
                 //instantiate the sync component
                 syncComponent = syncComponentFactory(
-                    self.getContainer().querySelector('.sync-container'),
+                    self.getContainer(),
                     { targets : targets }
                 )
                 .on('start', function(targetType){
@@ -144,7 +150,7 @@ define([
                 });
 
 
-                wipeout = wipeoutFactory(self.getContainer().querySelector('.danger-zone'), {
+                wipeout = wipeoutFactory(self.getContainer(), {
                     confirmMessage : __('This action will remove all data, including your user profile. Once done, you will have to login again. Please confirm the wipeout.')
                 }).on('wipeout', function(){
 

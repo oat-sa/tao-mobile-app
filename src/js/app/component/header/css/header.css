@@ -1,0 +1,3 @@
+header.menu-bar{position:relative;height:8rem;background:#3e7da7;color:#fff;display:flex;flex-flow:row nowrap;align-items:stretch;padding-top:2.5rem}header.menu-bar h1{margin:0;font-size:2.4rem;flex:1 1 auto;text-align:center}header.menu-bar .profile{flex:0 0 8rem;text-align:center}header.menu-bar .profile>span{opacity:.9;color:#fff;font-size:2rem}header.menu-bar nav{flex:0 0 6rem;text-align:center}header.menu-bar nav a{color:#fff;font-size:2.2rem}
+
+/*# sourceMappingURL=header.css.map */
