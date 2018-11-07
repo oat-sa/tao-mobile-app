@@ -7,9 +7,8 @@
     <author email="bertrand@taotesting.com" href="http://taotesting.com">
         Open Assessment Technologies S.A.
     </author>
-    <preference name="Fullscreen" value="true" />
+    <preference name="Fullscreen" value="false" />
     <preference name="android-windowSoftInputMode" value="stateUnspecified|adjustResize" />
-    <!--<preference name="Orientation" value="landscape" />-->
     <preference name="DisallowOverscroll" value="true" />
     <preference name="android-minSdkVersion" value="19" />
     <platform name="android">
