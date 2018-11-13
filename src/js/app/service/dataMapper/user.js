@@ -85,6 +85,9 @@ define([
                         }
                     });
                 }
+                if(_.isString(outputUser.username)){
+                    outputUser.username = outputUser.username.toLowerCase();
+                }
                 if(_.isString(outputUser.createdAt)){
                     outputUser.createdAt = parseFloat(outputUser.createdAt);
                 }
