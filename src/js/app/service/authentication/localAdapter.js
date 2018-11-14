@@ -90,7 +90,7 @@ define([
             }
 
             return userService.getByUserName(credentials.username).then(function(user){
-                if(user && user.id && user.username === credentials.username && user.password){
+                if(user && user.id && user.username.toLowerCase() === credentials.username.toLowerCase() && user.password){
 
                     return verifyPassword(credentials.password, user.password)
                         .then(function(isPasswordMatching){
