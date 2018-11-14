@@ -48,7 +48,7 @@
             'handlebars':  '../taodist/tao/views/js/lib/handlebars',
             'jquery':      '../taodist/tao/views/js/lib/jquery-1.8.0.min',
             'async':       '../taodist/tao/views/js/lib/async',
-            'mathJax'    : '../taodist/taoQtiItem/views/js/mathjax/MathJax',
+            'mathJax'    : '//:empty',
             'ckeditor'          : '../taodist/tao/views/js/lib/ckeditor/ckeditor',
             'raphael'           : '../taodist/tao/views/js/lib/raphael/raphael',
             'scale.raphael'     : '../taodist/tao/views/js/lib/raphael/scale.raphael',
@@ -57,7 +57,6 @@
             'qtip'       : '../taodist/tao/views/js/lib/jquery.qtip/jquery.qtip',
             'interact'       : '../taodist/tao/views/js/lib/interact',
             'i18n':        '../taodist/tao/views/js/i18n',
-            'router':      '../taodist/tao/views/js/router',
             'urlParser':   '../taodist/tao/views/js/urlParser',
             'util':        '../taodist/tao/views/js/util',
             'class':        '../taodist/tao/views/js/lib/class',
@@ -92,7 +91,7 @@
                 'extension': '',
                 'module': '',
                 'action': '',
-                'bundle': true
+                'bundle': false
             },
             text: {
                 useXhr: function() {

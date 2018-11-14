@@ -116,12 +116,11 @@ define(['app/core/router'], function(router){
 
         router
             .on('dispatching', function(route, taoRoute){
-                assert.equal(route, 'foo/bar', 'The dispatching events is triggered anyway');
-                assert.equal(taoRoute, 'app/foo/bar', 'The extension replacement took place');
+                assert.equal(route, 'test/timeout', 'The dispatching events is triggered anyway');
+                assert.equal(taoRoute, 'app/test/timeout', 'The extension replacement took place');
             })
             .on('dispatched', function(){
                 assert.ok(false, 'The route should not dispatch');
-                QUnit.start();
             });
 
         setTimeout(function(){
@@ -129,14 +128,14 @@ define(['app/core/router'], function(router){
         }, 475);
 
         router
-            .dispatch('foo/bar')
+            .dispatch('test/timeout')
             .then(function(){
                 assert.ok(false, 'The route should not dispatch');
                 QUnit.start();
             })
             .catch(function(err){
                 assert.ok(true, 'The route cannot dispatch it does not exists');
-                assert.equal(err.message, 'Timeout : unable to dispatch the route foo/bar', 'The rejection error is correct');
+                assert.equal(err.message, 'Timeout : unable to dispatch the route test/timeout', 'The rejection error is correct');
                 QUnit.start();
             });
     });

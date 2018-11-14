@@ -78,6 +78,11 @@ define([
                                 });
                             }
                             logger.debug('User ' + username + ' not identified from syncManager adapter');
+
+                            //we handle only some of the errors to the user, the others are considered
+                            if(result && result.success === false && (result.errorCode === 0 || result.errorCode > 403)){
+                                throw new Error(result.errorMessage);
+                            }
                         });
                 }
                 return user;

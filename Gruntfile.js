@@ -155,7 +155,12 @@ module.exports = function(grunt) {
         copy : {
             build : {
                 files : [
-                    {expand: true, cwd: `${taodist}tao/views/css`, src: ['font/**'], dest: `${target}css/` },
+                    {
+                        expand: true,
+                        cwd: `${taodist}tao/views/css`,
+                        src: ['font/**/*.{eot,svg,ttf,woff}'],
+                        dest: `${target}css/`
+                    },
                 ]
             }
         }
