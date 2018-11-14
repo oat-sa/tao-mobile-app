@@ -87,7 +87,7 @@ define([
                 'Accept':        'application/json'
             });
 
-
+            //check if the endpoint is configured
             if(!_.isString(requestConfig.endpoint) || _.isEmpty(requestConfig.endpoint)){
                 throw new Error(errorMessages.misconfiguredEndpoint);
             }
@@ -125,7 +125,27 @@ define([
 
             return new Promise(function(resolve) {
 
+                /**
+                 * Format the error response
+                 * @param {Number} code - the error code
+                 * @param {String} message - the error message
+                 * @returns {Promise<Object>} the response
+                 */
+                var resolveError = function resolveWith(code, message){
+                    return resolve({
+                        success : false,
+                        errorCode : code,
+                        errorMessage : message
+                    });
+                };
+
+                //formulate the request
+
                 xhr.open(requestConfig.method.toUpperCase(), url);
+
+                if(config.timeout && config.timeout > 0){
+                    xhr.timeout = config.timeout;
+                }
 
                 if(requestConfig.responseType){
                     xhr.responseType = requestConfig.responseType;
@@ -137,15 +157,17 @@ define([
                     xhr.setRequestHeader(header, value);
                 });
 
+                //we consider the service unavailable in case or network errors...
                 xhr.addEventListener('error', function(){
-                    return resolve({
-                        success : false,
-                        errorCode : xhr.status,
-                        errorMessage : errorMessages.unavaibleEndpoint
-                    });
+                    return resolveError(0, errorMessages.unavaibleEndpoint);
                 });
+
+                //... Or in case of timeout, if any
+                xhr.addEventListener('timeout', function(){
+                    return resolveError(0, errorMessages.unavaibleEndpoint);
+                });
+
                 xhr.addEventListener('load', function(){
-                    var errorMessage;
 
                     if(xhr.status === 200 || xhr.status === 302){
                         return resolve({
@@ -153,24 +175,47 @@ define([
                             data: xhr.response
                         });
                     }
-                    if(xhr.status  === 0 && xhr.readyState === 4){
-                        errorMessage = errorMessages.unavaibleEndpoint;
-                    }
-                    if(xhr.status  === 401 || xhr.status === 403){
-                        errorMessage = errorMessages.unauthorized;
-                    }
-                    else if(xhr.status === 201) {
-                        errorMessage = errorMessages.noContent;
-                    }
-                    else {
-                        errorMessage = errorMessages.serverError + ' (' + xhr.status + ' ' + xhr.statusText + ')';
+
+                    if( xhr.status  === 0 && xhr.readyState === 4){
+                        return resolveError(0, errorMessages.unavaibleEndpoint);
                     }
 
-                    return resolve({
-                        success : false,
-                        errorCode : xhr.status,
-                        errorMessage : errorMessage
-                    });
+                    //In Cordova apps (device) you'll have a 401 on the preflight request when
+                    //the server is not reachable. The CORS policy denies is request because the
+                    //preflight did not succeed, so it sends you a 401 instead of 0. :/
+                    if(xhr.status === 401){
+                        if(requestConfig.method.toLowerCase() !== 'head'){ //prevent too much recursion
+
+                            //so we head to the server to verify if we are really unauthorized
+                            //or if the service is not available
+                            return request({
+                                endpoint : requestConfig.endpoint,
+                                path     : '/',
+                                method   : 'head'
+                            })
+                            .then(function(response){
+
+                                //the server is reachable, it's a regular 401
+                                if(response.success === true){
+                                    return resolveError(401, errorMessages.unauthorized);
+                                } else {
+                                    return resolveError(0, errorMessages.unavaibleEndpoint);
+                                }
+                            })
+                            .catch(function(err){
+                                return resolveError(500, errorMessages.serverError + ':' + err.message);
+                            });
+                        }
+                        return resolveError(401, errorMessages.unauthorized);
+                    }
+                    if(xhr.status === 403){
+                        return resolveError(403, errorMessages.unauthorized);
+                    }
+                    if(xhr.status === 201) {
+                        return resolveError(201, errorMessages.noContent);
+                    }
+
+                    return resolveError(xhr.status, errorMessages.serverError + ' (' + xhr.status + ' ' + xhr.statusText + ')');
                 });
 
                 xhr.send(body);

@@ -1,5 +1,5 @@
 <?xml version='1.0' encoding='utf-8'?>
-<widget id="com.taotesting.app" version="0.1.0" versionCode="1" xmlns="http://www.w3.org/ns/widgets" xmlns:gap="http://phonegap.com/ns/1.0">
+<widget id="com.taotesting.app" version="0.4.2" versionCode="1" xmlns="http://www.w3.org/ns/widgets" xmlns:gap="http://phonegap.com/ns/1.0">
     <name>TAO Mobile App</name>
     <description>
         Experimental app wrapper to run a tao test in mobile devices 
@@ -7,8 +7,7 @@
     <author email="bertrand@taotesting.com" href="http://taotesting.com">
         Open Assessment Technologies S.A.
     </author>
-    <preference name="Fullscreen" value="true" />
-    <preference name="Orientation" value="landscape" />
+    <preference name="Fullscreen" value="false" />
     <preference name="DisallowOverscroll" value="true" />
     <preference name="android-minSdkVersion" value="19" />
     <platform name="android">

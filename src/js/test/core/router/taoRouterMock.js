@@ -26,11 +26,16 @@ define([], function(){
     'use strict';
 
     return {
-        dispatch : function dispatch(route, cb){
-            console.log('mock route dispatch ' + route);
-            if(route === 'app/test/index'){
-                return setTimeout(cb, 10);
-            }
+        dispatch : function dispatch(route){
+            return new Promise(function(resolve, reject){
+                if(route === 'app/test/index'){
+                    return setTimeout(resolve, 10);
+                }
+                if(route === 'app/test/timeout'){
+                    return setTimeout(resolve, 1000);
+                }
+                return setTimeout(reject, 10);
+            });
         }
     };
 });
