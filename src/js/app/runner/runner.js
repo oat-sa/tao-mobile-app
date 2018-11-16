@@ -55,12 +55,12 @@ define([
      * @param {String} deliveryId
      * @param {String} assemblyPath
      */
-    return function appRunnerFactory(container, deliveryId, assemblyPath){
+    return function appRunnerFactory(container, deliveryId, assemblyPath, deliveryExecutionId){
 
         var testConfig = {
             testDefinition: deliveryId,
             testCompilation: assemblyPath,
-            serviceCallId: deliveryId,
+            serviceCallId: deliveryExecutionId,
             deliveryServerConfig: [],
             bootstrap: {
                 timeout: 0,
@@ -74,7 +74,7 @@ define([
             plugins : plugins
         };
 
-        logger.debug('Launch test with ' +  deliveryId + ' ( ' + assemblyPath + ')');
+        logger.debug('Launch test with ' +  deliveryId + ' ( ' + assemblyPath + '), execution :' + deliveryExecutionId);
 
         runnerFactory.registerProvider('qti', qtiRunnerProvider);
         proxyFactory.registerProvider('appProxy', appProxyProvider);

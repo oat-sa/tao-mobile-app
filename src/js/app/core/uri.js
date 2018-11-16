@@ -18,32 +18,24 @@
  */
 
 /**
- * Service that manages deliveries.
+ * Manage URIs
+ *
  *
  * @author Bertrand Chevrier <bertrand@taotesting.com>
  */
-define([
-    'lodash',
-    'app/service/storeService',
-    'lib/uuid'
-], function(_, storeServiceFactory, uuid){
+define(['lib/uuid'], function(uuid) {
     'use strict';
 
-    var storeService = storeServiceFactory('delivery', 'delivery');
-
-    /**
-     * @typedef {Object} deliveryService
-     */
-    return _.assign(storeService, {
+    return {
 
         /**
-         * Generate a unique path
-         *
-         * @returns {String} the path
+         * Creates a brand new, unique and device related URI
+         * @param {String} [ontology = 'taoApp.rdf'
+         * @returns {String} the URI
          */
-        generatePathName : function generatePathName(){
-            return uuid(16);
+        create : function create(ontology){
+            ontology = ontology ||'taoApp.rdf';
+            return 'http://app.taocloud.org/' +  window.device.uuid + '/' + ontology + '#i' + uuid();
         }
-    });
+    };
 });
-

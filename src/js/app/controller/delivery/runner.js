@@ -26,8 +26,9 @@
 define([
     'app/controller/pageController',
     'app/service/session',
+    'app/service/deliveryExecution',
     'app/runner/runner',
-], function(pageController, sessionService, appRunnerFactory){
+], function(pageController, sessionService, deliveryExecutionService, appRunnerFactory){
     'use strict';
 
     /**
@@ -39,6 +40,14 @@ define([
 
             var params = this.getParams();
 
+            var handleError = function handleError(err){
+
+                self.handleError(err);
+                setTimeout(function(){
+                    self.getRouter().dispatch('delivery/index');
+                }, 4000);
+            };
+
             sessionService
                 .getCurrent()
                 .then(function(session){
@@ -48,19 +57,29 @@ define([
                     if(!params || !params.deliveryId || !params.assemblyPath){
                         throw new Error('Missing delivery parameters');
                     }
-                    return appRunnerFactory(self.getContainer(), params.deliveryId, params.assemblyPath);
+
+                    return deliveryExecutionService.create(params.deliveryId, session.user.id);
                 })
-                .then(function(runner){
-                    runner.on('destroy', function(){
-                        self.getRouter().dispatch('delivery/index');
-                    });
+                .then(function(deliveryExecution){
+
+                    return appRunnerFactory(
+                            self.getContainer(),
+                            params.deliveryId,
+                            params.assemblyPath,
+                            deliveryExecution.id
+                        )
+                        .then(function(runner){
+                            runner.on('destroy', function(){
+                                deliveryExecutionService
+                                    .finish(deliveryExecution.id)
+                                    .then(function(){
+                                        self.getRouter().dispatch('delivery/index');
+                                    })
+                                    .catch(handleError);
+                            });
+                        });
                 })
-                .catch(function(err){
-                    self.handleError(err);
-                    setTimeout(function(){
-                        self.getRouter().dispatch('delivery/index');
-                    }, 4000);
-                });
+                .catch(handleError);
         }
     });
 });
