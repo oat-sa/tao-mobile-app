@@ -131,7 +131,7 @@ define([
                  * @param {String} message - the error message
                  * @returns {Promise<Object>} the response
                  */
-                var resolveError = function resolveWith(code, message){
+                var resolveError = function resolveError(code, message){
                     return resolve({
                         success : false,
                         errorCode : code,

@@ -17,6 +17,7 @@
  *
  */
 
+const sass = require('node-sass');
 
 /**
  * Grunt configuration
@@ -66,6 +67,7 @@ module.exports = function(grunt) {
         //compile main scss and component scss
         sass : {
             options : {
+                implementation: sass,
                 includePaths : [ 'src/scss/', `${taodist}tao/views/scss/` ],
                 outputStyle : 'compressed',
                 sourceMap : true
