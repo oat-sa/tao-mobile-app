@@ -108,7 +108,7 @@ define([
         var extraParams = {};
 
         if(config.organisationId){
-            extraParams.organisationId = config.organisationId;
+            extraParams['organisation_id'] = config.organisationId;
         }
 
         /**

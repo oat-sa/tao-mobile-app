@@ -26,12 +26,13 @@
  * @author Bertrand Chevrier <bertrand@taotesting.com>
  */
 define([
+    'i18n',
     'app/controller/pageController',
     'app/service/session',
     'app/service/assignment',
     'app/component/deliveryLauncher/launcher',
-    'tpl!app/controller/delivery/layout'
-], function(pageController, sessionService, assignmentService, deliveryLauncherFactory, layoutTpl){
+    'app/component/header/header',
+], function(__, pageController, sessionService, assignmentService, deliveryLauncherFactory, headerComponentFactory){
     'use strict';
 
     return pageController({
@@ -55,16 +56,19 @@ define([
                 .getCurrent()
                 .then(function(session){
 
-                    //TODO handle the layout globally
-                    self.getContainer().innerHTML = layoutTpl(session.user);
+                    headerComponentFactory(self.getContainer(), {
+                        title : __('My tests'),
+                        user  : session.user
+                    })
+                    .on('error', function(err){
+                        self.handleError(err);
+                    });
 
                     return assignmentService
                         .getTestTakerDeliveries(session.user.id)
                         .then( function(deliveries) {
 
-                            var container =  self.getContainer().querySelector('.tests');
-
-                            deliveryLauncherFactory(container, { deliveries: deliveries })
+                            deliveryLauncherFactory(self.getContainer(), { deliveries: deliveries })
                                 .on('launch', function(id, delivery){
 
                                     logger.info('User ' + session.user.login + ' launches delivery ' + id);

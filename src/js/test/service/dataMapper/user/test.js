@@ -148,6 +148,38 @@ define(['app/service/dataMapper/user'], function(userDataMapper){
             role:          'syncManager',
             createdAt:     1525274752.9149,
         }
+    }, {
+        title : 'partial input with login upper case',
+        input : {
+            'id': 'http://a.org/tao.rdf#i1525274752697123',
+            'checksum': 'f4c19fff572ac1981ce560c29e5e8571',
+            'properties': {
+                'http://www.tao.lu/Ontologies/generis.rdf#login': 'AaronJames',
+                'http://www.tao.lu/Ontologies/generis.rdf#password': 'TSzCwsPz7358eee9cd2780ac9e8912a7cb08e4da246697eb5dfd5d181c050e63366a25cab1',
+                'http://www.tao.lu/Ontologies/generis.rdf#userFirstName': 'Aaron',
+                'http://www.tao.lu/Ontologies/generis.rdf#userLastName': 'James',
+                'http://www.tao.lu/Ontologies/generis.rdf#userMail': 'ajames@noone.net',
+                'http://www.tao.lu/Ontologies/generis.rdf#userRoles': 'http://www.tao.lu/Ontologies/generis.rdf#taoSyncManager',
+                'http://www.tao.lu/Ontologies/generis.rdf#userUILg': 'http://www.tao.lu/Ontologies/TAO.rdf#Langen-US',
+                'http://www.tao.lu/Ontologies/TAO.rdf#FirstTimeInTao': 'http://www.tao.lu/Ontologies/generis.rdf#False',
+                'http://www.taotesting.com/ontologies/synchro.rdf#organisationId': 'testorg1',
+                'http://www.w3.org/1999/02/22-rdf-syntax-ns#type': 'http://www.tao.lu/Ontologies/TAO.rdf#User',
+                'http://www.tao.lu/Ontologies/generis.rdf#userRoles': 'http://www.tao.lu/Ontologies/generis.rdf#taoSyncManager',
+                'http://www.w3.org/2000/01/rdf-schema#label': 'Sync Manager 43'
+            }
+        },
+        output : {
+            id:            'http://a.org/tao.rdf#i1525274752697123',
+            checksum:      'f4c19fff572ac1981ce560c29e5e8571',
+            username:      'aaronjames',
+            password:      'TSzCwsPz7358eee9cd2780ac9e8912a7cb08e4da246697eb5dfd5d181c050e63366a25cab1',
+            firstname:     'Aaron',
+            lastname:      'James',
+            email:         'ajames@noone.net',
+            originalRoles: ['http://www.tao.lu/Ontologies/generis.rdf#taoSyncManager'],
+            role:          'syncManager',
+            organisationId:'testorg1'
+        }
     }]).test('User mapping ', function(data, assert) {
 
         var output = userDataMapper(data.input);

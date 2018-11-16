@@ -103,7 +103,7 @@ define([
             }
             return store(userAuthStoreName)
                 .then(function(userAuthStore){
-                    return userAuthStore.getItem(username);
+                    return userAuthStore.getItem(username.toLowerCase());
                 })
                 .then(function(userAuth){
                     if(userAuth && userAuth.id){
@@ -161,7 +161,7 @@ define([
                 })
                 .then(function(userAuthStore){
                     if(userAuthStore){
-                        return userAuthStore.setItem(user.username, {
+                        return userAuthStore.setItem(user.username.toLowerCase(), {
                             role: user.role,
                             password : user.password,
                             id : user.id

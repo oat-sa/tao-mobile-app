@@ -149,7 +149,7 @@
                     },
                     assembly : {
                         method: 'GET',
-                        path : '/taoMobileApp/MobileServices/assembly',
+                        path : '/taoStaticDeliveries/RestStaticDeliveryExporter/assembly',
                         responseType : 'blob',
                         headers : {
                             'Content-Type' : 'application/zip',

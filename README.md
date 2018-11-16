@@ -204,6 +204,10 @@ See https://github.com/phonegap/phonegap-cli/issues/596
 Also very weird, but if you close the DevTools and restart the server the error will disappear.
 See https://github.com/phonegap/phonegap-cli/issues/770
 
+> Running the development server with a self signed certificate
+
+For now we need to manually set `secure : false` in the proxy options of `node_modules/connect-phonegap/lib/middleware/proxy.js` when using the dev server (`npm run dev`). For a bundled app, the build should be configured with the development flag.
+
 ### License
 
 > TBD
