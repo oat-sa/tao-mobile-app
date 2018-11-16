@@ -37,6 +37,7 @@ define([
     return pageController({
         start: function start(){
             var self = this;
+            var logger = this.getLogger();
 
             var params = this.getParams();
 

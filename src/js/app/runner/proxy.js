@@ -77,12 +77,12 @@ define([
          */
         init: function init(config, params) {
             var self = this;
-            var testIdentifier = config.serviceCallId;
+            var executionId = config.serviceCallId;
 
             //initialize the stores
             return Promise.all([
-                store('results-' + testIdentifier),
-                store('test-data-' + testIdentifier)
+                store('results-' + executionId),
+                store('test-data-' + executionId)
             ])
             .then(function(results) {
                 self.resultStore = results[0];
@@ -108,7 +108,7 @@ define([
                 self.itemStore = itemStoreFactory({
                     maxSize: itemNumber,
                     preload: false,
-                    testId: testIdentifier
+                    testId: executionId
                 });
 
                 return testData;

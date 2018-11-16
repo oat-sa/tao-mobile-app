@@ -28,7 +28,8 @@ define([
     'ui/feedback',
     'app/controller/pageController',
     'app/service/session',
-    'app/component/synchronizer/synchronizer',
+    'app/component/synchronizer/fetchSynchronizer',
+    'app/component/synchronizer/sendSynchronizer',
     'app/component/wipeout/wipeout',
     'app/component/header/header',
     'app/service/synchronization/loader',
@@ -46,7 +47,8 @@ define([
     syncComponentFactory,
     wipeoutFactory,
     headerComponentFactory,
-    synchronizerFactory,
+    fetchSynchronizerFactory,
+    sendSynchronizerFactory,
     client,
     userService,
     eligibilityService,
@@ -58,15 +60,23 @@ define([
     var targets = [{
         type : 'test-taker',
         name : __('Test takers'),
-        state: 'ready'
+        state: 'ready',
+        direction : 'fetch'
     }, {
         type : 'delivery',
         name : __('Deliveries'),
-        state: 'ready'
+        state: 'ready',
+        direction : 'fetch'
     }, {
         type : 'eligibility',
         name : __('Eligibilities'),
-        state: 'ready'
+        state: 'ready',
+        direction : 'fetch'
+    }, {
+        type : 'result',
+        name : __('Results'),
+        state: 'ready',
+        direction: 'send'
     }];
 
     return pageController({
@@ -89,7 +99,12 @@ define([
                 }
 
                 synchronizers = _.reduce(targets, function(acc, target){
-                    acc[target.type] = synchronizerFactory(target.type, syncConfig);
+                    if(target.direction === 'fetch'){
+                        acc[target.type] = fetchSynchronizerFactory(target.type, syncConfig);
+                    }
+                    if(target.direction === 'send'){
+                        acc[target.type] = sendSynchronizerFactory(target.type, syncConfig);
+                    }
                     return acc;
                 }, {});
 
@@ -119,6 +134,9 @@ define([
                                 var message = [];
 
                                 if(results){
+                                    if (results.sent && results.sent.length){
+                                        message.push( __('%d sent', results.sent.length));
+                                    }
                                     if (results.remove && results.remove.length){
                                         message.push( __('%d removed', results.remove.length));
                                     }

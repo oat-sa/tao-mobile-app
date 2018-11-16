@@ -53,7 +53,7 @@ define([
 ){
     'use strict';
 
-    var logger  = loggerFactory('app/service/synchronization/synchronizer');
+    var logger  = loggerFactory('app/service/synchronization/fetchSynchronizer');
 
     var defaultConfig = {
 

@@ -135,6 +135,17 @@ define([
                 state:      states.finished,
                 finishTime: Date.now()
             });
+        },
+
+        /**
+         * Get all delivery executions matching the given state
+         * @param {String} state
+         * @returns {Promise<Object[]>} resolves with the list of executions
+         */
+        getAllByState : function getAllByState(state){
+           return this.getAll().then(function(executions){
+                return _.filter(executions, { state : state} );
+           });
         }
     });
 });
