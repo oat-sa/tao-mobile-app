@@ -55,6 +55,11 @@ define([
 
     var logger  = loggerFactory('app/service/synchronization/fetchSynchronizer');
 
+    var directions    = {
+        send : 'send',
+        fetch: 'fetch'
+    };
+
     var defaultConfig = {
 
         /**
@@ -78,15 +83,23 @@ define([
      */
 
     //Lists the methods of a syncProvider
-    var syncProviderApi = [
-        'init',
-        'getRemoteResourceIds',
-        'getRemoteResources',
-        'getLocalResources',
-        'addResource',
-        'updateResource',
-        'removeResource'
-    ];
+    var syncProviderApi = {
+        fetch : [
+            'init',
+            'getRemoteResourceIds',
+            'getRemoteResources',
+            'getLocalResources',
+            'addResource',
+            'updateResource',
+            'removeResource'
+        ],
+        send : [
+            'init',
+            'getLocalResources',
+            'sendResource',
+            'removeResource'
+        ]
+    };
 
     /**
      * From a unique array of ids we create multiples array
@@ -113,9 +126,13 @@ define([
      * @throws {TypeError} if not valid
      */
     var validateSyncProvider = function validateSyncProvider(provider){
-        var isValid = _.isPlainObject(provider) && _.all(syncProviderApi, function(method){
-            return _.isFunction(provider[method]);
-        });
+        var isValid = _.isPlainObject(provider)  &&
+                      _.isString(provider.name) &&
+                      _.isString(directions[provider.direction]) &&
+                      _.isArray(syncProviderApi[provider.direction]) &&
+                      _.all(syncProviderApi[provider.direction], function(method){
+                          return _.isFunction(provider[method]);
+                      });
 
         if(!isValid){
             throw new TypeError('Please register a syncProvider that complies with the API');
@@ -130,6 +147,7 @@ define([
      * @param {Object} config
      * @param {String} config.key - the OAuth key linked to the syncManager profile
      * @param {String} config.secret - the OAuth secret  linked to the syncManager profile
+     * @param {String} [config.direction = fetch] - the sync direction
      * @param {Number} [config.chunkSize] - to change the size of the content load batches
      * @returns {synchronizer} the configured synchronizer
      * @throws {TypeError} if the provider isn't registered or values are missing in the config
@@ -175,41 +193,6 @@ define([
             start : function start(){
                 var self  = this;
 
-                var syncOperations = {
-                    add : [],
-                    update : [],
-                    remove : []
-                };
-
-                var totalOperations = 2;
-                var progress        = 0;
-
-                /**
-                 * Internal artifact to update the current progress based on the
-                 * number of operations to perform
-                 * @param {Number} [completeOperations = 1] - how much new operations get completed
-                 */
-                var updateProgress = function updateProgress(completedOperations){
-                    completedOperations = completedOperations || 1;
-                    if(totalOperations > 0){
-                        progress += (completedOperations / totalOperations) * 100;
-                    }
-                    self.trigger('progress', progress);
-                };
-
-                /**
-                 * Internal artifact to interrupt the promise chain
-                 * number of operations to perform
-                 * @param {*} results - to chain the promise results
-                 * @returns {*} the results parameter or reject the promise
-                 */
-                var stopIfCanceled = function stopIfCanceled(results){
-                    if(self.getState('canceled')){
-                        return Promise.reject({ cancel : true });
-                    }
-                    return results;
-                };
-
                 //prevent running the sync multiple times
                 if(this.getState('running')){
                     return Promise.reject(new Error('The synchronization is already running'));
@@ -218,96 +201,9 @@ define([
 
                 this.trigger('progress', 0);
 
-                // 1st step check the list of what to be synchronized
-                // and load all resources from DB to compare
-                return Promise
-                    .all([
-                        provider.getLocalResources.call(this),
-                        provider.getRemoteResourceIds.call(this),
-                    ])
-                    .then( stopIfCanceled )
-                    .then(function(results) {
-
-                        if(!results || results.length !== 2){
-                            throw new Error('Unable to compute operation from receieved data');
-                        }
-
-                        syncOperations =  self.computeNeededOperations(results[0], results[1]);
-
-                        //based on the computed operations we update the total for our progress
-                        totalOperations = _.reduce(syncOperations, function(acc, list){
-                            acc += list.length;
-                            return acc;
-                        }, totalOperations);
-
-                        //we consider the 2 provider calls above as 2 operations
-                        updateProgress(2);
-
-                        logger.info('[sync] ' + resourceType + ' : '  +
-                            _.map(syncOperations, function(list, key){
-                                return key + ' ' + list.length;
-                            }).join(',')
-                        );
-                    })
-                    .then( stopIfCanceled )
-                    .then(function(){
-                        //Remove
-                        return Promise.all(
-                            _.map(syncOperations.remove, function(id){
-                                return provider.removeResource.call(self, id);
-                            })
-                        );
-                    })
-                    .then( function(){
-                        updateProgress(syncOperations.remove.length);
-                    })
-                    .then( stopIfCanceled )
-                    .then(function(){
-
-                        //Update
-                        return Promise.all(
-                            //load resources by batch
-                            _.map(getIdsChunks(syncOperations.update, config.chunkSize), function(ids){
-                                return provider.getRemoteResources.call(self, ids).then(function(entities){
-
-                                    //then update the batch
-                                    return Promise.all(
-                                        _.map(entities, function(entity){
-                                            return provider.updateResource.call(self, entity.id, entity);
-                                        })
-                                    );
-                                })
-                                .then(function(){
-                                    updateProgress(ids.length);
-                                });
-                            })
-                        );
-                    })
-                    .then( stopIfCanceled )
-                    .then(function(){
-
-                        //Add
-                        return Promise.all(
-                            //load resources by batch
-                            _.map(getIdsChunks(syncOperations.add, config.chunkSize), function(ids){
-                                return provider.getRemoteResources.call(self, ids).then(function(entities){
-
-                                    //then add the batch
-                                    return Promise.all(
-                                        _.map(entities, function(entity){
-                                            return provider.addResource.call(self, entity.id, entity);
-                                        })
-                                    );
-                                })
-                                .then(function(){
-                                    updateProgress(ids.length);
-                                });
-                            })
-                        );
-                    })
-                    .then(function(){
-
-                        self.trigger('progress', progress );
+                //call this.fetch or this.send
+                return this[provider.direction]()
+                    .then(function(syncOperations){
 
                         self.setState('running', false)
                             .setState('canceled', false);
@@ -330,6 +226,174 @@ define([
                     this.setState('canceled', true);
                 }
                 return this;
+            },
+
+            fetch : function fetch(){
+                var self = this;
+                var totalOperations = 2;
+                var progress = 0;
+                var syncOperations = {
+                    add    : [],
+                    update : [],
+                    remove : []
+                };
+
+                /**
+                 * Internal artifact to update the current progress based on the
+                 * number of operations to perform
+                 * @param {Number} [completeOperations = 1] - how much new operations get completed
+                 */
+                var updateProgress = function updateProgress(completedOperations){
+                    completedOperations = completedOperations || 1;
+                    if(totalOperations > 0){
+                        progress += (completedOperations / totalOperations) * 100;
+                    }
+                    self.trigger('progress', progress);
+                };
+
+                // 1st step check the list of what to be synchronized
+                // and load all resources from DB to compare
+                return Promise
+                    .all([
+                        provider.getLocalResources.call(this),
+                        provider.getRemoteResourceIds.call(this),
+                    ])
+                    .then( this.stopIfCanceled )
+                    .then(function(results) {
+
+                        if(!results || results.length !== 2){
+                            throw new Error('Unable to compute operation from receieved data');
+                        }
+
+                        syncOperations =  self.computeNeededOperations(results[0], results[1]);
+
+                        //based on the computed operations we update the total for our progress
+                        totalOperations = _.reduce(syncOperations, function(acc, list){
+                            acc += list.length;
+                            return acc;
+                        }, totalOperations);
+
+                        //we consider the 2 provider calls above as 2 operations
+                        updateProgress(2, totalOperations);
+
+                        logger.info('[sync ' + provider.direction + '] ' + resourceType + ' : '  +
+                            _.map(syncOperations, function(list, key){
+                                return key + ' ' + list.length;
+                            }).join(',')
+                        );
+                    })
+                    .then( this.stopIfCanceled )
+                    .then(function(){
+                        //Remove
+                        return Promise.all(
+                            _.map(syncOperations.remove, function(id){
+                                return provider.removeResource.call(self, id);
+                            })
+                        );
+                    })
+                    .then( function(){
+                        updateProgress(syncOperations.remove.length);
+                    })
+                    .then( this.stopIfCanceled )
+                    .then(function(){
+                        //Update
+                        return Promise.all(
+                            _.map(getIdsChunks(syncOperations.update, config.chunkSize), function(ids){
+                                return provider.getRemoteResources.call(self, ids)
+                                    .then(function(entities){
+
+                                        //then update the batch
+                                        return Promise.all(
+                                            _.map(entities, function(entity){
+                                                return provider.updateResource.call(self, entity.id, entity);
+                                            })
+                                        );
+                                    })
+                                    .then(function(){
+                                        updateProgress(ids.length);
+                                    });
+                            })
+                        );
+                    })
+                    .then( this.stopIfCanceled )
+                    .then(function(){
+
+                        //Add
+                        return Promise.all(
+                            //load resources by batch
+                            _.map(getIdsChunks(syncOperations.add, config.chunkSize), function(ids){
+                                return provider.getRemoteResources.call(self, ids)
+                                    .then(function(entities){
+
+                                        //then add the batch
+                                        return Promise.all(
+                                            _.map(entities, function(entity){
+                                                return provider.addResource.call(self, entity.id, entity);
+                                            })
+                                        );
+                                    })
+                                    .then(function(){
+                                        updateProgress(ids.length);
+                                    });
+                            })
+                        );
+                    })
+                    .then(function(){
+                        return syncOperations;
+                    });
+            },
+
+            send : function send(){
+                var self  = this;
+                var syncOperations = {
+                    send : [],
+                    remove : []
+                };
+                return provider.getLocalResources.call(this)
+                    .then( this.stopIfCanceled )
+                    .then(function(resources) {
+                        self.trigger('progress', 0);
+                        return resources;
+                    })
+                    .then(function(resources){
+
+                        logger.info('[sync ' + provider.direction + '] ' + resourceType + ' : '  + resources.length);
+                        //send
+                        return Promise.all(_.map(resources, function(resource, index){
+                            var id = resource.id;
+                            return provider.sendResource.call(self, id, resource)
+                                .then( self.stopIfCanceled )
+                                .then(function(success){
+                                    if(success){
+                                        syncOperations.send.push(id);
+                                        return provider.removeResource.call(self, id);
+                                    }
+                                    return false;
+                                })
+                                .then(function(success){
+                                    if(success){
+                                        syncOperations.remove.push(id);
+                                    }
+                                    self.trigger('progress', (index / resources.length) * 100);
+                                });
+                        }));
+                    })
+                    .then(function(){
+                        return syncOperations;
+                    });
+            },
+
+            /**
+             * Internal artifact to interrupt the promise chain
+             * number of operations to perform
+             * @param {*} results - to chain the promise results
+             * @returns {*} the results parameter or reject the promise
+             */
+            stopIfCanceled : function stopIfCanceled(results){
+               /* if(this.getState('canceled')){
+                    return Promise.reject({ cancel : true });
+                }*/
+                return results;
             },
 
             /**

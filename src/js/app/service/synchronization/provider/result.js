@@ -24,12 +24,15 @@
  */
 define([
     'lodash',
+    'app/core/timestamp',
     'app/service/deliveryExecution',
+    'app/service/result',
     'app/service/synchronization/client',
-], function(_, deliveryExecutionService, syncClientFactory){
+], function(_, timestampHelper,  deliveryExecutionService, resultService, syncClientFactory){
     'use strict';
 
-    var resourceType = 'result';
+    //yes the API define the type in plural for results
+    var resourceType = 'results';
 
     /**
      * Implements the syncProviderApi to sync deliveries
@@ -42,6 +45,11 @@ define([
         name : resourceType,
 
         /**
+         * Sync direction
+         */
+        direction : 'send',
+
+        /**
          * Provider initialization
          * @param {Object} config
          * @param {String} config.key - the OAuth key linked to the syncManager profile
@@ -52,15 +60,16 @@ define([
             this.client = syncClientFactory(config);
         },
 
-
         /**
-         * Get all local deliveries
+         * Get all executions in finished state and not synchrnoized
          * @returns {Promise<Object>} resolves with the collection, indexed by id
          */
         getLocalResources : function getLocalResources(){
-            return deliveryExecutionService.getAllByState(deliveryExecutionService.states.finished)
-                .then( function(executions){
-                    console.log("FOUND EXECUTIONS", executions);
+
+            return deliveryExecutionService
+                .getAllByState(deliveryExecutionService.states.finished)
+                .then(function(executions){
+                    return _.reject(executions, 'synchronized');
                 });
         },
 
@@ -70,9 +79,37 @@ define([
          * @param {Object} resource - the delivery data
          * @returns {Promise<Boolean>} true id added
          */
-        sendResource : function sendResource(id){
+        sendResource : function sendResource(id, resource){
+            return resultService.getAllByDeliveryExecution(id)
+                .then(function(results){
 
-            return Promise.resolve(true);
+                    var content = {};
+
+                    console.log('RESULTS for ' + id);
+                    console.log(results);
+                    console.log('>>>>>>>>>>');
+
+                    content[id] =  {
+                        deliveryId : resource.delivery,
+                        deliveryExecutionId : id,
+                        details : {
+                            identifier:   id,
+                            label:        resource.label,
+                            'test-taker': resource.testTaker,
+                            state:        resource.state,
+                            starttime:    timestampHelper.toMicrotime(resource.startTime),
+                            finishtime:   timestampHelper.toMicrotime(resource.finishTime)
+                        },
+                        variables : results
+                    };
+
+                    return content;
+                })
+                .then(function(content){
+                    return this.client.sendResults({
+                        results : content
+                    });
+                });
         },
 
 
@@ -82,7 +119,7 @@ define([
          * @returns {Promise<Boolean>} true id removed
          */
         removeResource : function removeResource(id){
-
+            console.log('CALL REMOVE FOR RESULT FROM DELIVERY EXEC ', id);
             return Promise.resolve(true);
         }
     };

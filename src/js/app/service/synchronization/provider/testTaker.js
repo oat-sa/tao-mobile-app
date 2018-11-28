@@ -18,22 +18,22 @@
  */
 
 /**
- * Synchronization Provider for eligibilities
+ * Synchronization Provider for test takers
  *
  * @author Bertrand Chevrier <bertrand@taotesting.com>
  */
 define([
     'lodash',
-    'app/service/eligibility',
-    'app/service/dataMapper/eligibility',
+    'app/service/user',
+    'app/service/dataMapper/user',
     'app/service/synchronization/client'
-], function(_, eligibilityService, eligibilityDataMapper, syncClientFactory){
+], function(_, userService, userDataMapper, syncClientFactory){
     'use strict';
 
-    var resourceType = 'eligibility';
+    var resourceType = 'test-taker';
 
     /**
-     * Implements the syncProviderApi to sync eligibilities
+     * Implements the syncProviderApi to sync test takers
      */
     return {
 
@@ -41,6 +41,11 @@ define([
          * the provider name
          */
         name : resourceType,
+
+        /**
+         * Sync direction
+         */
+        direction : 'fetch',
 
         /**
          * Provider initialization
@@ -54,7 +59,7 @@ define([
         },
 
         /**
-         * Call the client to get the list of remote eligibilities,
+         * Call the client to get the list of remote test takers,
          * This list contains only ids and checksums
          * @returns {Promise<Object>} resolves with the collection, indexed by id
          */
@@ -64,7 +69,7 @@ define([
 
         /**
          * Call the client to retrieve remote resources from their id
-         * @param {String[]} ids - the ids of the eligibility to retrieve
+         * @param {String[]} ids - the ids of the test taker to retrieve
          * @returns {Promise<Object>} resolves with the collection, indexed by id
          */
         getRemoteResources : function getRemoteResources(ids){
@@ -72,55 +77,57 @@ define([
         },
 
         /**
-         * Get all local eligibilities
+         * Get all local test takers
          * @returns {Promise<Object>} resolves with the collection, indexed by id
          */
         getLocalResources : function getLocalResources(){
-            return eligibilityService.getAll().then( function(results){
-                var eligibilities;
+            return userService
+                .getAllByRole('testTaker')
+                .then( function(results){
+                    var users;
 
-                //an object with ids as key is required to compute sync operations
-                if(_.isArray(results)){
-                    eligibilities = _.reduce(results, function(acc, eligibility){
-                        if(eligibility && eligibility.id){
-                            acc[eligibility.id] = eligibility;
-                        }
-                        return acc;
-                    }, {});
-                } else {
-                    eligibilities = results;
-                }
-                return eligibilities;
-            });
+                    //an object with ids as key is required to compute sync operations
+                    if(_.isArray(results)){
+                        users = _.reduce(results, function(acc, user){
+                            if(user && user.id){
+                                acc[user.id] = user;
+                            }
+                            return acc;
+                        }, {});
+                    } else {
+                        users = results;
+                    }
+                    return users;
+                });
         },
 
         /**
-         * Add a eligibility
-         * @param {String} id - the identifier of the eligibility to add
-         * @param {Object} resource - the eligibility data
+         * Add a test taker
+         * @param {String} id - the identifier of the test taker to add
+         * @param {Object} resource - the test taker data
          * @returns {Promise<Boolean>} true id added
          */
         addResource : function addResource(id, resource){
-            return eligibilityService.set(eligibilityDataMapper(resource));
+            return userService.set(userDataMapper(resource));
         },
 
         /**
-         * Update a eligibility
-         * @param {String} id - the identifier of the eligibility to add
-         * @param {Object} resource - the new eligibility data
+         * Update a test taker
+         * @param {String} id - the identifier of the test taker to add
+         * @param {Object} resource - the new test taker data
          * @returns {Promise<Boolean>} true id updated
          */
         updateResource : function updateResource(id, resource){
-            return eligibilityService.update(id, eligibilityDataMapper(resource));
+            return userService.update(id, userDataMapper(resource));
         },
 
         /**
-         * Remove a eligibility
-         * @param {String} id - the identifier of the eligibility to delete
+         * Remove a test taker
+         * @param {String} id - the identifier of the test taker to delete
          * @returns {Promise<Boolean>} true id removed
          */
         removeResource : function removeResource(id){
-            return eligibilityService.remove(id);
+            return userService.remove(id);
         }
     };
 });

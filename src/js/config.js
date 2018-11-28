@@ -155,6 +155,14 @@
                             'Content-Type' : 'application/zip',
                             'Accept':        'application/zip'
                         }
+                    },
+                    result: {
+                        method: 'POST',
+                        path : '/taoSync/ResultApi/syncResults',
+                        headers : {
+                            'Content-Type' : 'application/json',
+                            'Accept':        'application/json'
+                        }
                     }
                 }
             }

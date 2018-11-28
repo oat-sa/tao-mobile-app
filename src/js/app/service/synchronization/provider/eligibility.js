@@ -18,23 +18,22 @@
  */
 
 /**
- * Synchronization Provider for deliveries
+ * Synchronization Provider for eligibilities
  *
  * @author Bertrand Chevrier <bertrand@taotesting.com>
  */
 define([
     'lodash',
-    'app/service/delivery',
-    'app/service/deliveryAssembly',
-    'app/service/dataMapper/delivery',
-    'app/service/synchronization/client',
-], function(_, deliveryService, deliveryAssemblyService, deliveryDataMapper, syncClientFactory){
+    'app/service/eligibility',
+    'app/service/dataMapper/eligibility',
+    'app/service/synchronization/client'
+], function(_, eligibilityService, eligibilityDataMapper, syncClientFactory){
     'use strict';
 
-    var resourceType = 'delivery';
+    var resourceType = 'eligibility';
 
     /**
-     * Implements the syncProviderApi to sync deliveries
+     * Implements the syncProviderApi to sync eligibilities
      */
     return {
 
@@ -42,6 +41,11 @@ define([
          * the provider name
          */
         name : resourceType,
+
+        /**
+         * Sync direction
+         */
+        direction : 'fetch',
 
         /**
          * Provider initialization
@@ -55,7 +59,7 @@ define([
         },
 
         /**
-         * Call the client to get the list of remote deliveries,
+         * Call the client to get the list of remote eligibilities,
          * This list contains only ids and checksums
          * @returns {Promise<Object>} resolves with the collection, indexed by id
          */
@@ -65,7 +69,7 @@ define([
 
         /**
          * Call the client to retrieve remote resources from their id
-         * @param {String[]} ids - the ids of the delivery to retrieve
+         * @param {String[]} ids - the ids of the eligibility to retrieve
          * @returns {Promise<Object>} resolves with the collection, indexed by id
          */
         getRemoteResources : function getRemoteResources(ids){
@@ -73,82 +77,55 @@ define([
         },
 
         /**
-         * Get all local deliveries
+         * Get all local eligibilities
          * @returns {Promise<Object>} resolves with the collection, indexed by id
          */
         getLocalResources : function getLocalResources(){
-            return deliveryService.getAll().then( function(results){
-                var deliveries;
+            return eligibilityService.getAll().then( function(results){
+                var eligibilities;
 
                 //an object with ids as key is required to compute sync operations
                 if(_.isArray(results)){
-                    deliveries = _.reduce(results, function(acc, user){
-                        if(user && user.id){
-                            acc[user.id] = user;
+                    eligibilities = _.reduce(results, function(acc, eligibility){
+                        if(eligibility && eligibility.id){
+                            acc[eligibility.id] = eligibility;
                         }
                         return acc;
                     }, {});
                 } else {
-                    deliveries = results;
+                    eligibilities = results;
                 }
-                return deliveries;
+                return eligibilities;
             });
         },
 
         /**
-         * Add a delivery
-         * @param {String} id - the identifier of the delivery to add
-         * @param {Object} resource - the delivery data
+         * Add a eligibility
+         * @param {String} id - the identifier of the eligibility to add
+         * @param {Object} resource - the eligibility data
          * @returns {Promise<Boolean>} true id added
          */
         addResource : function addResource(id, resource){
-
-            //adding a new delivery : we trigger the assembly download
-            //before inserting the delivery in the db.
-            var delivery = deliveryDataMapper(resource);
-
-            if(!delivery.assemblyPath){
-                delivery.assemblyPath = deliveryService.generatePathName();
-            }
-
-            return this.client.downloadDeliveryAssembly(id)
-                .then(function(result){
-                    return deliveryAssemblyService.save(id, delivery.assemblyPath, result);
-                })
-                .then(function(){
-                    return deliveryAssemblyService.getAssemblyDirBaseUrl(id, delivery.assemblyPath);
-                })
-                .then(function(){
-                    return deliveryService.set(delivery);
-                });
+            return eligibilityService.set(eligibilityDataMapper(resource));
         },
 
         /**
-         * Update a delivery
-         * @param {String} id - the identifier of the delivery to update
-         * @param {Object} resource - the new delivery data
+         * Update a eligibility
+         * @param {String} id - the identifier of the eligibility to add
+         * @param {Object} resource - the new eligibility data
          * @returns {Promise<Boolean>} true id updated
          */
         updateResource : function updateResource(id, resource){
-            var delivery = deliveryDataMapper(resource);
-
-            if(!delivery.assemblyPath){
-                delivery.assemblyPath = deliveryService.generatePathName();
-            }
-            return deliveryService.update(id, delivery);
+            return eligibilityService.update(id, eligibilityDataMapper(resource));
         },
 
         /**
-         * Remove a delivery
-         * @param {String} id - the identifier of the delivery to delete
+         * Remove a eligibility
+         * @param {String} id - the identifier of the eligibility to delete
          * @returns {Promise<Boolean>} true id removed
          */
         removeResource : function removeResource(id){
-
-            return deliveryAssemblyService.remove(id)
-                .then(function(){
-                    return deliveryService.remove(id);
-                });
+            return eligibilityService.remove(id);
         }
     };
 });
