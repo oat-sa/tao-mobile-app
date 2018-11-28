@@ -26,34 +26,24 @@ define([
     'lodash',
     'i18n',
     'ui/feedback',
+    'core/store',
     'app/controller/pageController',
     'app/service/session',
-    'app/component/synchronizer/fetchSynchronizer',
-    'app/component/synchronizer/sendSynchronizer',
+    'app/component/synchronizer/synchronizer',
     'app/component/wipeout/wipeout',
     'app/component/header/header',
     'app/service/synchronization/loader',
-    'app/service/synchronization/client',
-    'app/service/user',
-    'app/service/eligibility',
-    'app/service/delivery',
-    'app/service/deliveryAssembly'
 ], function(
     _,
     __,
     feedback,
+    store,
     pageController,
     sessionService,
     syncComponentFactory,
     wipeoutFactory,
     headerComponentFactory,
-    fetchSynchronizerFactory,
-    sendSynchronizerFactory,
-    client,
-    userService,
-    eligibilityService,
-    deliveryService,
-    deliveryAssemblyService
+    synchronizerFactory
 ){
     'use strict';
 
@@ -73,7 +63,7 @@ define([
         state: 'ready',
         direction : 'fetch'
     }, {
-        type : 'result',
+        type : 'results',
         name : __('Results'),
         state: 'ready',
         direction: 'send'
@@ -99,12 +89,7 @@ define([
                 }
 
                 synchronizers = _.reduce(targets, function(acc, target){
-                    if(target.direction === 'fetch'){
-                        acc[target.type] = fetchSynchronizerFactory(target.type, syncConfig);
-                    }
-                    if(target.direction === 'send'){
-                        acc[target.type] = sendSynchronizerFactory(target.type, syncConfig);
-                    }
+                    acc[target.type] = synchronizerFactory(target.type, syncConfig);
                     return acc;
                 }, {});
 
@@ -171,29 +156,24 @@ define([
                 wipeout = wipeoutFactory(self.getContainer(), {
                     confirmMessage : __('This action will remove all data, including your user profile. Once done, you will have to login again. Please confirm the wipeout.')
                 }).on('wipeout', function(){
-
                     logger.info('User ' + session.user.login + ' ask to wipeout the app data');
 
-                    Promise.all([
-                        userService.removeAll(),
-                        eligibilityService.removeAll(),
-                        deliveryService.removeAll(),
-                        deliveryAssemblyService.removeAll()
-                    ])
-                    .then(function(){
+                    store
+                        .removeAll()
+                        .then(function(){
 
-                        logger.info('Data wipeout');
+                            logger.info('Data wipeout');
 
-                        //inform the user and log out
-                        feedback().success(__('The application data has been removed'));
-                        setTimeout(function(){
-                            self.getRouter().dispatch('main/logout');
-                        }, 3000);
-                    })
-                    .catch(function(err){
-                        wipeout.reset();
-                        self.handleError(err);
-                    });
+                            //inform the user and log out
+                            feedback().success(__('The application data has been removed'));
+                            setTimeout(function(){
+                                self.getRouter().dispatch('main/logout');
+                            }, 3000);
+                        })
+                        .catch(function(err){
+                            wipeout.reset();
+                            self.handleError(err);
+                        });
                 });
             })
             .catch(function(err){
