@@ -34,8 +34,13 @@ define(['lib/uuid'], function(uuid) {
          * @returns {String} the URI
          */
         create : function create(ontology){
+
+            var deviceId = window.device.uuid || 'dev';
+
             ontology = ontology ||'taoApp.rdf';
-            return 'http://app.taocloud.org/' +  window.device.uuid + '/' + ontology + '#i' + uuid();
+
+
+            return 'http://app.taocloud.org/' +  deviceId + '/' + ontology + '#i' + uuid();
         }
     };
 });
