@@ -30,10 +30,10 @@ define([
     'use strict';
 
     var states = {
-        active:    'active',
-        finished:  'finished',
-        paused:    'paused',
-        abandoned: 'abandoned'
+        active:    'http://www.tao.lu/Ontologies/TAODelivery.rdf#DeliveryExecutionStatusActive',
+        finished:  'http://www.tao.lu/Ontologies/TAODelivery.rdf#DeliveryExecutionStatusFinished',
+        paused:    'http://www.tao.lu/Ontologies/TAODelivery.rdf#DeliveryExecutionStatusPaused',
+        abandoned:  'http://www.tao.lu/Ontologies/TAODelivery.rdf#DeliveryExecutionStatusAbandoned'
     };
 
     /**
@@ -66,7 +66,7 @@ define([
         if(_.isEmpty(deliveryExecution.testTaker)){
             throw new TypeError('A delivery execution needs to have a property testTaker');
         }
-        if(!states[deliveryExecution.state]){
+        if(!_.contains(states, deliveryExecution.state)){
             throw new TypeError('A delivery execution needs to have a valid property state');
         }
         return true;
@@ -90,17 +90,20 @@ define([
          * The execution starts now, in active state.
          * @param {String} deliveryId - the id of the linked delivery
          * @param {String} testTakerId - the id of the linked test taker
+         * @param {String} [label] - give a name to the execution
          *
          * @returns {Promise<deliveryExecution>} resolves with the new delivery execution
          */
-        create : function create(deliveryId, testTakerId){
+        create : function create(deliveryId, testTakerId, label){
             var deliveyExecution = {
-                id:         uri.create(),
-                delivery:   deliveryId,
-                testTaker:  testTakerId,
-                state:      states.active,
-                startTime:  Date.now(),
-                finishTIme: null
+                id:           uri.create(),
+                delivery:     deliveryId,
+                label:        label,
+                testTaker:    testTakerId,
+                state:        states.active,
+                startTime:    Date.now(),
+                finishTime:   null,
+                synchronized: false
             };
 
             return this.set(deliveyExecution).then(function(inserted){
@@ -143,9 +146,9 @@ define([
          * @returns {Promise<Object[]>} resolves with the list of executions
          */
         getAllByState : function getAllByState(state){
-           return this.getAll().then(function(executions){
+            return this.getAll().then(function(executions){
                 return _.filter(executions, { state : state} );
-           });
+            });
         }
     });
 });

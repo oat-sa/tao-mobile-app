@@ -36,7 +36,8 @@ define(['app/service/deliveryExecution'], function(deliveryExecutionService){
     QUnit.cases([
         { title : 'create' },
         { title : 'pause' },
-        { title : 'finish' }
+        { title : 'finish' },
+        { title : 'getAllByState' }
     ]).test('Service API ', function(data, assert) {
         assert.equal(typeof deliveryExecutionService[data.title], 'function', 'The service exposes the method "' + data.title);
     });
@@ -84,36 +85,38 @@ define(['app/service/deliveryExecution'], function(deliveryExecutionService){
             });
         }, TypeError, 'a valid state is expected');
 
-        deliveryExecutionService.set({
-            id:          'de1',
-            delivery:  'd1',
-            testTaker: 'tt1',
-            state:       deliveryExecutionService.states.active,
-            startTime:   Date.now()
-        })
-        .then(function(set){
-            assert.ok(set, 'With valid values the entity is set');
-            QUnit.start();
-        })
-        .catch(function(err){
-            assert.ok(false, err.message);
-            QUnit.start();
-        });
+        deliveryExecutionService
+            .set({
+                id:          'de1',
+                delivery:  'd1',
+                testTaker: 'tt1',
+                state:       deliveryExecutionService.states.active,
+                startTime:   Date.now()
+            })
+            .then(function(set){
+                assert.ok(set, 'With valid values the entity is set');
+                QUnit.start();
+            })
+            .catch(function(err){
+                assert.ok(false, err.message);
+                QUnit.start();
+            });
     });
 
     QUnit.asyncTest('deliveyExecution lifecycle', function(assert) {
 
-        QUnit.expect(15);
+        QUnit.expect(16);
 
         deliveryExecutionService
-            .create('delivery1', 'testTaker1')
+            .create('delivery1', 'testTaker1', 'My delivery')
             .then(function(deliveryExecution){
 
                 assert.equal(typeof deliveryExecution, 'object', 'A new execution is created');
                 assert.equal(typeof deliveryExecution.id, 'string', 'The created execution contains an id');
                 assert.equal(deliveryExecution.delivery, 'delivery1', 'The created execution contains the delivery id');
                 assert.equal(deliveryExecution.testTaker, 'testTaker1', 'The created execution contains the test taker id');
-                assert.equal(deliveryExecution.state, 'active', 'The created execution is in active state');
+                assert.equal(deliveryExecution.label, 'My delivery', 'The created execution contains the given label');
+                assert.equal(deliveryExecution.state, deliveryExecutionService.states.active, 'The created execution is in active state');
                 assert.ok(deliveryExecution.startTime > 0, 'The created execution has a start time');
                 assert.ok(deliveryExecution.startTime <= Date.now(), 'The created execution has a start time at the creation time');
 
@@ -128,7 +131,7 @@ define(['app/service/deliveryExecution'], function(deliveryExecutionService){
 
                 assert.equal(deliveryExecution.delivery, 'delivery1', 'The execution contains the delivery id');
                 assert.equal(deliveryExecution.testTaker, 'testTaker1', 'The execution contains the test taker id');
-                assert.equal(deliveryExecution.state, 'finished', 'The execution is in finished state');
+                assert.equal(deliveryExecution.state, deliveryExecutionService.states.finished, 'The created execution is in finished state');
                 assert.ok(deliveryExecution.startTime > 0, 'The execution has a start time');
                 assert.ok(deliveryExecution.finishTime > 0, 'The execution has a finish time');
                 assert.ok(deliveryExecution.finishTime <= Date.now(), 'The execution has a finish time');

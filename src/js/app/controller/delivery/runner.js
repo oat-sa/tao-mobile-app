@@ -55,30 +55,32 @@ define([
                     if(!session || !session.user || session.user.role !== 'testTaker'){
                         throw new Error('Attempt to start a delivery with a user role of ' + session.user.role);
                     }
-                    if(!params || !params.deliveryId || !params.assemblyPath){
+                    if(!params || !params.delivery || !params.delivery.id || !params.delivery.assemblyPath){
                         throw new Error('Missing delivery parameters');
                     }
 
-                    return deliveryExecutionService.create(params.deliveryId, session.user.id);
+                    return deliveryExecutionService.create(params.delivery.id, session.user.id, params.delivery.label);
                 })
                 .then(function(deliveryExecution){
 
+                    logger.debug('Delivery execution ' + deliveryExecution.id + ' created for user ' + deliveryExecution.testTakerId);
+
                     return appRunnerFactory(
-                            self.getContainer(),
-                            params.deliveryId,
-                            params.assemblyPath,
-                            deliveryExecution.id
-                        )
-                        .then(function(runner){
-                            runner.on('destroy', function(){
-                                deliveryExecutionService
-                                    .finish(deliveryExecution.id)
-                                    .then(function(){
-                                        self.getRouter().dispatch('delivery/index');
-                                    })
-                                    .catch(handleError);
-                            });
+                        self.getContainer(),
+                        params.delivery.id,
+                        params.delivery.assemblyPath,
+                        deliveryExecution.id
+                    )
+                    .then(function(runner){
+                        runner.on('destroy', function(){
+                            deliveryExecutionService
+                                .finish(deliveryExecution.id)
+                                .then(function(){
+                                    self.getRouter().dispatch('delivery/index');
+                                })
+                                .catch(handleError);
                         });
+                    });
                 })
                 .catch(handleError);
         }
