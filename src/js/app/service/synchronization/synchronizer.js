@@ -158,6 +158,13 @@ define([
 
         var provider = synchronizerFactory.getProvider(resourceType);
 
+        var stopIfCanceled = function stopIfCanceled(results){
+            if(synchronizer.getState('canceled')){
+                return Promise.reject({ cancel : true });
+            }
+            return results;
+        };
+
         if(!provider){
             throw new TypeError('No registered provider for resources of type ' + resourceType);
         }
@@ -264,7 +271,7 @@ define([
                         provider.getLocalResources.call(this),
                         provider.getRemoteResourceIds.call(this),
                     ])
-                    .then( this.stopIfCanceled )
+                    .then( stopIfCanceled )
                     .then(function(results) {
 
                         if(!results || results.length !== 2){
@@ -288,7 +295,7 @@ define([
                             }).join(',')
                         );
                     })
-                    .then( this.stopIfCanceled )
+                    .then( stopIfCanceled )
                     .then(function(){
                         //Remove
                         return Promise.all(
@@ -300,7 +307,7 @@ define([
                     .then( function(){
                         updateProgress(syncOperations.remove.length);
                     })
-                    .then( this.stopIfCanceled )
+                    .then( stopIfCanceled )
                     .then(function(){
                         //Update
                         return Promise.all(
@@ -321,7 +328,7 @@ define([
                             })
                         );
                     })
-                    .then( this.stopIfCanceled )
+                    .then( stopIfCanceled )
                     .then(function(){
 
                         //Add
@@ -362,7 +369,7 @@ define([
                     remove : []
                 };
                 return provider.getLocalResources.call(this)
-                    .then( this.stopIfCanceled )
+                    .then( stopIfCanceled )
                     .then(function(resources) {
                         self.trigger('progress', 0);
                         return resources;
@@ -374,7 +381,7 @@ define([
                         return Promise.all(_.map(resources, function(resource, index){
                             var id = resource.id;
                             return provider.sendResource.call(self, id, resource)
-                                .then( self.stopIfCanceled )
+                                .then( stopIfCanceled )
                                 .then(function(success){
                                     if(success){
                                         syncOperations.send.push(id);
@@ -393,19 +400,6 @@ define([
                     .then(function(){
                         return syncOperations;
                     });
-            },
-
-            /**
-             * Internal artifact to interrupt the promise chain
-             * number of operations to perform
-             * @param {*} results - to chain the promise results
-             * @returns {*} the results parameter or reject the promise
-             */
-            stopIfCanceled : function stopIfCanceled(results){
-                if(this.getState('canceled')){
-                    return Promise.reject({ cancel : true });
-                }
-                return results;
             },
 
             /**

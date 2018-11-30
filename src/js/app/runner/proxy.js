@@ -274,6 +274,9 @@ define([
                     self.getDataHolder().set('testMap', testMap);
 
                     return self.saveCurrentTestState();
+                },
+                exitTest : function exitTest(){
+
                 }
             };
 
@@ -372,8 +375,6 @@ define([
             var testContext = this.getDataHolder().get('testContext');
             var testMap = this.getDataHolder().get('testMap');
 
-
-
             if (!this.testStateStore || !this.itemStateStore) {
                 return Promise.reject(new Error('Please initiaze the proxy first'));
             }
@@ -419,8 +420,6 @@ define([
                                 }
                             });
                         }
-
-                        console.log('MERGED ITEM ', item);
 
                         resultCollector = resultCollectorFactory(self.testUri, self.executionId, item);
                         return Promise.all([

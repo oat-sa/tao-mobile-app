@@ -119,8 +119,8 @@ define([
                                 var message = [];
 
                                 if(results){
-                                    if (results.sent && results.sent.length){
-                                        message.push( __('%d sent', results.sent.length));
+                                    if (results.send && results.send.length){
+                                        message.push( __('%d sent', results.send.length));
                                     }
                                     if (results.remove && results.remove.length){
                                         message.push( __('%d removed', results.remove.length));

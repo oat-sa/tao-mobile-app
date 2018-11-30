@@ -111,7 +111,7 @@ define([
                     });
                 })
                 .then(function(response){
-                    return response && response.succes && response.data[id] && response.data[id].success;
+                    return response && response.success && response.data[id] && response.data[id].success;
                 });
         },
 
@@ -122,7 +122,7 @@ define([
          * @returns {Promise<Boolean>} true if the results are removed
          */
         removeResource : function removeResource(id){
-            return deliveryExecutionService.get(id)
+            return deliveryExecutionService.getById(id)
                 .then(function(execution){
                     execution.synchronized = true;
                     return deliveryExecutionService.set(execution);

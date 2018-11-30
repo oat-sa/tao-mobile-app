@@ -72,13 +72,15 @@ define([
                         deliveryExecution.id
                     )
                     .then(function(runner){
-                        runner.on('destroy', function(){
-                            deliveryExecutionService
-                                .finish(deliveryExecution.id)
-                                .then(function(){
-                                    self.getRouter().dispatch('delivery/index');
-                                })
-                                .catch(handleError);
+                        runner.after('destroy', function(){
+                            setTimeout(function(){
+                                deliveryExecutionService
+                                    .finish(deliveryExecution.id)
+                                    .then(function(){
+                                        self.getRouter().dispatch('delivery/index');
+                                    })
+                                    .catch(handleError);
+                            });
                         });
                     });
                 })
