@@ -228,6 +228,12 @@ define([
                 return this;
             },
 
+            /**
+             * Fetch sync
+             *
+             * @returns {Promise<Object>} resolves once the sync is done with the stats
+             * @trigger synchronizer#progress
+             */
             fetch : function fetch(){
                 var self = this;
                 var totalOperations = 2;
@@ -343,6 +349,12 @@ define([
                     });
             },
 
+            /**
+             * Send sync
+             *
+             * @returns {Promise<Object>} resolves once the sync is done with the stats
+             * @trigger synchronizer#progress
+             */
             send : function send(){
                 var self  = this;
                 var syncOperations = {
@@ -390,9 +402,9 @@ define([
              * @returns {*} the results parameter or reject the promise
              */
             stopIfCanceled : function stopIfCanceled(results){
-               /* if(this.getState('canceled')){
+                if(this.getState('canceled')){
                     return Promise.reject({ cancel : true });
-                }*/
+                }
                 return results;
             },
 
