@@ -166,6 +166,20 @@ define([
             });
         },
 
+        /**
+         * Create a result from a response
+         *
+         * @param {String} deliveryExecutionId - the identifier of the execution
+         * @param {String} testId - the URI/idenfier of the test
+         * @param {String} itemId - the URI/idenfier of the item
+         * @param {String} callIdItem - the identifier of the item calls id (execution.item-id.occurence)
+         * @param {Object} response - the response variabel
+         * @param {String} response.identifer - the identifier of the variable
+         * @param {String} response.cardinality - the variable cardinality (QTI)
+         * @param {String} response.baseType - the variable baseType (QTI)
+         * @param {Object|Array|String|Number} response.value - the variable value
+         * @returns {Promise<result>} resolves with the created result
+         */
         createFromResponse : function createFromResponse(deliveryExecutionId, testId, itemId, callIdItem, response){
             return this.create(
                 deliveryExecutionId,
@@ -177,6 +191,18 @@ define([
             );
         },
 
+        /**
+         * Create a result from an outcome
+         * Only single float outcomes are supported for now.
+         *
+         * @param {String} deliveryExecutionId - the identifier of the execution
+         * @param {String} testId - the URI/idenfier of the test
+         * @param {String} itemId - the URI/idenfier of the item
+         * @param {String} callIdItem - the identifier of the item calls id (execution.item-id.occurence)
+         * @param {String} identifer - the identifier of the variable
+         * @param {Number} value - the variable value
+         * @returns {Promise<result>} resolves with the created result
+         */
         createFromOutcome : function createFromOutcome(deliveryExecutionId, testId, itemId, callIdItem, identifier, value){
             return this.create(
                 deliveryExecutionId,
@@ -193,6 +219,17 @@ define([
             );
         },
 
+        /**
+         * Create a result from a duration
+         * Only single float outcomes are supported for now.
+         *
+         * @param {String} deliveryExecutionId - the identifier of the execution
+         * @param {String} testId - the URI/idenfier of the test
+         * @param {String} itemId - the URI/idenfier of the item
+         * @param {String} callIdItem - the identifier of the item calls id (execution.item-id.occurence)
+         * @param {String} duration - the duration formatted  in ISO-8601
+         * @returns {Promise<result>} resolves with the created result
+         */
         createFromDuration : function createFromDuration(deliveryExecutionId, testId, itemId, callIdItem, duration){
             return this.create(
                 deliveryExecutionId,
@@ -209,6 +246,16 @@ define([
             );
         },
 
+        /**
+         * Create a result from a number of attempt
+         *
+         * @param {String} deliveryExecutionId - the identifier of the execution
+         * @param {String} testId - the URI/idenfier of the test
+         * @param {String} itemId - the URI/idenfier of the item
+         * @param {String} callIdItem - the identifier of the item calls id (execution.item-id.occurence)
+         * @param {Number} attempt - the number of attempts
+         * @returns {Promise<result>} resolves with the created result
+         */
         createFromAttempt : function createFromAttempt(deliveryExecutionId, testId, itemId, callIdItem, attempt){
             return this.create(
                 deliveryExecutionId,
@@ -225,6 +272,16 @@ define([
             );
         },
 
+        /**
+         * Create a result from a completion status
+         *
+         * @param {String} deliveryExecutionId - the identifier of the execution
+         * @param {String} testId - the URI/idenfier of the test
+         * @param {String} itemId - the URI/idenfier of the item
+         * @param {String} callIdItem - the identifier of the item calls id (execution.item-id.occurence)
+         * @param {String} completion - the status
+         * @returns {Promise<result>} resolves with the created result
+         */
         createFromCompletion : function createFromCompletion(deliveryExecutionId, testId, itemId, callIdItem, completion){
             return this.create(
                 deliveryExecutionId,
@@ -241,6 +298,11 @@ define([
             );
         },
 
+        /**
+         * Get a all the results that belong to a delivery execution
+         * @param {String} deliveryExecutionId - the delivery execution id
+         * @returns {Promise<Object[]>} resolves with the collection of results
+         */
         getAllByDeliveryExecution : function getAllByDeliveryExecution(deliveryExecutionId){
             return this.getAll().then(function(results){
                 return _.filter(results, { deliveryExecutionId : deliveryExecutionId });
