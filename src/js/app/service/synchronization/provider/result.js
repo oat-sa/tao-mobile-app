@@ -27,7 +27,7 @@ define([
     'app/core/timestamp',
     'app/service/deliveryExecution',
     'app/service/result',
-    'app/service/synchronization/client',
+    'app/service/synchronization/client'
 ], function(_, timestampHelper,  deliveryExecutionService, resultService, syncClientFactory){
     'use strict';
 
@@ -61,7 +61,9 @@ define([
         },
 
         /**
-         * Get all executions in finished state and not synchrnoized
+         * Get all executions in finished state and not synchronized
+         * We will then send results for this delivery execution.
+         *
          * @returns {Promise<Object>} resolves with the collection, indexed by id
          */
         getLocalResources : function getLocalResources(){
@@ -74,20 +76,18 @@ define([
         },
 
         /**
-         * Add a delivery
-         * @param {String} id - the identifier of the result to send
-         * @param {Object} resource - the delivery data
-         * @returns {Promise<Boolean>} true id added
+         * Send delivery execution's results
+         *
+         * @param {String} id - the identifier of the delivery execution
+         * @param {Object} resource - the execution resource
+         * @returns {Promise<Boolean>} true id sent
          */
         sendResource : function sendResource(id, resource){
+            var self = this;
             return resultService.getAllByDeliveryExecution(id)
                 .then(function(results){
 
                     var content = {};
-
-                    console.log('RESULTS for ' + id);
-                    console.log(results);
-                    console.log('>>>>>>>>>>');
 
                     content[id] =  {
                         deliveryId : resource.delivery,
@@ -106,21 +106,38 @@ define([
                     return content;
                 })
                 .then(function(content){
-                    return this.client.sendResults({
+                    return self.client.sendResults({
                         results : content
                     });
+                })
+                .then(function(response){
+                    return response && response.succes && response.data[id] && response.data[id].success;
                 });
         },
 
 
         /**
-         * Remove a delivery
-         * @param {String} id - the identifier of the delivery to delete
-         * @returns {Promise<Boolean>} true id removed
+         * Removes the delivery execution's results
+         * @param {String} id - the identifier of the delivery execution
+         * @returns {Promise<Boolean>} true if the results are removed
          */
         removeResource : function removeResource(id){
-            console.log('CALL REMOVE FOR RESULT FROM DELIVERY EXEC ', id);
-            return Promise.resolve(true);
+            return deliveryExecutionService.get(id)
+                .then(function(execution){
+                    execution.synchronized = true;
+                    return deliveryExecutionService.set(execution);
+                })
+                .then(function(){
+                    return resultService.getAllByDeliveryExecution(id);
+                })
+                .then(function(results){
+                    return Promise.all(_.map(results, function(result){
+                        return resultService.remove(result.id);
+                    }));
+                })
+                .then(function(removed){
+                    return _.all(removed);
+                });
         }
     };
 });

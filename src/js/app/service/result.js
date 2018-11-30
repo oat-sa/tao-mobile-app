@@ -27,7 +27,7 @@ define([
     'app/service/storeService',
     'app/core/timestamp',
     'lib/uuid'
-], function(_, storeServiceFactory, timestampHelper uuid){
+], function(_, storeServiceFactory, timestampHelper, uuid){
     'use strict';
 
     var types = {
@@ -45,7 +45,7 @@ define([
      * @param {String} testId - the URI/idenfier of the test
      * @param {String} [callTestId = null] - the identifier of the test call id
      * @param {String} itemId - the URI/idenfier of the item
-     * @param {String} callItemId - the identifier of the item calls id (execution.item-id.occurence)
+     * @param {String} callIdItem - the identifier of the item calls id (execution.item-id.occurence)
      * @param {Object} data - the result variable data
      * @param {String} data.identifer - the identifier of the variable
      * @param {String} data.cardinality - the variable cardinality (QTI)
@@ -70,14 +70,14 @@ define([
         if(_.isEmpty(result.deliveryExecutionId)){
             throw new TypeError('A result needs to have a property deliveryExecutionId');
         }
-        if(_.isEmpty(result.callItemId)){
+        if(_.isEmpty(result.callIdItem)){
             throw new TypeError('A result needs to have a property deliveyExecutionId');
         }
         if(!_.contains(types, result.type)) {
             throw new TypeError('A result needs to have a valid property type');
         }
-        if(!result.callItemId && !result.callTestId) {
-            throw new TypeError('A result needs to have at least one of the callItemId or callTestId property');
+        if(!result.callIdItem && !result.callTestId) {
+            throw new TypeError('A result needs to have at least one of the callIdItem or callTestId property');
         }
         if(!_.isPlainObject(result.data)){
             throw new TypeError('A result needs to have a valid data property');
@@ -105,7 +105,7 @@ define([
          * @param {String} type - the variable type
          * @param {String} testId - the URI/idenfier of the test
          * @param {String} itemId - the URI/idenfier of the item
-         * @param {String} callItemId - the identifier of the item calls id (execution.item-id.occurence)
+         * @param {String} callIdItem - the identifier of the item calls id (execution.item-id.occurence)
          * @param {Object} data - the result variable data
          * @param {String} data.identifer - the identifier of the variable
          * @param {String} data.cardinality - the variable cardinality (QTI)
@@ -113,13 +113,13 @@ define([
          * @param {Object|Array|String|Number} data.value - the variable value
          * @returns {Promise<result>} resolves with the created result
          */
-        create : function create(deliveryExecutionId, type, testId, itemId, callItemId, variable){
+        create : function create(deliveryExecutionId, type, testId, itemId, callIdItem, variable){
             var result;
             var resultData;
 
             //minimal checks
             if(!_.isString(deliveryExecutionId) ||
-               !_.isString(callItemId) ||
+               !_.isString(callIdItem) ||
                !_.isString(itemId) ||
                !_.isString(testId) ||
                !_.contains(types, type) ||
@@ -152,10 +152,10 @@ define([
                 id:                  uuid(),
                 deliveryExecutionId: deliveryExecutionId,
                 type:                type,
-                callItemId:          callItemId,
+                callIdItem:          callIdItem,
                 callTestId:          null,
-                itemId:              itemId,
-                testId:              testId,
+                item:                itemId,
+                test:                testId,
                 data:                resultData
             };
             return this.set(result).then(function(created){
@@ -166,24 +166,24 @@ define([
             });
         },
 
-        createFromResponse : function createFromResponse(deliveryExecutionId, testId, itemId, callItemId, response){
+        createFromResponse : function createFromResponse(deliveryExecutionId, testId, itemId, callIdItem, response){
             return this.create(
                 deliveryExecutionId,
                 types.response,
                 testId,
                 itemId,
-                callItemId,
+                callIdItem,
                 response
             );
         },
 
-        createFromOutcome : function createFromOutcome(deliveryExecutionId, testId, itemId, callItemId, identifier, value){
+        createFromOutcome : function createFromOutcome(deliveryExecutionId, testId, itemId, callIdItem, identifier, value){
             return this.create(
                 deliveryExecutionId,
                 types.outcome,
                 testId,
                 itemId,
-                callItemId,
+                callIdItem,
                 {
                     identifier:  identifier,
                     cardinality: 'single',
@@ -193,13 +193,13 @@ define([
             );
         },
 
-        createFromDuration : function createFromDuration(deliveryExecutionId, testId, itemId, callItemId, duration){
+        createFromDuration : function createFromDuration(deliveryExecutionId, testId, itemId, callIdItem, duration){
             return this.create(
                 deliveryExecutionId,
                 types.response,
                 testId,
                 itemId,
-                callItemId,
+                callIdItem,
                 {
                     identifier:  'duration',
                     cardinality: 'single',
@@ -209,13 +209,13 @@ define([
             );
         },
 
-        createFromAttempt : function createFromAttempt(deliveryExecutionId, testId, itemId, callItemId, attempt){
+        createFromAttempt : function createFromAttempt(deliveryExecutionId, testId, itemId, callIdItem, attempt){
             return this.create(
                 deliveryExecutionId,
                 types.response,
                 testId,
                 itemId,
-                callItemId,
+                callIdItem,
                 {
                     identifier:  'numAttempts',
                     cardinality: 'single',
@@ -225,13 +225,13 @@ define([
             );
         },
 
-        createFromCompletion : function createFromCompletion(deliveryExecutionId, testId, itemId, callItemId, completion){
+        createFromCompletion : function createFromCompletion(deliveryExecutionId, testId, itemId, callIdItem, completion){
             return this.create(
                 deliveryExecutionId,
                 types.outcome,
                 testId,
                 itemId,
-                callItemId,
+                callIdItem,
                 {
                     identifier:  'completionStatus',
                     cardinality: 'single',
