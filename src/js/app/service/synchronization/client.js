@@ -197,8 +197,10 @@ define([
             },
 
             /**
-             *
-             *
+             * Download delivery assemblies
+             * @param {String} deliveryId - the identifier of the delivery
+             * @param {Boolean} [retrying = false] - retry with a new token (only once)
+             * @returns {Promise<Blob>} resolves with a zip file Blob (binary data)
              */
             downloadDeliveryAssembly : function downloadDeliveryAssembly(deliveryId, retrying){
 
@@ -229,6 +231,12 @@ define([
                     });
             },
 
+            /**
+             * Send results to the central server
+             * @param {Object} results - the results payload to send
+             * @param {Boolean} [retrying = false] - retry with a new token (only once)
+             * @returns {Promise<Object>} resolves with the response (with the ACK by deliveryExecution)
+             */
             sendResults : function sendResults(results, retrying){
 
                 return getAccessToken(retrying === true)
@@ -239,13 +247,12 @@ define([
                         }, clientConfig.api.result));
                     })
                     .then(function(response){
-                        console.log('rESPONSE', response);
                         if(response){
                             if(response.success === true){
                                 return response;
                             }
                             else if(!retrying && (response.status === 403 || response.status === 401) ){
-                                return self.senfResults(results, true);
+                                return self.sendResults(results, true);
                             }
                         }
                     });

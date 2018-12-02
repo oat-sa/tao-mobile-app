@@ -39,7 +39,6 @@ define(['lib/uuid'], function(uuid) {
 
             ontology = ontology ||'taoApp.rdf';
 
-
             return 'http://app.taocloud.org/' +  deviceId + '/' + ontology + '#i' + uuid();
         }
     };

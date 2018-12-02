@@ -83,7 +83,10 @@ define([
                 return deliveryAssemblyService.getAssemblyDirBaseUrl(config.testDefinition, config.testCompilation);
             };
 
-
+            /**
+             * Get the URI of the test from the meta-data
+             * @returns {Promise<String>} resolves with the URI
+             */
             this.getTestURI = function getTestURI(){
                 return self.getJsonFile('test-metadata.json')
                     .then(function(fileContent){
@@ -91,6 +94,11 @@ define([
                     });
             };
 
+            /**
+             * Get the URI of the given item from the meta-data
+             * @param {String} itemIdentifier - the item identifier
+             * @returns {Promise<String>} resolves with the URI
+             */
             this.getItemUri = function getItemUri(itemIdentifier){
                 return self.getJsonFile('items/' + itemIdentifier + '/metadataElements.json')
                     .then(function(fileContent){
@@ -98,6 +106,11 @@ define([
                     });
             };
 
+            /**
+             * Get the content of the given item
+             * @param {String} itemIdentifier - the item identifier
+             * @returns {Promise<Object>} resolves with the item content
+             */
             this.getItemContent = function getItemContent(itemIdentifier){
                 return self.getJsonFile('items/' + itemIdentifier + '/item.json')
                     .then(function(itemContent){
@@ -108,6 +121,11 @@ define([
                     });
             };
 
+            /**
+             * Get the variables elements of the item content (to not disclose, so don't store this)
+             * @param {String} itemIdentifier - the item identifier
+             * @returns {Promise<Object>} resolves with the item content
+             */
             this.getItemVariableElements = function getItemVariableElements(itemIdentifier){
                 return self.getJsonFile('items/' + itemIdentifier + '/variableElements.json');
             };
@@ -394,12 +412,21 @@ define([
                     ]).then(function(results) {
 
                         var resultCollector;
+
+                        //we build the item for the result collector, using :
+                        // - the item content
+                        // - the item stats from the testMap
+                        // - the item variable elements (response processing, etc.)
+                        // - the item meta-data
+
                         var item = results[0];
                         var itemDataVariable = results[2];
                         item.metadata = {
                             uri : results[1]
                         };
                         item.stats = mapHelper.getItem(testMap, itemIdentifier);
+
+                        //merge variables elements to the item
                         _.forEach(item.itemData.data.responses, function(response, index){
                             if(itemDataVariable[index]){
                                 item.itemData.data.responses[index] = _.defaults(itemDataVariable[index], response);
@@ -418,6 +445,7 @@ define([
                             });
                         }
 
+                        //build the result collector for the current item and collect variables
                         resultCollector = resultCollectorFactory(self.testUri, self.executionId, item);
                         return Promise.all([
                             resultCollector.addDuration(params.itemDuration),
@@ -440,6 +468,7 @@ define([
                     state: testData.states.closed
                 };
                 updatePromises.push(self.testStateStore.clear());
+                updatePromises.push(self.itemStateStore.clear());
 
             } else if (params.direction && params.scope) {
 
