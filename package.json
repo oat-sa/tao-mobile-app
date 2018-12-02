@@ -1,6 +1,6 @@
 {
   "name": "@oat-sa/tao-mobile-app",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "displayName": "TAO Mobile App",
   "description": "TAO hybrid application project for mobile devices",
   "bin": {
@@ -63,6 +63,6 @@
     "phonegap": "^8.2.2"
   },
   "config": {
-    "tao": ">=3.3.0-sprint89"
+    "tao": ">=3.3.0-sprint91"
   }
 }
