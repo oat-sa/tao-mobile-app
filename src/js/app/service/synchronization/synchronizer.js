@@ -158,6 +158,12 @@ define([
 
         var provider = synchronizerFactory.getProvider(resourceType);
 
+        /**
+         * Cancel the sync promise chain
+         * can be called as a `then` callback
+         * @param {*} results - last promice
+         * @returns {*} results pass through or reject
+         */
         var stopIfCanceled = function stopIfCanceled(results){
             if(synchronizer.getState('canceled')){
                 return Promise.reject({ cancel : true });
