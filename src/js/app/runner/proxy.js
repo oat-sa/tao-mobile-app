@@ -274,9 +274,6 @@ define([
                     self.getDataHolder().set('testMap', testMap);
 
                     return self.saveCurrentTestState();
-                },
-                exitTest : function exitTest(){
-
                 }
             };
 
@@ -442,8 +439,7 @@ define([
                 testState.testContext = {
                     state: testData.states.closed
                 };
-                //updatePromises.push(self.testStateStore.clear());
-                //updatePromises.push(self.resultStore.clear());
+                updatePromises.push(self.testStateStore.clear());
 
             } else if (params.direction && params.scope) {
 

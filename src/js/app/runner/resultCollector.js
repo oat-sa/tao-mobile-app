@@ -18,7 +18,7 @@
  */
 
 /**
- * Experimental app proxy, it reads the data from the filesystem and save state to the store.
+ * Collects results during a test.
  *
  * @author Bertrand Chevrier <bertrand@taotesting.com>
  */
@@ -26,43 +26,83 @@ define([
     'lodash',
     'moment',
     'core/promise',
-    'core/logger',
     'app/service/result',
     'taoQtiItem/scoring/qtiScorer'
 ], function(
     _,
     moment,
     Promise,
-    loggerFactory,
     resultService,
     scorer
 ) {
     'use strict';
 
-    var logger = loggerFactory('runner/local/proxy');
-
+    /**
+     * Createst a result collector
+     * @param {String} testId - the identifier of the test (the URI)
+     * @param {String} deliveryExecutionId - the delivery execution identifier (the URI)
+     * @param {Object} item - all data related to the current item
+     * @param {String} item.itemIdentifier - the item identifier within the test
+     * @param {Object} item.stats - all item statisitics from the testMap (occurences, viewed, etc.)
+     * @param {Object} item.itemData - items data from the itemRunner
+     * @param {Object} item.metadata - contains all items metadata, including it's URI
+     */
     var resultCollectorFactory = function resultCollectorFactory(testId, deliveryExecutionId, item){
 
-        console.log('ITEM', item);
+        if(_.isEmpty(testId)){
+            throw new TypeError('A valid test id is required to collect results');
+        }
+        if(_.isEmpty(deliveryExecutionId)){
+            throw new TypeError('A valid delivery execution id is required to collect results');
+        }
+        if( !_.isPlainObject(item) || _.isEmpty(item.itemIdentifier) ||
+            !_.isPlainObject(item.itemData) || !_.isPlainObject(item.metadata) ||
+            !_.isPlainObject(item.stats) ){
+
+            throw new TypeError('The given item to the result collector is incomplete');
+        }
 
         return {
 
+            /**
+             * Get the configured deliveryExecutionId
+             * @returns {String} deliveryExecutionId
+             */
             getDeliveryExecutionId : function getDeliveryExecutionId(){
                 return deliveryExecutionId;
             },
 
+            /**
+             * Get an item identifier composed by the deliveryExecution,
+             * the item identifier and the number of occurrences
+             * @returns {String} the callIdItem
+             */
             getCallItemId : function getCallItemId(){
                 return deliveryExecutionId + '.' + item.itemIdentifier + '.' + item.stats.occurrence;
             },
 
+            /**
+             * Get the item id
+             * @returns {String} the URI of the current item
+             */
             getItemId : function getItemId(){
                 return item && item.metadata && item.metadata.uri;
             },
 
+            /**
+             * Get the test id
+             * @returns {String} the URI of the current test
+             */
             getTestId : function getTestId(){
                 return testId;
             },
 
+            /**
+             * Add to the results store the outcomes results (score, maxscore, responses)
+             * from the test taker responses
+             * @param {Object} responses - PCI formatted responses
+             * @returns {Promise} resolves once the result variables are created
+             */
             addOutcomes : function addOutcomes(responses){
                 var self = this;
 
@@ -73,10 +113,6 @@ define([
                         .on('error', reject)
                         .on('outcome', function(outcomes, state){
                             var responsesDeclarations = _.pluck(item.itemData.data.responses, 'identifier');
-
-                            console.log('DECLARATIOn', responsesDeclarations);
-                            console.log('OUTCOMES', outcomes);
-                            console.log('STATE', state);
                             Promise.all( _.map(state, function(variable, identifier){
                                 if(_.contains(supportedOutcomes, identifier)){
                                     return resultService.createFromOutcome(
@@ -110,6 +146,11 @@ define([
                 });
             },
 
+            /**
+             * Add to the results store the item duration
+             * @param {Number} duration - in seconds
+             * @returns {Promise} resolves once the result variables are created
+             */
             addDuration: function addDuration(duration){
                 if(_.isNumber(duration) && duration > 0){
                     return resultService.createFromDuration(
@@ -122,6 +163,10 @@ define([
                 }
             },
 
+            /**
+             * Add to the results store a variable stating the item is completed
+             * @returns {Promise} resolves once the result variables are created
+             */
             addCompletion: function addCompletion(){
                 return resultService.createFromCompletion(
                     this.getDeliveryExecutionId(),
@@ -132,6 +177,11 @@ define([
                 );
             },
 
+            /**
+             * Add to the results store the number of attempts for this item
+             * @param {Number} attemps - the number of attempts
+             * @returns {Promise} resolves once the result variables are created
+             */
             addAttempts: function addAttempts(attempts){
                 return resultService.createFromAttempt(
                     this.getDeliveryExecutionId(),
