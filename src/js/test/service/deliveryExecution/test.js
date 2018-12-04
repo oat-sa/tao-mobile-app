@@ -22,7 +22,10 @@
  *
  * @author Bertrand Chevrier <bertrand@taotesting.com>
  */
-define(['app/service/deliveryExecution'], function(deliveryExecutionService){
+define([
+    'app/service/deliveryExecution',
+    'core/store'
+], function(deliveryExecutionService, store){
     'use strict';
 
     QUnit.module('API');
@@ -37,7 +40,8 @@ define(['app/service/deliveryExecution'], function(deliveryExecutionService){
         { title : 'create' },
         { title : 'pause' },
         { title : 'finish' },
-        { title : 'getAllByState' }
+        { title : 'getAllByState' },
+        { title : 'getAllToSync' }
     ]).test('Service API ', function(data, assert) {
         assert.equal(typeof deliveryExecutionService[data.title], 'function', 'The service exposes the method "' + data.title);
     });
@@ -54,7 +58,16 @@ define(['app/service/deliveryExecution'], function(deliveryExecutionService){
     });
 
 
-    QUnit.module('Behavior');
+    QUnit.module('Behavior', {
+        teardown : function teardown(){
+            QUnit.stop();
+            store
+                .removeAll()
+                .then(function(){
+                    QUnit.start();
+                });
+        }
+    });
 
     QUnit.asyncTest('set invalid delivery execution', function(assert) {
 
@@ -145,5 +158,119 @@ define(['app/service/deliveryExecution'], function(deliveryExecutionService){
             });
     });
 
+    QUnit.asyncTest('get all by state', function(assert) {
 
+        var sampleExecutions = [{
+            id:        'de1',
+            delivery:  'd1',
+            testTaker: 'tt1',
+            state:       deliveryExecutionService.states.active,
+            startTime:   Date.now()
+        }, {
+            id:        'de2',
+            delivery:  'd1',
+            testTaker: 'tt1',
+            state:       deliveryExecutionService.states.abandoned,
+            startTime:   Date.now()
+        }, {
+            id:        'de3',
+            delivery:  'd1',
+            testTaker: 'tt1',
+            state:       deliveryExecutionService.states.finished,
+            startTime:   Date.now()
+        }, {
+            id:        'de4',
+            delivery:  'd1',
+            testTaker: 'tt1',
+            state:       deliveryExecutionService.states.finished,
+            startTime:   Date.now()
+        }];
+
+
+        QUnit.expect(3);
+
+        Promise.all([
+            deliveryExecutionService.set(sampleExecutions[0]),
+            deliveryExecutionService.set(sampleExecutions[1]),
+            deliveryExecutionService.set(sampleExecutions[2]),
+            deliveryExecutionService.set(sampleExecutions[3])
+        ]).then(function(results){
+            assert.deepEqual(results, [true, true, true, true], 'The executions have been inserted');
+
+            return deliveryExecutionService.getAllByState(deliveryExecutionService.states.finished);
+        }).then(function(deliveryExecutions){
+            assert.deepEqual(deliveryExecutions, [
+                sampleExecutions[2],
+                sampleExecutions[3]
+            ], 'The retrieved executions are correct');
+
+            return deliveryExecutionService.getAllByState(deliveryExecutionService.states.active);
+        }).then(function(deliveryExecutions){
+            assert.deepEqual(deliveryExecutions, [
+                sampleExecutions[0]
+            ], 'The retrieved executions are correct');
+
+            QUnit.start();
+        })
+        .catch(function(err){
+            assert.ok(false, err.message);
+            QUnit.start();
+        });
+    });
+
+    QUnit.asyncTest('get all to sync', function(assert) {
+
+        var sampleExecutions = [{
+            id:        'de1',
+            delivery:  'd1',
+            testTaker: 'tt1',
+            state:       deliveryExecutionService.states.active,
+            startTime:   Date.now()
+        }, {
+            id:        'de2',
+            delivery:  'd1',
+            testTaker: 'tt1',
+            state:       deliveryExecutionService.states.finished,
+            startTime:   Date.now()
+        }, {
+            id:        'de3',
+            delivery:  'd1',
+            testTaker: 'tt1',
+            state:       deliveryExecutionService.states.finished,
+            synchronized : true,
+            startTime:   Date.now()
+        }, {
+            id:        'de4',
+            delivery:  'd1',
+            testTaker: 'tt1',
+            state:       deliveryExecutionService.states.finished,
+            synchronized : false,
+            startTime:   Date.now()
+        }];
+
+
+        QUnit.expect(2);
+
+        Promise.all([
+            deliveryExecutionService.set(sampleExecutions[0]),
+            deliveryExecutionService.set(sampleExecutions[1]),
+            deliveryExecutionService.set(sampleExecutions[2]),
+            deliveryExecutionService.set(sampleExecutions[3])
+        ]).then(function(results){
+            assert.deepEqual(results, [true, true, true, true], 'The executions have been inserted');
+
+            return deliveryExecutionService.getAllToSync();
+        }).then(function(deliveryExecutions){
+            assert.deepEqual(deliveryExecutions, [
+                sampleExecutions[1],
+                sampleExecutions[3]
+            ], 'The retrieved executions are correct');
+
+            QUnit.start();
+        })
+        .catch(function(err){
+            assert.ok(false, err.message);
+            QUnit.start();
+        });
+    });
 });

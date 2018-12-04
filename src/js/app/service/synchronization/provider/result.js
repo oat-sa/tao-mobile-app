@@ -67,12 +67,7 @@ define([
          * @returns {Promise<Object>} resolves with the collection, indexed by id
          */
         getLocalResources : function getLocalResources(){
-
-            return deliveryExecutionService
-                .getAllByState(deliveryExecutionService.states.finished)
-                .then(function(executions){
-                    return _.reject(executions, 'synchronized');
-                });
+            return deliveryExecutionService.getAllToSync();
         },
 
         /**

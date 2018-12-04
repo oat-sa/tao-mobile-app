@@ -149,6 +149,19 @@ define([
             return this.getAll().then(function(executions){
                 return _.filter(executions, { state : state} );
             });
+        },
+
+        /**
+         * Get all delivery executions that need to be synchronized
+         * @param {String} state
+         * @returns {Promise<Object[]>} resolves with the list of executions
+         */
+        getAllToSync : function getAllToSync(){
+            return this
+                .getAllByState(states.finished)
+                .then(function(executions){
+                    return _.reject(executions, 'synchronized');
+                });
         }
     });
 });

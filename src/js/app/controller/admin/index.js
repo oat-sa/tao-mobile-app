@@ -33,6 +33,7 @@ define([
     'app/component/wipeout/wipeout',
     'app/component/header/header',
     'app/service/synchronization/loader',
+    'app/service/deliveryExecution'
 ], function(
     _,
     __,
@@ -43,7 +44,8 @@ define([
     syncComponentFactory,
     wipeoutFactory,
     headerComponentFactory,
-    synchronizerFactory
+    synchronizerFactory,
+    deliveryExecutionService
 ){
     'use strict';
 
@@ -68,6 +70,26 @@ define([
         state: 'ready',
         direction: 'send'
     }];
+
+    /**
+     * Get the wipeout message based on the number of results left to synchronize
+     * @returns {Promise<String>} resolves with the message
+     */
+    var getWipeoutMessage = function getWipeoutMessage(){
+        return deliveryExecutionService.getAllToSync()
+            .then(function(remainingExecutions){
+                var message = '';
+                if(remainingExecutions.length > 0) {
+                    message = __('%d result set left on the device. You need to cancel this action and synchronize the device, otherwise results will be lost. Proceed with the wipeout anyway ?', remainingExecutions.length );
+                } else {
+
+                    message =  __('This action will remove all data stored on the device. Once done, you will have to login again. Please confirm the wipeout.');
+
+                }
+
+                return message;
+            });
+    };
 
     return pageController({
         start: function start(){
@@ -154,7 +176,7 @@ define([
 
 
                 wipeout = wipeoutFactory(self.getContainer(), {
-                    confirmMessage : __('This action will remove all data, including your user profile. Once done, you will have to login again. Please confirm the wipeout.')
+                    confirmMessage : getWipeoutMessage
                 }).on('wipeout', function(){
                     logger.info('User ' + session.user.login + ' ask to wipeout the app data');
 
