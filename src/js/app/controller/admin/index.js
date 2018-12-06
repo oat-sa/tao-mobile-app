@@ -33,7 +33,8 @@ define([
     'app/component/wipeout/wipeout',
     'app/component/header/header',
     'app/service/synchronization/loader',
-    'app/service/deliveryExecution'
+    'app/service/deliveryExecution',
+    'app/service/deliveryAssembly'
 ], function(
     _,
     __,
@@ -45,7 +46,8 @@ define([
     wipeoutFactory,
     headerComponentFactory,
     synchronizerFactory,
-    deliveryExecutionService
+    deliveryExecutionService,
+    deliveryAssemblyService
 ){
     'use strict';
 
@@ -180,22 +182,24 @@ define([
                 }).on('wipeout', function(){
                     logger.info('User ' + session.user.login + ' ask to wipeout the app data');
 
-                    store
-                        .removeAll()
-                        .then(function(){
+                    Promise.all([
+                        store.removeAll(),
+                        deliveryAssemblyService.removeAll()
+                    ])
+                    .then(function(){
 
-                            logger.info('Data wipeout');
+                        logger.info('Data wipeout');
 
-                            //inform the user and log out
-                            feedback().success(__('The application data has been removed'));
-                            setTimeout(function(){
-                                self.getRouter().dispatch('main/logout');
-                            }, 3000);
-                        })
-                        .catch(function(err){
-                            wipeout.reset();
-                            self.handleError(err);
-                        });
+                        //inform the user and log out
+                        feedback().success(__('The application data has been removed'));
+                        setTimeout(function(){
+                            self.getRouter().dispatch('main/logout');
+                        }, 3000);
+                    })
+                    .catch(function(err){
+                        wipeout.reset();
+                        self.handleError(err);
+                    });
                 });
             })
             .catch(function(err){
