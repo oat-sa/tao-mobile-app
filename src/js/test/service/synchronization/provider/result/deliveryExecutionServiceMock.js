@@ -30,8 +30,15 @@ define([], function(){
         states : {
             finished : 'finished'
         },
-        getAllByState: function getAllByState(){
-            return Promise.resolve(this.executions);
+        getAllToSync: function getAllToSync(){
+            var key;
+            var executions = {};
+            for(key in this.executions){
+                if(!this.executions[key].synchronized){
+                    executions[key] = this.executions[key];
+                }
+            }
+            return Promise.resolve(executions);
         },
         getById: function getAllById(id){
             return Promise.resolve(this.executions[id]);

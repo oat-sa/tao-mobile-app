@@ -151,8 +151,8 @@ define([
             .start()
             .then(function(results){
 
-                assert.equal(results.send.length, data.send, 'The correct number of test taker is sent');
-                assert.equal(results.remove.length, data.remove, 'The correct number of test taker is removed');
+                assert.equal(results.send.length, data.send, 'The correct number of delivery execution is sent');
+                assert.equal(results.remove.length, data.remove, 'The correct number of delivery execution is removed');
 
                 QUnit.start();
             })
