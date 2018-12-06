@@ -151,7 +151,7 @@ define([
                                 }
                                 return entityIds;
                             }
-                            else if(retrying === false && result.status === 403 || result.status === 401){
+                            else if(!retrying && (result.status === 403 || result.status === 401)){
                                 return self.getEntityIds(type, nextCallUrl, true);
                             }
                         }
@@ -189,13 +189,19 @@ define([
                             if(result.success === true && result.data){
                                 return result.data;
                             }
-                            else if(retrying === false && (result.status === 403 || result.status === 401) ){
+                            else if(!retrying && (result.status === 403 || result.status === 401)){
                                 return self.getEntitiesContent(type, entityIds, true);
                             }
                         }
                     });
             },
 
+            /**
+             * Download delivery assemblies
+             * @param {String} deliveryId - the identifier of the delivery
+             * @param {Boolean} [retrying = false] - retry with a new token (only once)
+             * @returns {Promise<Blob>} resolves with a zip file Blob (binary data)
+             */
             downloadDeliveryAssembly : function downloadDeliveryAssembly(deliveryId, retrying){
 
                 if(_.isEmpty(deliveryId)){
@@ -218,8 +224,35 @@ define([
                             if(result.success === true && result.data){
                                 return result.data;
                             }
-                            else if(retrying === false && (result.status === 403 || result.status === 401) ){
-                                return self.getEntitiesContent(deliveryId, true);
+                            else if(!retrying && (result.status === 403 || result.status === 401)){
+                                return self.downloadDeliveryAssembly(deliveryId, true);
+                            }
+                        }
+                    });
+            },
+
+            /**
+             * Send results to the central server
+             * @param {Object} results - the results payload to send
+             * @param {Boolean} [retrying = false] - retry with a new token (only once)
+             * @returns {Promise<Object>} resolves with the response (with the ACK by deliveryExecution)
+             */
+            sendResults : function sendResults(results, retrying){
+
+                return getAccessToken(retrying === true)
+                    .then(function(token) {
+                        return request(_.defaults({
+                            headers: authHeaders(token.access_token, clientConfig.api.result.headers),
+                            body : results
+                        }, clientConfig.api.result));
+                    })
+                    .then(function(response){
+                        if(response){
+                            if(response.success === true){
+                                return response;
+                            }
+                            else if(!retrying && (response.status === 403 || response.status === 401) ){
+                                return self.sendResults(results, true);
                             }
                         }
                     });

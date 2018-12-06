@@ -44,6 +44,7 @@ define([
      *
      * @param {HTMLElement|jQuery} container - where to append the component
      * @param {Object} [config]
+     * @param {String|Functino} [config.confirmMessage] - the confirm message or the function to retrieve it
      * @returns {wipeoutComponent} the component instance
      */
     return function wipeoutComponentFactory(container, config) {
@@ -61,31 +62,54 @@ define([
              */
             apply : function apply(){
                 var self = this;
+
+                /**
+                 * Wrap the different forms a the confirm message
+                 * and resloves it as a promise
+                 * @returns {Promise<String>}
+                 */
+                var loadConfirmMessage = function loadConfirmMessage(){
+                    var configResult;
+                    if(_.isFunction(self.config.confirmMessage)){
+                        configResult = self.config.confirmMessage();
+                        if(configResult && configResult instanceof Promise){
+                            return configResult;
+                        }
+                        return Promise.resolve(configResult);
+                    }
+                    return Promise.resolve(self.config.confirmMessage);
+                };
+
                 if(this.is('rendered') && !this.is('waiting')){
 
                     this.setState('waiting', true);
 
-                    confirmDialog(this.config.confirmMessage, function accept(){
+                    loadConfirmMessage().then(function(message){
+                        confirmDialog(message, function accept(){
 
-                        /**
-                         * The wipeout has been confirmed
-                         * @event wipeoutComponent#wipeout
-                         */
-                        self.trigger('wipeout');
+                            /**
+                             * The wipeout has been confirmed
+                             * @event wipeoutComponent#wipeout
+                             */
+                            self.trigger('wipeout');
 
-                        //please note we don't reset automatically
-                        //and let it to the implementor in case
-                        //of long running operation
+                            //please note we don't reset automatically
+                            //and let it to the implementor in case
+                            //of long running operation
 
-                    }, function cancel(){
+                        }, function cancel(){
 
-                        self.reset();
+                            self.reset();
 
-                        /**
-                         * The wipeout has bee canceled
-                         * @event wipeoutComponent#cancel
-                         */
-                        self.trigger('cancel');
+                            /**
+                             * The wipeout has bee canceled
+                             * @event wipeoutComponent#cancel
+                             */
+                            self.trigger('cancel');
+                        });
+                    })
+                    .catch(function(err){
+                        self.trigger('error', err);
                     });
                 }
                 return this;

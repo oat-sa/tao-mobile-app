@@ -154,6 +154,42 @@ define(['app/component/wipeout/wipeout'], function(wipeoutComponentFactory){
             });
     });
 
+    QUnit.asyncTest('Dynamic confirm message', function(assert) {
+        var container = document.getElementById('qunit-fixture');
+
+        QUnit.expect(5);
+
+        wipeoutComponentFactory(container, {
+            confirmMessage: function (){
+                return new Promise(function(resolve){
+                    setTimeout(resolve('dynamic message'), 50);
+                });
+            }
+        })
+        .on('render', function(){
+            var element = this.getElement()[0];
+            var button = element.querySelector('button');
+            var modal = document.querySelector('.modal');
+
+            assert.ok(button instanceof HTMLElement, 'The button exists');
+            assert.equal(modal, null, 'There is no modal');
+
+            setTimeout(function(){
+                modal = document.querySelector('.modal');
+                assert.ok(modal instanceof HTMLElement, 'The modal has been created');
+                assert.equal(modal.querySelector('.message').textContent.trim(), 'dynamic message', 'The correct message has been retrieved');
+
+                modal.querySelector('.ok').click();
+            }, 100);
+
+            button.click();
+        })
+        .on('wipeout', function(){
+            assert.ok(true, 'Wipeout called');
+            QUnit.start();
+        });
+    });
+
     QUnit.asyncTest('Cancel wipeout', function(assert) {
         var container = document.getElementById('qunit-fixture');
         var wipeout;

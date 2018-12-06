@@ -27,18 +27,22 @@ define([
     'app/service/synchronization/synchronizer',
     'app/service/synchronization/provider/eligibility',
     'app/service/synchronization/provider/delivery',
-    'app/service/synchronization/provider/testTaker'
+    'app/service/synchronization/provider/testTaker',
+    'app/service/synchronization/provider/result'
+
 ], function(
     synchronizerFactory,
     eligibilitySyncProvider,
     deliverySyncProvider,
-    testTakerSyncProvider
+    testTakerSyncProvider,
+    resultSyncProvider
 ){
     'use strict';
 
     synchronizerFactory.registerProvider(eligibilitySyncProvider.name, eligibilitySyncProvider);
     synchronizerFactory.registerProvider(deliverySyncProvider.name, deliverySyncProvider);
     synchronizerFactory.registerProvider(testTakerSyncProvider.name, testTakerSyncProvider);
+    synchronizerFactory.registerProvider(resultSyncProvider.name, resultSyncProvider);
 
     return synchronizerFactory;
 });

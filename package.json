@@ -1,6 +1,6 @@
 {
   "name": "@oat-sa/tao-mobile-app",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "displayName": "TAO Mobile App",
   "description": "TAO hybrid application project for mobile devices",
   "bin": {
@@ -31,13 +31,15 @@
   "homepage": "https://github.com/oat-sa/tao-mobile-app#readme",
   "cordova": {
     "plugins": {
+      "cordova-plugin-device": {},
       "cordova-plugin-file": {},
-      "cordova-plugin-network-information": {},
       "cordova-plugin-indexeddb-async": {},
+      "cordova-plugin-network-information": {},
       "cordova-plugin-whitelist": {}
     }
   },
   "dependencies": {
+    "cordova-plugin-device": "~2.0.2",
     "cordova-plugin-file": "~4.3.3",
     "cordova-plugin-indexeddb-async": "~2.2.1",
     "cordova-plugin-network-information": "~1.3.3",
@@ -45,6 +47,7 @@
   },
   "devDependencies": {
     "commander": "^2.19.0",
+    "eslint": "^5.9.0",
     "fs-extra": "^7.0.0",
     "grunt": "^1.0.2",
     "grunt-contrib-clean": "^2.0.0",
@@ -60,6 +63,6 @@
     "phonegap": "^8.2.2"
   },
   "config": {
-    "tao": ">=3.3.0-sprint89"
+    "tao": ">=3.3.0-sprint91"
   }
 }

@@ -35,6 +35,20 @@ define([], function(){
             },
             downloadDeliveryAssembly : function downloadDeliveryAssembly(){
                 return Promise.resolve(true);
+            },
+            sendResults : function sendResults(content){
+
+                return Promise.resolve({
+                    success : true,
+                    //format the response
+                    data : Object.keys(content.results).reduce(function(acc, id){
+                        acc[id] = {
+                            success: true
+                        };
+                        return acc;
+                    }, {})
+
+                });
             }
         };
     }

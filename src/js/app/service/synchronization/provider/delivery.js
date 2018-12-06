@@ -44,6 +44,11 @@ define([
         name : resourceType,
 
         /**
+         * Sync direction
+         */
+        direction : 'fetch',
+
+        /**
          * Provider initialization
          * @param {Object} config
          * @param {String} config.key - the OAuth key linked to the syncManager profile

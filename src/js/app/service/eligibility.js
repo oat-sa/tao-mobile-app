@@ -25,8 +25,8 @@
  */
 define([
     'lodash',
-    'core/store',
-], function(_, store){
+    'app/service/storeService',
+], function(_, storeServiceFactory){
     'use strict';
 
     var eligibilityStoreName = 'eligibility';
@@ -64,103 +64,6 @@ define([
     /**
      * @typedef {Object} eligibilityService
      */
-    return {
-
-        /**
-         * Get a eligibility from it's identifier / URI.
-         *
-         * @param {String} id - the eligibility identifier
-         * @returns {Promise<eligibility>} resolves with the eligibility or null if not found
-         */
-        getById : function getById(id){
-            if(_.isEmpty(id)){
-                return Promise.resolve(null);
-            }
-            return store(eligibilityStoreName).then(function(eligibilityStore){
-                return eligibilityStore.getItem(id);
-            });
-        },
-
-        /**
-         * Get all eligibilitys
-         * @returns {Promise<Object[]>} resolves with the eligibility collection
-         */
-        getAll : function getAll(){
-            return store(eligibilityStoreName).then(function(eligibilityStore){
-                return eligibilityStore.getItems();
-            });
-        },
-
-        /**
-         * Set an eligibility (add or replace), if one exists already, it will be replaced !
-         *
-         * @param {eligibility} eligibility - a valid eligibility instance
-         * @returns {Promise<Boolean>} resolves with true if set
-         * @throws {TypeError} when trying to set an invalid eligibility
-         */
-        set : function set(eligibility){
-
-            validateEligibility(eligibility);
-
-            return store(eligibilityStoreName).then(function(eligibilityStore){
-                return eligibilityStore.setItem(eligibility.id, eligibility);
-            });
-        },
-
-        /**
-         * Update by merge an existing eligibility.
-         *
-         * If an entry was already there, we will merge them,
-         * using the existing values as default.
-         *
-         * The merge is only done at the 1st level.
-         *
-         * @param {String} id - the eligibility identifier
-         * @param {Object|eligibility} properties - the properties to set to the eligibility
-         * @returns {Promise<Boolean>} resolves with true if updated
-         */
-        update : function update(id, properties){
-            var self = this;
-
-            if(!_.isPlainObject(properties) || _.isEmpty(id) ){
-                return Promise.resolve(false);
-            }
-
-            return this.getById(id).then(function(existingEligibility){
-                return self.set(_.defaults(properties, existingEligibility || {}));
-            });
-        },
-
-        /**
-         * Remove an eligibility
-         *
-         * @param {String} id - the eligibility identifier
-         * @returns {Promise<Boolean>} resolves with true if removed
-         */
-        remove : function remove(id){
-            if(_.isEmpty(id)){
-                return Promise.resolve(false);
-            }
-            return this.getById(id).then(function(eligibility){
-                if(eligibility && eligibility.id){
-                    return store(eligibilityStoreName).then(function(eligibilityStore){
-                        return eligibilityStore.removeItem(id);
-                    });
-                }
-                return false;
-            });
-        },
-
-        /**
-         * Remove all eligibilities
-         *
-         * @returns {Promise<Boolean>}
-         */
-        removeAll : function removeAll(){
-            return store(eligibilityStoreName).then(function(eligibilityStore){
-                return eligibilityStore.clear();
-            });
-        }
-    };
+    return storeServiceFactory('eligibility', 'eligibility', validateEligibility);
 });
 

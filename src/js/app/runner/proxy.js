@@ -23,20 +23,28 @@
  * @author Bertrand Chevrier <bertrand@taotesting.com>
  */
 define([
-    'jquery',
     'lodash',
-    'i18n',
-    'context',
     'core/promise',
-    'core/store',
     'core/logger',
     'app/service/deliveryAssembly',
+    'app/runner/resultCollector',
+    'taoTests/runner/testStore',
     'taoQtiTest/runner/navigator/navigator',
     'taoQtiTest/runner/helpers/map',
-    'taoQtiTest/runner/helpers/navigation',
     'taoQtiTest/runner/provider/dataUpdater',
     'taoQtiTest/runner/proxy/cache/itemStore'
-], function($, _, __, context, Promise, store, loggerFactory, deliveryAssemblyService, testNavigatorFactory, mapHelper, navigationHelper, dataUpdater, itemStoreFactory) {
+], function(
+    _,
+    Promise,
+    loggerFactory,
+    deliveryAssemblyService,
+    resultCollectorFactory,
+    testStore,
+    testNavigatorFactory,
+    mapHelper,
+    dataUpdater,
+    itemStoreFactory
+) {
     'use strict';
 
     var logger = loggerFactory('runner/local/proxy');
@@ -47,6 +55,7 @@ define([
          * Install behavior on the proxy
          */
         install: function install(config) {
+            var self = this;
 
             /**
              * Load the content of the given delivery URL
@@ -54,9 +63,15 @@ define([
              * @returns {Promise<Object>} resolve with the parsed content of the JSON file
              */
             this.getJsonFile = function getJsonFile(url) {
-                return deliveryAssemblyService.readAssemblyFile( config.testDefinition, config.testCompilation, url, false)
-                    .then(function(content){
-                        return JSON.parse(content);
+                return deliveryAssemblyService
+                    .readAssemblyFile(config.testDefinition, config.testCompilation, url, false)
+                    .then(function(content) {
+                        try{
+                            return JSON.parse(content);
+                        } catch(err){
+                            logger.error('Unable to parse content of ' + url + ' : ' + err.message);
+                        }
+                        return null;
                     });
             };
 
@@ -64,8 +79,90 @@ define([
              * Get the baseUrl from the assembly root
              * @returns {Promise<String>} resolves with the baseUrl
              */
-            this.getBaseUrl = function getBaseUrl(){
+            this.getBaseUrl = function getBaseUrl() {
                 return deliveryAssemblyService.getAssemblyDirBaseUrl(config.testDefinition, config.testCompilation);
+            };
+
+            /**
+             * Get the URI of the test from the meta-data
+             * @returns {Promise<String>} resolves with the URI
+             */
+            this.getTestURI = function getTestURI(){
+                return self.getJsonFile('test-metadata.json')
+                    .then(function(fileContent){
+                        return fileContent && fileContent['@id'];
+                    });
+            };
+
+            /**
+             * Get the URI of the given item from the meta-data
+             * @param {String} itemIdentifier - the item identifier
+             * @returns {Promise<String>} resolves with the URI
+             */
+            this.getItemUri = function getItemUri(itemIdentifier){
+                return self.getJsonFile('items/' + itemIdentifier + '/metadataElements.json')
+                    .then(function(fileContent){
+                        return fileContent && fileContent['@uri'];
+                    });
+            };
+
+            /**
+             * Get the content of the given item
+             * @param {String} itemIdentifier - the item identifier
+             * @returns {Promise<Object>} resolves with the item content
+             */
+            this.getItemContent = function getItemContent(itemIdentifier){
+                return self.getJsonFile('items/' + itemIdentifier + '/item.json')
+                    .then(function(itemContent){
+                        if (itemContent && itemContent.type && itemContent.type === 'qti') {
+                            return itemContent;
+                        }
+                        return null;
+                    });
+            };
+
+            /**
+             * Get the variables elements of the item content (to not disclose, so don't store this)
+             * @param {String} itemIdentifier - the item identifier
+             * @returns {Promise<Object>} resolves with the item content
+             */
+            this.getItemVariableElements = function getItemVariableElements(itemIdentifier){
+                return self.getJsonFile('items/' + itemIdentifier + '/variableElements.json');
+            };
+
+            /**
+             * Load the test state from the local store or the test file
+             * @returns {Promis<Object>} resolves with the test state
+             */
+            this.getTestState = function getTestState() {
+                if (!this.testStateStore) {
+                    throw new Error('The test state store is not yet available');
+                }
+
+                //check in the local store first
+                return this.testStateStore
+                    .getItem('current')
+                    .then(function(testState) {
+                        if (!testState) {
+                            //load the initial state from the data file,
+                            //yes testData is not very well named
+                            return self.getJsonFile('testData.json');
+                        }
+                        return testState;
+                    });
+            };
+
+            /**
+             * Take the current test state from the data holder and save it into the store
+             * @returns {Promis<Boolean>}
+             */
+            this.saveCurrentTestState = function saveCurrentTestState() {
+                return this.testStateStore
+                    .setItem('current', {
+                        testData: this.getDataHolder().get('testData'),
+                        testContext: this.getDataHolder().get('testContext'),
+                        testMap: this.getDataHolder().get('testMap')
+                    });
             };
         },
 
@@ -75,44 +172,43 @@ define([
          * @param {Object} [params] - the test configuration
          * @returns {Promise<Object>} the triple <testData,testContext,testMap>
          */
-        init: function init(config, params) {
+        init: function init(config) {
             var self = this;
-            var testIdentifier = config.serviceCallId;
 
-            //initialize the stores
-            return Promise.all([
-                store('results-' + testIdentifier),
-                store('test-data-' + testIdentifier)
-            ])
-            .then(function(results) {
-                self.resultStore = results[0];
-                self.testDataStore = results[1];
+            this.executionId = config.serviceCallId;
 
-                return self.testDataStore.getItem('testData');
-            })
-            .then(function(testData) {
-                if (testData) {
-                    return testData;
-                }
+            //initialize the stores and get the base url
+            return Promise
+                .all([
+                    testStore(this.executionId).getStore('testState'),
+                    testStore(this.executionId).getStore('itemState'),
+                    this.getTestURI(),
+                    this.getBaseUrl()
+                ])
+                .then(function(results) {
+                    self.testStateStore = results[0];
+                    self.itemStateStore = results[1];
+                    self.testUri = results[2];
+                    self.baseUrl = results[3];
 
-                return self.getJsonFile('testData.json');
-            })
-            .then(function(testData) {
-                var itemNumber = 100;
-                if (testData && testData.testMap && testData.testMap.stats) {
-                    itemNumber = testData.testMap.stats.total;
-                }
+                    return self.getTestState();
+                })
+                .then(function(testState) {
+                    var itemStoreSize = 100;
+                    if (testState && testState.testMap && testState.testMap.stats) {
+                        itemStoreSize = testState.testMap.stats.total;
+                    }
 
-                logger.info('Set up item store for ' + itemNumber + ' items');
+                    logger.info('Set up item cache store for ' + itemStoreSize + ' items');
 
-                self.itemStore = itemStoreFactory({
-                    maxSize: itemNumber,
-                    preload: false,
-                    testId: testIdentifier
+                    self.itemStore = itemStoreFactory({
+                        maxSize: itemStoreSize,
+                        preload: false,
+                        testId: self.executionId
+                    });
+
+                    return testState;
                 });
-
-                return testData;
-            });
         },
 
         /**
@@ -130,16 +226,10 @@ define([
          * @returns {Promise<Object>} the testData
          */
         getTestData: function getTestData() {
-            var self = this;
-            return this.testDataStore.getItem('testData')
-                .then(function(testData) {
-                    if (!testData) {
-                        return self.getJsonFile('testData.json');
-                    }
-                    return testData;
-                })
-                .then(function(testData) {
-                    return testData && testData.testData;
+            return this
+                .getTestState()
+                .then(function(testState) {
+                    return testState && testState.testData;
                 });
         },
 
@@ -148,16 +238,10 @@ define([
          * @returns {Promise<Object>} the testContext
          */
         getTestContext: function getTestContext() {
-            var self = this;
-            return this.testDataStore.getItem('testData')
-                .then(function(testData) {
-                    if (!testData) {
-                        return self.getJsonFile('testData.json');
-                    }
-                    return testData;
-                })
-                .then(function(testData) {
-                    return testData && testData.testContext;
+            return this
+                .getTestState()
+                .then(function(testState) {
+                    return testState && testState.testContext;
                 });
         },
 
@@ -166,36 +250,39 @@ define([
          * @returns {Promise<Object>} the testMap
          */
         getTestMap: function getTestMap() {
-            var self = this;
-            return this.testDataStore.getItem('testData')
-                .then(function(testData) {
-                    if (!testData) {
-                        return self.getJsonFile('testData.json');
-                    }
-                    return testData;
-                })
-                .then(function(testData) {
-                    return testData && testData.testMap;
+            return this
+                .getTestState()
+                .then(function(testState) {
+                    return testState && testState.testMap;
                 });
         },
 
+        /**
+         * Sends collected variables
+         * TODO implement me please
+         */
         sendVariables: function sendVariables(variables) {
             logger.info('Collected variables : ' + JSON.stringify(variables));
+            logger.warn('SENDING TEST VARIABLES IS NOT YET SUPPORTED');
         },
 
+        /**
+         * Perform an action at the level of test.
+         * Supported actions :
+         *  - flagItem
+         * TODO implement the others
+         * @param {String} action - the action
+         * @param {Object} params - action parameters
+         * @returns {Promise}
+         */
         callTestAction: function callTestAction(action, params) {
             var self = this;
-            var saveTestData = function saveTestData() {
-                return self.testDataStore.setItem('testData', {
-                    testData: self.getDataHolder().get('testData'),
-                    testContext: self.getDataHolder().get('testContext'),
-                    testMap: self.getDataHolder().get('testMap')
-                });
-            };
+
             var actions = {
                 flagItem: function flagItem(actionParams) {
                     var testContext = self.getDataHolder().get('testContext');
                     var testMap = self.getDataHolder().get('testMap');
+
                     if (testContext.itemPosition === actionParams.position) {
                         testContext.itemFlagged = !!actionParams.flag;
                     }
@@ -204,11 +291,11 @@ define([
                     self.getDataHolder().set('testContext', testContext);
                     self.getDataHolder().set('testMap', testMap);
 
-                    return saveTestData();
+                    return self.saveCurrentTestState();
                 }
             };
 
-            if (_.isFunction(actions[action])) {
+            if (typeof actions[action] === 'function') {
                 return actions[action](params);
             } else {
                 logger.warn('Test action action  ' + action + ' is not yet supported');
@@ -217,60 +304,59 @@ define([
 
         /**
          * Get the item data
-         * @param {String} itemIdentifier - item unique ID$
+         * @param {String} itemIdentifier - item unique ID
          * @param {Object} [params] - additionnal parameters
          * @returns {Promise<Object>} resolves with the item data
          */
-        getItem: function getItem(itemIdentifier, params) {
+        getItem: function getItem(itemIdentifier) {
+
             var self = this;
-            if (!this.itemStore || !this.resultStore) {
+            if (!this.itemStore || !this.itemStateStore) {
                 return Promise.reject(new Error('Please initiaze the proxy first'));
             }
 
-            return this.resultStore.getItem(itemIdentifier)
-                .then(function(storedResults) {
-                    return storedResults && storedResults.itemState;
-                })
+            return this.itemStateStore
+                .getItem(itemIdentifier)
                 .then(function(itemState) {
 
                     //load it from the item store
                     if (self.itemStore.has(itemIdentifier)) {
-                        return self.itemStore.get(itemIdentifier).then(function(item) {
-                            item.itemState = itemState;
-                            return item;
-                        });
+                        return self.itemStore
+                            .get(itemIdentifier)
+                            .then(function(item) {
+                                //update the state
+                                item.itemState = itemState;
+                                return item;
+                            });
                     }
 
-                    //load get the json file
-                    return self.getJsonFile('items/' + itemIdentifier + '/item.json').then(function(data) {
-                        var item;
-                        if (data && !data.itemData && data.type && data.type === 'qti') {
+                    //otherwise load it from the json file
+                    return self.getItemContent(itemIdentifier).then(function(itemContent) {
+                        var item = {};
+                        if (itemContent) {
                             item = {
-                                itemState: itemState,
+                                itemState:      itemState,
                                 itemIdentifier: itemIdentifier,
-                                itemData: data,
-                                baseUrl:  '/items/' + itemIdentifier + '/'
+                                itemData:       itemContent,
+                                baseUrl:        self.baseUrl + '/items/' + itemIdentifier + '/',
                             };
                             if (self.itemStore) {
-                                self.itemStore.set(itemIdentifier, item);
+                                return self.itemStore
+                                    .set(itemIdentifier, item)
+                                    .then(function(){
+                                        return item;
+                                    });
                             }
-
                             return item;
                         }
-                        return data;
-                    })
-                    .then(function(itemData){
-                        return self.getBaseUrl().then(function(baseUrl){
-                            itemData.baseUrl = baseUrl + itemData.baseUrl;
-                            return itemData;
-                        });
+                        return null;
                     });
                 });
         },
 
         /**
          * Submit item response and
-         * @param {String} itemIdentifier - item unique ID$
+         * @param {String} itemIdentifier - item unique ID
          * @param {Object} state - the item state
          * @param {Object} response - the item response
          * @param {Object} [params] - additionnal parameters
@@ -278,8 +364,8 @@ define([
          */
         submitItem: function submitItem(itemIdentifier, state, response, params) {
             //update the item response and the item state
-            if (this.resultStore && (params.itemResponse || params.itemState)) {
-                return this.resultStore.setItem(itemIdentifier, _.pick(params, ['itemResponse', 'itemState']));
+            if (this.itemStateStore && params.itemState) {
+                return this.itemStateStore.setItem(itemIdentifier, params.itemState);
             }
         },
 
@@ -296,7 +382,7 @@ define([
             var newTestContext;
             var updatePromises = [];
 
-            var result = {
+            var testState = {
                 success: true
             };
 
@@ -304,15 +390,70 @@ define([
             var testContext = this.getDataHolder().get('testContext');
             var testMap = this.getDataHolder().get('testMap');
 
-            if (!this.testDataStore || !this.resultStore) {
+            if (!this.testStateStore || !this.itemStateStore) {
                 return Promise.reject(new Error('Please initiaze the proxy first'));
             }
 
-            //update the item response and the item state
-            if (params.itemResponse || params.itemState) {
-                logger.info('Item reponse for ' + itemIdentifier + ' : ' + JSON.stringify(params.itemResponse));
+            //update the item state
+            if (params.itemState) {
+                logger.info('Item state for ' + itemIdentifier + ' : ' + JSON.stringify(params.itemState));
                 updatePromises.push(
-                    this.resultStore.setItem(itemIdentifier, _.pick(params, ['itemResponse', 'itemState']))
+                    this.itemStateStore.setItem(itemIdentifier, params.itemState)
+                );
+            }
+            if (params.itemResponse) {
+                logger.info('Item response for ' + itemIdentifier + ' : ' + JSON.stringify(params.itemResponse));
+
+                updatePromises.push(
+                    Promise.all([
+                        self.itemStore.get(itemIdentifier),
+                        self.getItemUri(itemIdentifier),
+                        self.getItemVariableElements(itemIdentifier)
+                    ]).then(function(results) {
+
+                        var resultCollector;
+
+                        //we build the item for the result collector, using :
+                        // - the item content
+                        // - the item stats from the testMap
+                        // - the item variable elements (response processing, etc.)
+                        // - the item meta-data
+
+                        var item = results[0];
+                        var itemDataVariable = results[2];
+                        item.metadata = {
+                            uri : results[1]
+                        };
+                        item.stats = mapHelper.getItem(testMap, itemIdentifier);
+
+                        //merge variables elements to the item
+                        _.forEach(item.itemData.data.responses, function(response, index){
+                            if(itemDataVariable[index]){
+                                item.itemData.data.responses[index] = _.defaults(itemDataVariable[index], response);
+                            }
+                        });
+                        if(!item.itemData.data.responseProcessing){
+                            _.forEach(itemDataVariable, function(content, key){
+                                if(_.isString(content.processingType)){
+                                    item.itemData.data.responseProcessing = _.merge({
+                                        serial : key,
+                                        qtiClass:'responseProcessing',
+                                        attributes : {}
+                                    }, content);
+                                    return false;
+                                }
+                            });
+                        }
+
+                        //build the result collector for the current item and collect variables
+                        resultCollector = resultCollectorFactory(self.testUri, self.executionId, item);
+                        return Promise.all([
+                            resultCollector.addDuration(params.itemDuration),
+                            resultCollector.addAttempts(testContext.attempts),
+                            resultCollector.addCompletion(),
+                            resultCollector.addOutcomes(params.itemResponse)
+                        ]);
+                    })
                 );
             }
 
@@ -323,11 +464,11 @@ define([
                 (testContext.isLast && action === 'move' && params.scope === 'item' && params.direction === 'next') ||
                 (action === 'timeout' && params.scope !== 'item')) {
 
-                result.testContext = {
+                testState.testContext = {
                     state: testData.states.closed
                 };
-                updatePromises.push(self.testDataStore.clear());
-                updatePromises.push(self.resultStore.clear());
+                updatePromises.push(self.testStateStore.clear());
+                updatePromises.push(self.itemStateStore.clear());
 
             } else if (params.direction && params.scope) {
 
@@ -337,23 +478,23 @@ define([
                     params.scope,
                     params.ref
                 );
-                result.testContext = newTestContext;
+                testState.testContext = newTestContext;
 
-                updatePromises.push(
-                    self.testDataStore.setItem('testData', {
-                        testData: testData,
-                        testContext: newTestContext,
-                        testMap: testMap
-                    })
-                );
+                this.getDataHolder().set('testContext', newTestContext);
+
+                updatePromises.push(self.saveCurrentTestState());
             }
 
-            return Promise.all(updatePromises).then(function() {
-                return result;
-            });
+            return Promise
+                .all(updatePromises)
+                .then(function() {
+                    return testState;
+                });
         },
 
-        telemetry: function telemetry(itemIdentifier, signal, params) {},
+        telemetry: function telemetry() {
+            return null;
+        },
 
         loadCommunicator: function loadCommunicator() {
             return null;
