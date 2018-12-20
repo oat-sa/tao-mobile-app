@@ -114,7 +114,7 @@
                 }
             },
             'app/core/request' : {
-                endpoint : 'https://app.oat.taocloud.org/',
+                endpoint : 'https://app.oat.taocloud.org',
                 timeout  : 30 * 1000
             },
             'app/service/authentication' : {
