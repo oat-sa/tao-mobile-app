@@ -114,7 +114,7 @@
                 }
             },
             'app/core/request' : {
-                endpoint : 'http://spielplatz.taocloud.org/app-central-sync',
+                endpoint : 'https://app.oat.taocloud.org',
                 timeout  : 30 * 1000
             },
             'app/service/authentication' : {
