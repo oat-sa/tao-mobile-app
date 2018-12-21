@@ -105,6 +105,9 @@ module.exports = function(grunt) {
                 baseUrl : 'src/js',
                 force : true,
                 mainConfigFile : 'src/js/config.js',
+                paths : {
+                    ckeditor: 'empty://'
+                }
             },
 
             // bundle for dev without opitmization, for performances
@@ -114,7 +117,7 @@ module.exports = function(grunt) {
                     name: 'app',
                     out : `${target}js/app.min.js`,
                     include: includeInBundle,
-                    excludeShallow: ['ckeditor']
+                    exclude: ['ckeditor']
                 }
             },
 
@@ -131,7 +134,7 @@ module.exports = function(grunt) {
                     name: 'app',
                     out : `${target}js/app.min.js`,
                     include: includeInBundle,
-                    excludeShallow: ['ckeditor']
+                    exclude: ['ckeditor']
                 }
             }
         },
@@ -156,14 +159,17 @@ module.exports = function(grunt) {
         //some resources are not compiled so we copy them from TAO to the target
         copy : {
             build : {
-                files : [
-                    {
-                        expand: true,
-                        cwd: `${taodist}tao/views/css`,
-                        src: ['font/**/*.{eot,svg,ttf,woff}'],
-                        dest: `${target}css/`
-                    },
-                ]
+                files : [{
+                    expand: true,
+                    cwd: `${taodist}tao/views/css`,
+                    src: ['font/**/*.{eot,svg,ttf,woff}'],
+                    dest: `${target}css/`
+                }, {
+                    expand: true,
+                    cwd: `${taodist}tao/views/js`,
+                    src: ['lib/ckeditor/**/*.{js,css,png,map}'],
+                    dest: `${target}js/`
+                }]
             }
         }
     });

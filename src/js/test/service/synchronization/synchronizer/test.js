@@ -27,14 +27,24 @@ define([
 ], function(synchronizerFactory) {
     'use strict';
 
-    var dummyProvider = {
-        name : 'dummy',
+    var fetchProvider = {
+        name : 'dummyFeych',
+        direction : 'fetch',
         init : function(){},
         getRemoteResourceIds : function(){},
         getRemoteResources : function(){},
         getLocalResources : function(){},
         addResource : function(){},
         updateResource : function(){},
+        removeResource : function(){}
+    };
+
+    var sendProvider = {
+        name : 'dummySend',
+        direction : 'send',
+        init : function(){},
+        getLocalResources : function(){},
+        sendResource : function(){},
         removeResource : function(){}
     };
 
@@ -62,7 +72,7 @@ define([
             synchronizerFactory('dummy');
         }, Error, 'The given provider is not registered');
 
-        synchronizerFactory.registerProvider('dummy', dummyProvider);
+        synchronizerFactory.registerProvider('dummy', fetchProvider);
 
         assert.equal(typeof synchronizerFactory('dummy'), 'object', "The factory produces an object");
         assert.notStrictEqual(synchronizerFactory('dummy'), synchronizerFactory('dummy'), "The factory provides a different object on each call");
@@ -76,7 +86,7 @@ define([
         { title : 'after' },
     ]).test('Eventifier API ', function(data, assert) {
         var synchronizer;
-        synchronizerFactory.registerProvider('dummy', dummyProvider);
+        synchronizerFactory.registerProvider('dummy', fetchProvider);
         synchronizer = synchronizerFactory('dummy');
         assert.equal(typeof synchronizer[data.title], 'function', 'The synchronizerFactory exposes the eventifier method "' + data.title);
     });
@@ -86,7 +96,7 @@ define([
         { title : 'setState' },
     ]).test('State API ', function(data, assert) {
         var synchronizer;
-        synchronizerFactory.registerProvider('dummy', dummyProvider);
+        synchronizerFactory.registerProvider('dummy', fetchProvider);
         synchronizer = synchronizerFactory('dummy');
         assert.equal(typeof synchronizer[data.title], 'function', 'The synchronizerFactory exposes the statifier method "' + data.title);
     });
@@ -97,9 +107,11 @@ define([
         { title : 'computeNeededOperations' },
         { title : 'getLogger' },
         { title : 'getConfig' },
+        { title : 'fetch' },
+        { title : 'send' }
     ]).test('Facade API ', function(data, assert) {
         var synchronizer;
-        synchronizerFactory.registerProvider('dummy', dummyProvider);
+        synchronizerFactory.registerProvider('dummy', fetchProvider);
         synchronizer = synchronizerFactory('dummy');
         assert.equal(typeof synchronizer[data.title], 'function', 'The synchronizerFactory exposes the facade method "' + data.title);
     });
@@ -159,7 +171,7 @@ define([
 
         var syncOperations;
 
-        synchronizerFactory.registerProvider('dummy', dummyProvider);
+        synchronizerFactory.registerProvider('dummy', fetchProvider);
 
         syncOperations = synchronizerFactory('dummy').computeNeededOperations(data.local, data.remote);
 
@@ -174,6 +186,7 @@ define([
 
         synchronizerFactory.registerProvider('wait', {
             name : 'wait',
+            direction : 'fetch',
             init : function(){},
             getRemoteResourceIds : function(){
                 return new Promise(function(resolve){
@@ -218,7 +231,7 @@ define([
         }, 20);
     });
 
-    QUnit.asyncTest('synchronize', function(assert){
+    QUnit.asyncTest('fetch synchronize', function(assert){
 
         var mockConfig  = {
             foo : true,
@@ -229,6 +242,7 @@ define([
 
         synchronizerFactory.registerProvider('mock', {
             name : 'mock',
+            direction : 'fetch',
             init : function(config){
                 assert.deepEqual(config, mockConfig, 'The provider is initialzed with the config');
             },
@@ -295,6 +309,57 @@ define([
             });
     });
 
+    QUnit.asyncTest('send synchronize', function(assert){
+
+        var mockConfig  = {
+            foo : 'bar'
+        };
+
+        QUnit.expect(7);
+
+        synchronizerFactory.registerProvider('mock', {
+            name : 'mock',
+            direction : 'send',
+            init : function(config){
+                assert.deepEqual(config, mockConfig, 'The provider is initialzed with the config');
+            },
+            getLocalResources : function(){
+                assert.ok(true, 'getLocalResources called');
+                return Promise.resolve({
+                    d1 : { id : 'd1', checksum : 'a' },
+                    d2 : { id : 'd2', checksum : 'b' },
+                    d3 : { id : 'd3', checksum : 'a' }
+                });
+            },
+            sendResource : function(id, resource){
+                assert.ok(true, 'sendResource called');
+                if(resource.checksum === 'b'){
+                    return Promise.resolve(true);
+                }
+                return Promise.resolve(false);
+            },
+            removeResource : function(id){
+                assert.equal(id, 'd2', 'The correct resource will be removed');
+                return Promise.resolve(true);
+            }
+        });
+
+        synchronizerFactory('mock', mockConfig)
+            .start()
+            .then(function(operations){
+                assert.deepEqual(operations, {
+                    send: ['d2'],
+                    remove : ['d2']
+                }, 'The expected operations have been executed');
+
+                QUnit.start();
+            })
+            .catch(function(err){
+                assert.ok(false, err.message);
+                QUnit.start();
+            });
+    });
+
     QUnit.asyncTest('fail in retrieval', function(assert){
 
         var synchronizer;
@@ -308,6 +373,7 @@ define([
 
         synchronizerFactory.registerProvider('fail-retrieve', {
             name : 'fail-retrieve',
+            direction : 'fetch',
             init : function(config){
                 assert.deepEqual(config, mockConfig, 'The provider is initialzed with the config');
             },

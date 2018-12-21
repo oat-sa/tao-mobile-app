@@ -42,13 +42,11 @@ define([
 
             /**
              * Launch the delivery
-             * @param {String} deliveryId
-             * @param {String} assemblyPath
+             * @param {Object} delivery
              */
-            var launchDelivery = function launchDelivery(deliveryId, assemblyPath){
+            var launchDelivery = function launchDelivery(delivery){
                 self.getRouter().dispatch('delivery/runner', {
-                    deliveryId : deliveryId,
-                    assemblyPath : assemblyPath
+                    delivery : delivery
                 });
             };
 
@@ -71,8 +69,8 @@ define([
                             deliveryLauncherFactory(self.getContainer(), { deliveries: deliveries })
                                 .on('launch', function(id, delivery){
 
-                                    logger.info('User ' + session.user.login + ' launches delivery ' + id);
-                                    launchDelivery(id, delivery.assemblyPath);
+                                    logger.info('User ' + session.user.id + ' launches delivery ' + id);
+                                    launchDelivery(delivery);
                                 })
                                 .on('error', function(err){
                                     self.handleError(err);

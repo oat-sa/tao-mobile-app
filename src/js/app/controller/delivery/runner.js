@@ -26,8 +26,9 @@
 define([
     'app/controller/pageController',
     'app/service/session',
+    'app/service/deliveryExecution',
     'app/runner/runner',
-], function(pageController, sessionService, appRunnerFactory){
+], function(pageController, sessionService, deliveryExecutionService, appRunnerFactory){
     'use strict';
 
     /**
@@ -36,8 +37,17 @@ define([
     return pageController({
         start: function start(){
             var self = this;
+            var logger = this.getLogger();
 
             var params = this.getParams();
+
+            var handleError = function handleError(err){
+
+                self.handleError(err);
+                setTimeout(function(){
+                    self.getRouter().dispatch('delivery/index');
+                }, 4000);
+            };
 
             sessionService
                 .getCurrent()
@@ -45,22 +55,36 @@ define([
                     if(!session || !session.user || session.user.role !== 'testTaker'){
                         throw new Error('Attempt to start a delivery with a user role of ' + session.user.role);
                     }
-                    if(!params || !params.deliveryId || !params.assemblyPath){
+                    if(!params || !params.delivery || !params.delivery.id || !params.delivery.assemblyPath){
                         throw new Error('Missing delivery parameters');
                     }
-                    return appRunnerFactory(self.getContainer(), params.deliveryId, params.assemblyPath);
+
+                    return deliveryExecutionService.create(params.delivery.id, session.user.id, params.delivery.label);
                 })
-                .then(function(runner){
-                    runner.on('destroy', function(){
-                        self.getRouter().dispatch('delivery/index');
+                .then(function(deliveryExecution){
+
+                    logger.debug('Delivery execution ' + deliveryExecution.id + ' created for user ' + deliveryExecution.testTakerId);
+
+                    return appRunnerFactory(
+                        self.getContainer(),
+                        params.delivery.id,
+                        params.delivery.assemblyPath,
+                        deliveryExecution.id
+                    )
+                    .then(function(runner){
+                        runner.after('destroy', function(){
+                            setTimeout(function(){
+                                deliveryExecutionService
+                                    .finish(deliveryExecution.id)
+                                    .then(function(){
+                                        self.getRouter().dispatch('delivery/index');
+                                    })
+                                    .catch(handleError);
+                            });
+                        });
                     });
                 })
-                .catch(function(err){
-                    self.handleError(err);
-                    setTimeout(function(){
-                        self.getRouter().dispatch('delivery/index');
-                    }, 4000);
-                });
+                .catch(handleError);
         }
     });
 });

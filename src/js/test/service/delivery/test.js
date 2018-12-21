@@ -34,19 +34,24 @@ define(['app/service/delivery'], function(deliveryService){
     });
 
     QUnit.cases([
+        { title : 'generatePathName' },
+    ]).test('Service API ', function(data, assert) {
+        assert.equal(typeof deliveryService[data.title], 'function', 'The service exposes the method "' + data.title);
+    });
+
+    QUnit.cases([
         { title : 'getById' },
         { title : 'getAll' },
         { title : 'set' },
         { title : 'update' },
         { title : 'remove' },
         { title : 'removeAll' },
-    ]).test('Component API ', function(data, assert) {
-        assert.equal(typeof deliveryService[data.title], 'function', 'The service exposes the component method "' + data.title);
+    ]).test('storeService API ', function(data, assert) {
+        assert.equal(typeof deliveryService[data.title], 'function', 'The service exposes the method "' + data.title);
     });
 
 
     QUnit.module('Behavior');
-
 
     QUnit.test('set invalid delivery', function(assert) {
 

@@ -38,6 +38,7 @@ define([
 
     QUnit.test('syncProvider', function(assert) {
         assert.equal(typeof deliverySyncProvider.name, 'string', 'The provider exposes a name');
+        assert.equal(deliverySyncProvider.direction, 'fetch', 'The provider is a fetch provider');
         assert.equal(typeof deliverySyncProvider.init, 'function', 'The provider exposes an init method');
         assert.equal(typeof deliverySyncProvider.getRemoteResourceIds, 'function', 'The provider exposes an getRemoteResourceIds method');
         assert.equal(typeof deliverySyncProvider.getRemoteResources, 'function', 'The provider exposes a getRemoteResources method');

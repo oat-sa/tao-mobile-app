@@ -169,7 +169,7 @@ define(['app/component/deliveryLauncher/launcher'], function(deliveryLauncherFac
                 var element = this.getElement()[0];
                 assert.deepEqual(container.querySelector('.delivery-launcher'), element, 'The component exists');
 
-                assert.equal(element.querySelector('h1').textContent.trim(), 'available tests', 'The title is set');
+                assert.equal(element.querySelector('h2').textContent.trim(), 'available tests', 'The title is set');
                 assert.equal(element.querySelectorAll('article').length, 0, 'No deliveries are rendered');
                 assert.equal(element.querySelector('p').textContent.trim(), 'nothing', 'The empty text is added');
 

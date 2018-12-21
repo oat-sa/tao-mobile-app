@@ -48,8 +48,8 @@
             'handlebars':  '../taodist/tao/views/js/lib/handlebars',
             'jquery':      '../taodist/tao/views/js/lib/jquery-1.8.0.min',
             'async':       '../taodist/tao/views/js/lib/async',
-            'mathJax'    : '//:empty',
-            'ckeditor'          : '../taodist/tao/views/js/lib/ckeditor/ckeditor',
+            'mathJax'    : '../taodist/taoQtiItem/views/js/MathJaxFallback',
+            'ckeditor'          : '/dist/js/lib/ckeditor/ckeditor',
             'raphael'           : '../taodist/tao/views/js/lib/raphael/raphael',
             'scale.raphael'     : '../taodist/tao/views/js/lib/raphael/scale.raphael',
             'select2'           : '../taodist/tao/views/js/lib/select2/select2.min',
@@ -114,7 +114,7 @@
                 }
             },
             'app/core/request' : {
-                endpoint : 'http://spielplatz.taocloud.org/app-central-sync',
+                endpoint : 'https://app.oat.taocloud.org',
                 timeout  : 30 * 1000
             },
             'app/service/authentication' : {
@@ -154,6 +154,14 @@
                         headers : {
                             'Content-Type' : 'application/zip',
                             'Accept':        'application/zip'
+                        }
+                    },
+                    result: {
+                        method: 'POST',
+                        path : '/taoSync/ResultApi/syncResults',
+                        headers : {
+                            'Content-Type' : 'application/json',
+                            'Accept':        'application/json'
                         }
                     }
                 }

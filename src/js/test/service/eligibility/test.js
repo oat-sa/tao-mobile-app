@@ -40,8 +40,8 @@ define(['app/service/eligibility'], function(eligibilityService){
         { title : 'update' },
         { title : 'remove' },
         { title : 'removeAll' },
-    ]).test('Component API ', function(data, assert) {
-        assert.equal(typeof eligibilityService[data.title], 'function', 'The service exposes the component method "' + data.title);
+    ]).test('StoreService API ', function(data, assert) {
+        assert.equal(typeof eligibilityService[data.title], 'function', 'The service exposes the method "' + data.title);
     });
 
 
