@@ -108,7 +108,7 @@ define(['app/component/header/header'], function(headerComponentFactory){
             assert.ok(element.querySelectorAll('h1').length, 1, 'The <title> tag is added');
             assert.equal(element.querySelector('h1').textContent.trim(), 'Foo', 'The title is correct');
             assert.ok(element.querySelectorAll('.profile').length, 1, 'The profile element is added');
-            assert.equal(element.querySelector('.profile > p').textContent.trim(), 'John Doe',  'The profile contains the user first and lastname');
+            assert.equal(element.querySelector('.profile').textContent.trim(), 'John Doe',  'The profile contains the user first and lastname');
             assert.ok(element.querySelectorAll('nav > a').length, 1, 'The header contains one action');
             assert.equal(element.querySelector('nav > a').dataset.route, 'main/logout', 'The default action route is correct');
 
@@ -134,7 +134,7 @@ define(['app/component/header/header'], function(headerComponentFactory){
             assert.deepEqual(container.querySelector('header'), element, 'The component exists');
 
             assert.ok(element.querySelectorAll('.profile').length, 1, 'The profile element is added');
-            assert.equal(element.querySelector('.profile > p').textContent.trim(), 'jdoe',  'The profile contains the user login');
+            assert.equal(element.querySelector('.profile').textContent.trim(), 'jdoe',  'The profile contains the user login');
 
             QUnit.start();
         });
