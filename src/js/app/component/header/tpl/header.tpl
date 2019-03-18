@@ -1,18 +1,20 @@
 <header class="menu-bar">
     <h1>{{title}}</h1>
     {{#if user}}
-    <div class="profile">
-        <span class="icon-user"></span>
+
+    <span class="icon-user"></span>
+    <p class="profile">
         {{#if user.lastname}}
-        <p>{{user.firstname}} {{user.lastname}}</p>
+            {{user.firstname}} {{user.lastname}}
         {{else}}
-        <p>{{user.login}}</p>
+            {{user.login}}
         {{/if}}
-    </div>
+    </p>
     {{/if}}
     <nav>
     {{#each actions}}
         <a href="#" title="{{title}}" data-route="{{route}}"><span class="icon-{{icon}}"></span></a>
+
     {{/each}}
     </nav>
 </header>
