@@ -46,7 +46,7 @@
             'lodash':      '../taodist/tao/views/js/lib/lodash.min',
             'moment':      '../taodist/tao/views/js/lib/moment-with-locales.min',
             'handlebars':  '../taodist/tao/views/js/lib/handlebars',
-            'jquery':      '../taodist/tao/views/js/lib/jquery-1.8.0.min',
+            'jquery':      '../taodist/tao/views/js/lib/jquery-1.9.1',
             'async':       '../taodist/tao/views/js/lib/async',
             'mathJax'    : '../taodist/taoQtiItem/views/js/MathJaxFallback',
             'ckeditor'          : '/dist/js/lib/ckeditor/ckeditor',
