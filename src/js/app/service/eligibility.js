@@ -55,9 +55,9 @@ define([
         if(_.isEmpty(eligibility.delivery)){
             throw new TypeError('An eligibility needs to have a property delivery');
         }
-        if(!_.isArray(eligibility.testTakers)){
-            throw new TypeError('An eligibility needs to have a property testTakers');
-        }
+        //if(!_.isArray(eligibility.testTakers)){
+            //throw new TypeError('An eligibility needs to have a property testTakers');
+        //}
         return true;
     };
 
