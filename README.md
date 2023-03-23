@@ -1,5 +1,7 @@
 # TAO mobile test client
 
+## !!! DEPRECATED / ARCHIVED REPOSITORY !!!
+
 This repository contains the sources to build a TAO mobile client application for Android and iOS, using Cordova and PhoneGap.
 
 ## Offline Test taking
